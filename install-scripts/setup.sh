@@ -13,5 +13,5 @@ sudo apt-get install build-essential
 brew install gcc 
 
 # cleanup
-sudo apt autoremove
+sudo apt autoremove -y
 export DEBIAN_FRONTEND=readline
