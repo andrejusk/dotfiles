@@ -36,9 +36,6 @@ ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/the
 sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="spaceship"/g' ~/.zshrc
 
 
-# # # dev 
-brew install hugo
-
 # cleanup
 sudo apt autoremove -y
 export DEBIAN_FRONTEND=readline
