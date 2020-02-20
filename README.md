@@ -3,9 +3,8 @@
 
 ## Install
 ```
-git clone https://github.com/andrejusk/dotfiles.git ~/git/dotfiles
-cd ~/git/dotfiles/install-scripts
-bash ./setup.sh
+git clone https://github.com/andrejusk/dotfiles.git ~/workspace/dotfiles
+sudo sh ~/workspace/dotfiles/setup.sh
 ```
 
 ## About
