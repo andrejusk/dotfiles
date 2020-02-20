@@ -9,9 +9,6 @@ ln -s /mnt/c/git ~/git
 # # # shell
 
 # apt
-sudo apt-get update
-sudo apt-get upgrade -y
-
 # brew
 yes '' | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
 echo 'eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)' >>~/.profile
