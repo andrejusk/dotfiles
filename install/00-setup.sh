@@ -1,1 +1,0 @@
-touch $state_dir

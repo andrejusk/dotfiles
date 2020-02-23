@@ -1,1 +1,2 @@
-install/.state
+install/*.lock
+install.lock

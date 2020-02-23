@@ -1,3 +1,5 @@
+indent() { sed 's/^/  /'; }
+
 C_BLACK='\033[0;30m'
 C_DGRAY='\033[1;30m'
 C_RED='\033[0;31m'
