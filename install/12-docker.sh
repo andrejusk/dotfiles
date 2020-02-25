@@ -8,7 +8,8 @@
 #
 
 # 1. docker is installed
-if ! hash docker 2>/dev/null; then
+if ! hash docker 2>/dev/null
+then
 
     printf "Installing docker...\n"
 
@@ -32,7 +33,8 @@ fi
 printf "docker is installed\n"
 
 # 2. docker-compose if installed
-if ! hash docker-compose 2>/dev/null; then
+if ! hash docker-compose 2>/dev/null
+then
 
     printf "Installing docker-compose...\n"
 
@@ -45,14 +47,16 @@ fi
 printf "docker-compose is installed\n"
 
 # 3. docker group exists
-group='docker'
-if ! grep -q $group /etc/group; then
-    sudo groupadd docker
+readonly docker_group='docker'
+if ! grep -q $docker_group /etc/group
+then
+    sudo groupadd $docker_group
 fi
-printf "group '$group' is created\n"
+printf "group '$docker_group' is created\n"
 
 # 4. user is in docker group
-if ! groups $USER | grep -q "\b$group\b"; then
+if ! groups $USER | grep -q "\b$docker_group\b"
+then
     sudo usermod -aG docker $USER
 fi
-printf "user '$USER' is in '$group' group\n"
+printf "user '$USER' is in '$docker_group' group\n"

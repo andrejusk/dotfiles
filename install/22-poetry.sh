@@ -5,7 +5,8 @@
 #
 
 # 1. poetry is installed
-if ! hash poetry 2>/dev/null; then
+if ! hash poetry 2>/dev/null
+then
 
     printf "Installing poetry...\n"
 

@@ -10,5 +10,5 @@ DEBIAN_FRONTEND=noninteractive sudo apt-get \
     -o Dpkg::Options::="--force-confold" upgrade -y
 
 # Package installs
-pkglist=$(cat $install_dir/00-apt-pkglist)
-sudo apt-get install -y $pkglist
+readonly apt_pkglist=$(cat $install_dir/00-apt-pkglist)
+sudo apt-get install -y $apt_pkglist

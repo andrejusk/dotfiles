@@ -1,5 +1,29 @@
 indent() { sed 's/^/  /'; }
 
+# Symlink contents of source folder to target 
+#
+# @arg $1 source
+# @arg $2 target
+#
+link_folder () {
+
+    source=$1
+    target=$2
+
+    for file in $(ls -d $source)
+    do
+        rel_path=$(realpath --relative-to="$target" "$file")
+        printf "Linking $file to $target as $rel_path...\n"
+        ln -sf $target $rel_path
+    done
+
+}
+
+# Return if specified binary is not in PATH
+is_missing () {
+    return ! hash $1
+}
+
 C_BLACK='\033[0;30m'
 C_DGRAY='\033[1;30m'
 C_RED='\033[0;31m'
