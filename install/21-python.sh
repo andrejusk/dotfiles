@@ -5,8 +5,7 @@
 #
 
 # 1. python is installed
-if ! hash python 2>/dev/null
-then
+if not_installed "python"; then
 
     printf "Installing python...\n"
 

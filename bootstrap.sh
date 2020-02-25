@@ -1,48 +1,43 @@
 #!/bin/bash
 #
 # Script to set up and install dotfiles repository.
-# 
+#
 # Usage:
 #   `source path/to/bootstrap.sh`
 #   `source <(wget path/to/bootstrap.sh)`
 #
-set -euo pipefail
+set -o pipefail
+echo "setting up..."
 
-# Set up variables and imports
-readonly repository="andrejusk/dotfiles"
-readonly repository_url="https://github.com/$repository.git"
-readonly workspace_dir="$HOME/workspace"
-readonly dotfiles_dir="$workspace_dir/dotfiles"
-readonly install_dir="$dotfiles_dir/install"
-readonly lock_file="$dotfiles_dir/.dotlock"
-source "$dotfiles_dir/utils.sh"
+# Variables: git
+if [ -z "$REPOSITORY" ]; then
+    export REPOSITORY="andrejusk/dotfiles"
+fi
+readonly repository_url="https://github.com/$REPOSITORY.git"
+echo "using repository: $repository_url"
 
-# Log execution
-printf "Setting up ${C_CYAN}$repository${C_NC} with:\n"
-printf "  repository:\t  ${C_YELLOW}$repository${C_NC}\n"
-printf "  repository_url: ${C_YELLOW}$repository_url${C_NC}\n"
-printf "  workspace_dir:  ${C_YELLOW}$workspace_dir${C_NC}\n"
-printf "  dotfiles_dir:\t  ${C_YELLOW}$dotfiles_dir${C_NC}\n"
-printf "  install_dir:\t  ${C_YELLOW}$install_dir${C_NC}\n"
-printf "  lock_file:\t  ${C_YELLOW}$lock_file${C_NC}\n\n"
+# Variables: workspace
+if [ -z "$WORKSPACE" ]; then
+    export WORKSPACE="$HOME/workspace"
+fi
+readonly dotfiles_dir="$WORKSPACE/dotfiles"
+echo "using dir: $dotfiles_dir"
 
 # Ensure git is installed
-if ! hash git 2>/dev/null
-then
-    sudo apt-get update -yqq
-    sudo apt-get install -yqq git
-fi
-
-# Ensure repository is cloned
-if [[ ! -d "$dotfiles_dir" ]]
-then
-    mkdir -p "$workspace_dir"
-    git clone -q "$repository_url" "$dotfiles_dir"
+if ! [ -x "$(command -v git)" ]; then
+    echo "installing git..."
+    sudo apt-get update -qqy
+    sudo apt-get install git -qqy
 fi
 
 # Ensure repository is up to date
-cd "$dotfiles_dir"
-git pull -q origin master || true
+echo "pulling latest..."
+if [[ ! -d $dotfiles_dir ]]; then
+    mkdir -p "$dotfiles_dir"
+    git clone -q "$repository_url" "$dotfiles_dir"
+else
+    git --git-dir="$dotfiles_dir/.git" pull -q origin master || true
+fi
 
 # Install dotfiles
 source "$dotfiles_dir/install.sh"

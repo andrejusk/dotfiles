@@ -1,14 +1,15 @@
 #!/bin/bash
 #
-# Always updates apt, upgrades apt, and installes 00-apt-pkglist
+# apt update and upgrade
 #
+# Install list of packages in ./00-apt-pkglist
+#
+readonly package_list_file="00-apt-pkglist"
 
 # apt update and upgrade non-interactively
-sudo apt-get update -y
-DEBIAN_FRONTEND=noninteractive sudo apt-get \
-    -o Dpkg::Options::="--force-confdef" \
-    -o Dpkg::Options::="--force-confold" upgrade -y
+update
+upgrade
 
 # Package installs
-readonly apt_pkglist=$(cat $install_dir/00-apt-pkglist)
-sudo apt-get install -y $apt_pkglist
+readonly package_list=$(cat $install_dir/$package_list_file)
+install -y "$package_list"

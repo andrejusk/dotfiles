@@ -5,13 +5,12 @@
 #
 
 # 1. poetry is installed
-if ! hash poetry 2>/dev/null
-then
+if not_installed "poetry"; then
 
     printf "Installing poetry...\n"
 
     # Install poetry
-    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
+    run https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py python3
 
 fi
 printf "poetry is installed\n"

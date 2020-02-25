@@ -1,29 +1,57 @@
+#!/bin/bash
+#
+# Alias commands and utilities.
+#
+
+update() {
+    sudo apt-get update -y
+}
+
+# Non-interactive upgrade
+upgrade() {
+    DEBIAN_FRONTEND=noninteractive \
+        sudo apt-get upgrade -y \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold"
+}
+
+# @arg $1 packages to install
+install() {
+    sudo apt-get install -y $1
+}
+
+# @arg $1 repository to add
+app_ppa() {
+    sudo add-apt-repository -y ppa:"$1" &>/dev/null
+}
+
+# @arg $1 url to add
+add_key() {
+    curl -fsSL $1 | sudo apt-key add -
+}
+
+# @arg $1 URL to run
+# @arg $2 binary to use
+run() {
+    curl -fsSL $1 | $2
+}
+
+# Symlink contents of source folder to target
+#
+# @arg $1 source folder
+# @arg $2 target folder
+link_folder() {
+    cp -srf $1 $2
+}
+
 indent() { sed 's/^/  /'; }
 
-# Symlink contents of source folder to target 
-#
-# @arg $1 source
-# @arg $2 target
-#
-link_folder () {
-
-    source=$1
-    target=$2
-
-    for file in $(ls -d $source)
-    do
-        rel_path=$(realpath --relative-to="$target" "$file")
-        printf "Linking $file to $target as $rel_path...\n"
-        ln -sf $target $rel_path
-    done
-
+# @arg $1 binary to test
+not_installed() {
+    ! [ -x "$(command -v $1)" ]
 }
 
-# Return if specified binary is not in PATH
-is_missing () {
-    return ! hash $1
-}
-
+# Colors
 C_BLACK='\033[0;30m'
 C_DGRAY='\033[1;30m'
 C_RED='\033[0;31m'

@@ -5,14 +5,15 @@
 #
 
 # 1.keybase is installed
-if [ ! hash keybase ] 2>/dev/null
-then
+if not_installed "keybase"; then
 
     printf "Installing keybase...\n"
 
     curl --remote-name https://prerelease.keybase.io/keybase_amd64.deb
-    sudo apt-get install -y ./keybase_amd64.deb
-    run_keybase
+    install ./keybase_amd64.deb
+    rm ./keybase_amd64.deb
 
 fi
 printf "keybase is installed\n"
+run_keybase
+keybase --version

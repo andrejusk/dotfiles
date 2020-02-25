@@ -8,13 +8,12 @@
 #
 
 # 1. docker is installed
-if ! hash docker 2>/dev/null
-then
+if not_installed "docker"; then
 
     printf "Installing docker...\n"
 
     # Requirements
-    sudo apt-get -y install \
+    install \
         apt-transport-https \
         ca-certificates \
         curl \
@@ -22,41 +21,42 @@ then
         software-properties-common
 
     # Add repository
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    add_key https://download.docker.com/linux/ubuntu/gpg
     sudo add-apt-repository -y \
         "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) \
-    stable"
-    sudo apt-get -y update
+        $(lsb_release -cs) \
+        stable"
+    update
+
+    # Install
+    install docker-ce
 
 fi
 printf "docker is installed\n"
+docker --version
 
 # 2. docker-compose if installed
-if ! hash docker-compose 2>/dev/null
-then
+if not_installed "docker-compose"; then
 
     printf "Installing docker-compose...\n"
 
     # Docker-compose
     curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
-    docker-compose --version
 
 fi
 printf "docker-compose is installed\n"
+docker-compose --version
 
 # 3. docker group exists
 readonly docker_group='docker'
-if ! grep -q $docker_group /etc/group
-then
-    sudo groupadd $docker_group
+if ! grep -q "$docker_group" /etc/group; then
+    sudo groupadd "$docker_group"
 fi
 printf "group '$docker_group' is created\n"
 
 # 4. user is in docker group
-if ! groups $USER | grep -q "\b$docker_group\b"
-then
-    sudo usermod -aG docker $USER
+if ! groups $USER | grep -q "\b$docker_group\b"; then
+    sudo usermod -aG docker "$USER"
 fi
 printf "user '$USER' is in '$docker_group' group\n"
