@@ -42,7 +42,7 @@ if not_installed "docker-compose"; then
 
     # Docker-compose
     readonly docker_compose_url="https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m)"
-    curl -L docker_compose_url -o /usr/local/bin/docker-compose
+    curl -L "$docker_compose_url" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
 
 fi
