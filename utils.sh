@@ -48,7 +48,7 @@ indent() { sed 's/^/  /'; }
 
 # @arg $1 binary to test
 not_installed() {
-    ! [ -x $(command -v $1) ]
+    ! [ -x "$(command -v $1)" ]
 }
 
 # Colors

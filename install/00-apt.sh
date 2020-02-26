@@ -10,6 +10,6 @@ readonly package_list_file="00-apt-pkglist"
 update
 upgrade
 
-# Package installs (don't escape list)
-readonly package_list=$(cat $install_dir/$package_list_file)
+# Package installs
+readonly package_list=$(cat $install_dir/$package_list_file) # Don't escape list
 install -y $package_list
