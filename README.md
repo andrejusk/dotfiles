@@ -6,7 +6,7 @@ Tested on and compatible with:
 
 ## Install
 
-    wget -qO - https://raw.githubusercontent.com/andrejusk/dotfiles/master/bootstrap.sh | bash
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/bootstrap.sh -qO - | bash
 
 _Running the above without reading through repository is strongly discouraged._
 

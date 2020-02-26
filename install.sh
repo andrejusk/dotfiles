@@ -1,9 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -euo pipefail
 #
 # Invokes all install scripts.
 #
-set -euo pipefail
-
 source "$dotfiles_dir/utils.sh"
 printf "Installing ${C_CYAN}$REPOSITORY${C_NC}"
 printf " as ${C_YELLOW}$USER${C_NC}\n\n"

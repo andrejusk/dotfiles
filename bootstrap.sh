@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -o pipefail
 #
 # Script to set up dotfiles repository and run installer.
 #
@@ -11,37 +11,44 @@
 #   i. Run in new bash shell.
 #
 #       $ bash bootstrap.sh
-#       $ bash path/to/bootstrap.sh
-#       $ wget -O - path.to/bootstrap.sh | bash
+#       $ bash /path/to/bootstrap.sh
+#       $ wget path.to/bootstrap.sh -qO - | bash
 #
 #   ii.  Source into existing bash shell.
 #
 #       $ source bootstrap.sh
-#       $ source path/to/bootstrap.sh
-#       $ source <(wget path.to/bootstrap.sh)
+#       $ source /path/to/bootstrap.sh
+#       $ source <(wget -q path.to/bootstrap.sh)
 #
 #
 # Configuration:
 #
-#   $REPOSITORY - GitHub repository to clone and run $dir/install.sh of
+#   $REPOSITORY - GitHub repository to clone
 #       @default "andrejusk/dotfiles"
 #
-#   $WORKSPACE  - parent directory to clone repository in to
+#   $WORKSPACE  - parent directory to clone repository into
 #       @default "$HOME/workspace"
 #
+#   $INSTALLER  - installer file name
+#       @default "install.sh"
 #
-set -o pipefail
+#
 echo "setting up..."
 
-# Variables: git
+# Variables: $REPOSITORY
 if [ -z "$REPOSITORY" ]; then export REPOSITORY="andrejusk/dotfiles"; fi
 readonly repository_url="https://github.com/$REPOSITORY.git"
 echo "using repository: $repository_url"
 
-# Variables: workspace
+# Variables: $WORKSPACE
 if [ -z "$WORKSPACE" ]; then export WORKSPACE="$HOME/workspace"; fi
 readonly dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
+
+# Variables: $INSTALLER
+if [ -z "$INSTALLER" ]; then export INSTALLER="install.sh"; fi
+readonly installer="$dotfiles_dir/$INSTALLER"
+echo "using installer: $installer"
 
 # Ensure git is installed
 if ! [ -x "$(command -v git)" ]; then
@@ -60,5 +67,6 @@ else
 fi
 
 # Install dotfiles
-cd $dotfiles_dir
-source "$dotfiles_dir/install.sh"
+cd "$dotfiles_dir"
+chmod +x "$installer"
+"$installer"
