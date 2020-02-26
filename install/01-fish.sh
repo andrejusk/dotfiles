@@ -27,7 +27,8 @@ readonly fish_path="$(which fish)"
 if [ "$SHELL" != fish_path ]; then
 
     # Update default login shell
-    usermod -s "$fish_path" "$USER"
+    sudo chsh -s "$fish_path" "$USER"
+    sudo usermod -s "$fish_path" "$USER"
 
 fi
 printf "fish is default login shell\n"
