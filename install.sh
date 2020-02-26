@@ -33,7 +33,7 @@ for script in $script_filter; do
 
     # Log execution
     script_name="$(basename "$script" ".sh")"
-    printf "Running ${C_YELLOW}$script_name${C_NC}...\n${C_DGRAY}"
+    printf "\nRunning ${C_YELLOW}$script_name${C_NC}...\n${C_DGRAY}"
 
     # Run and indent output
     source "$script" | indent
@@ -43,7 +43,7 @@ for script in $script_filter; do
 done || make clean
 
 # Clean up and exit
-printf "Done! Cleaning up...\n${C_DGRAY}"
+printf "\nDone! Cleaning up...\n${C_DGRAY}"
 make clean
 printf "${C_NC}\n"
 exit 0

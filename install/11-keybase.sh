@@ -15,5 +15,4 @@ if not_installed "keybase"; then
 
 fi
 printf "keybase is installed\n"
-run_keybase
 keybase --version

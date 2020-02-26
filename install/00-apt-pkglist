@@ -2,3 +2,4 @@ curl
 make
 net-tools
 openssh-server
+screenfetch

@@ -20,7 +20,10 @@ if not_installed "pyenv"; then
     run https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer bash
 
     # Add to install path
-    export PATH="$HOME/.pyenv/bin:$PATH"
+    readonly pyenv_path="$HOME/.pyenv/bin"
+    export PATH="$pyenv_path:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
 
 fi
 printf "pyenv is installed\n"
