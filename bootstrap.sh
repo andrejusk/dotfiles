@@ -64,7 +64,8 @@ if [[ ! -d $dotfiles_dir ]]; then
     mkdir -p "$dotfiles_dir"
     git clone -q "$repository_url" "$dotfiles_dir"
 else
-    git --git-dir="$dotfiles_dir/.git" pull -q origin master || true
+    git --git-dir="$dotfiles_dir/.git" fetch -q
+    git --git-dir="$dotfiles_dir/.git" rebase -q --autostash FETCH_HEAD
 fi
 
 # Install dotfiles
