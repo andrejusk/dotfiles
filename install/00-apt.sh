@@ -12,4 +12,4 @@ upgrade
 
 # Package installs
 readonly package_list=$(cat $install_dir/$package_list_file) # Don't escape list
-install -y $package_list
+install $package_list

@@ -17,7 +17,7 @@ upgrade() {
 
 # @arg $1 packages to install
 install() {
-    sudo apt-get install -y "$1"
+    sudo apt-get install -y $1
 }
 
 # @arg $1 repository to add

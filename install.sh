@@ -4,8 +4,8 @@
 #
 set -euo pipefail
 source "$dotfiles_dir/utils.sh"
-printf "Installing ${C_CYAN}$REPOSITORY${C_NC}"
-printf " as ${C_YELLOW}$USER${C_NC}\n\n"
+printf "\nInstalling ${C_CYAN}$REPOSITORY${C_NC}"
+printf " as ${C_YELLOW}$USER${C_NC}\n"
 
 # Prevent running as root
 if [[ $USER == root ]]; then
