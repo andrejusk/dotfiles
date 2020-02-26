@@ -17,7 +17,7 @@ if not_installed "pyenv"; then
 
     # Install pyenv
     # see https://github.com/pyenv/pyenv-installer
-    run https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer bash
+    run "https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer" "bash"
 
     # Add to install path
     readonly pyenv_path="$HOME/.pyenv/bin"

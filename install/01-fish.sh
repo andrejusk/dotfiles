@@ -12,7 +12,7 @@ if not_installed "fish"; then
     printf "Installing fish...\n"
 
     # Add fish repository
-    app_ppa fish-shell/release-3
+    app_ppa "fish-shell/release-3"
     update
 
     # Install fish
