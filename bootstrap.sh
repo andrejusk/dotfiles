@@ -37,17 +37,17 @@ set -o pipefail
 echo "setting up..."
 
 # Variables: $REPOSITORY
-if [ -z "$REPOSITORY" ]; then export REPOSITORY="andrejusk/dotfiles"; fi
+if [ -z "$REPOSITORY" ]; then REPOSITORY="andrejusk/dotfiles"; fi
 readonly repository_url="https://github.com/$REPOSITORY.git"
 echo "using repository: $repository_url"
 
 # Variables: $WORKSPACE
-if [ -z "$WORKSPACE" ]; then export WORKSPACE="$HOME/workspace"; fi
+if [ -z "$WORKSPACE" ]; then WORKSPACE="$HOME/workspace"; fi
 readonly dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
 
 # Variables: $INSTALLER
-if [ -z "$INSTALLER" ]; then export INSTALLER="install.sh"; fi
+if [ -z "$INSTALLER" ]; then INSTALLER="install.sh"; fi
 readonly installer="$dotfiles_dir/$INSTALLER"
 echo "using installer: $installer"
 

@@ -10,7 +10,7 @@ update() {
 # Non-interactive upgrade
 upgrade() {
     DEBIAN_FRONTEND=noninteractive \
-        sudo apt-get upgrade -y \
+        sudo apt-get dist-upgrade -y \
         -o Dpkg::Options::="--force-confdef" \
         -o Dpkg::Options::="--force-confold"
 }

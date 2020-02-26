@@ -13,3 +13,6 @@ upgrade
 # Package installs
 readonly package_list=$(cat $install_dir/$package_list_file) # Don't escape list
 install $package_list
+
+# Log version
+cat /etc/os-release
