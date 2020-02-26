@@ -2,9 +2,33 @@
 #
 # Script to set up and install dotfiles repository.
 #
+# Installs git using apt-get if not in $PATH.
+# Pulls latest dotfiles repository.
+#
+#
 # Usage:
-#   `source path/to/bootstrap.sh`
-#   `source <(wget path/to/bootstrap.sh)`
+#
+#   i.  Source into existing bash shell.
+#
+#       $ source bootstrap.sh
+#       $ source path/to/bootstrap.sh
+#       $ source <(wget path.to/bootstrap.sh)
+#
+#   ii. Run in new bash shell.
+#
+#       $ bash bootstrap.sh
+#       $ bash path/to/bootstrap.sh
+#       $ bash <(wget path.to/bootstrap.sh)
+#
+#
+# Configuration:
+#
+#   $REPOSITORY - GitHub repository to clone and run $dir/install.sh of
+#       @default "andrejusk/dotfiles"
+#
+#   $WORKSPACE  - parent directory to clone repository in to
+#       @default "$HOME/workspace"
+#
 #
 set -o pipefail
 echo "setting up..."
