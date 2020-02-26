@@ -52,7 +52,7 @@ readonly installer="$dotfiles_dir/$INSTALLER"
 echo "using installer: $installer"
 
 # Ensure git is installed
-if ! [ -x "$(command -v git)" ]; then
+if ! [ -x $(command -v git) ]; then
     echo "installing git..."
     sudo apt-get update -qqy
     sudo apt-get install git -qqy
