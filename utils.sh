@@ -41,7 +41,7 @@ run() {
 # @arg $1 source folder
 # @arg $2 target folder
 link_folder() {
-    cp -srf "$1" "$2"
+    cp -srf "$1/." "$2"
 }
 
 indent() { sed 's/^/  /'; }
