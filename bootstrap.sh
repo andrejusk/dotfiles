@@ -38,7 +38,7 @@ echo "setting up..."
 
 # Variables: $REPOSITORY
 if [ -z "$REPOSITORY" ]; then REPOSITORY="andrejusk/dotfiles"; fi
-readonly repository_url="https://github.com/$REPOSITORY.git"
+readonly repository_url="git@github.com:$REPOSITORY.git"
 echo "using repository: $repository_url"
 
 # Variables: $WORKSPACE
