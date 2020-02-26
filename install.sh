@@ -17,7 +17,7 @@ fi
 
 # Prevent concurrent runs
 readonly install_lock_file="$dotfiles_dir/.dotlock"
-if [ -f $install_lock_file ]; then
+if [ -f "$install_lock_file" ]; then
     printf "Failed: ${C_RED}Script already running${C_NC}\n"
     printf "Please wait for script to exit or ${C_YELLOW}make clean${C_NC}\n"
     exit 1
@@ -27,13 +27,13 @@ touch "$install_lock_file" # Requires clean
 # Run all install scripts
 readonly install_dir="$dotfiles_dir/install"
 readonly script_filter="$install_dir/*.sh"
-for script in $script_filter; do
+for script in "$script_filter"; do
 
     # Avoid pattern matching self
     [ -e "$script" ] || continue
 
     # Log execution
-    script_name=$(basename "$script" ".sh")
+    script_name="$(basename "$script" ".sh")"
     printf "Running ${C_YELLOW}$script_name${C_NC}...\n${C_DGRAY}"
 
     # Run and indent output

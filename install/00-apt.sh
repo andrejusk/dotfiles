@@ -11,5 +11,5 @@ update
 upgrade
 
 # Package installs
-readonly package_list=$(cat $install_dir/$package_list_file)
+readonly package_list="$(cat $install_dir/$package_list_file)"
 install -y "$package_list"

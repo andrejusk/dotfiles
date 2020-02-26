@@ -23,7 +23,7 @@ printf "fish is installed\n"
 fish --version
 
 # 2. fish shell is default login shell
-readonly fish_path=$(which fish)
+readonly fish_path="$(which fish)"
 if [ "$SHELL" != fish_path ]; then
 
     # Update default login shell
