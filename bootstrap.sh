@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Script to set up dotfiles repository and run installer.
 #
@@ -12,7 +12,7 @@
 #
 #       $ bash bootstrap.sh
 #       $ bash path/to/bootstrap.sh
-#       $ bash <(wget path.to/bootstrap.sh)
+#       $ wget -O - path.to/bootstrap.sh | bash
 #
 #   ii.  Source into existing bash shell.
 #
