@@ -64,4 +64,5 @@ else
 fi
 
 # Install dotfiles
+cd $dotfiles_dir
 source "$dotfiles_dir/install.sh"
