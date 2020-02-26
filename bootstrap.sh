@@ -69,5 +69,4 @@ fi
 
 # Install dotfiles
 cd "$dotfiles_dir"
-chmod +x "$installer"
-"$installer"
+source "$installer"
