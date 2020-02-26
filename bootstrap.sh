@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to set up and install dotfiles repository.
+# Script to set up dotfiles repository and run installer.
 #
 # Installs git using apt-get if not in $PATH.
 # Pulls latest dotfiles repository.
@@ -8,17 +8,17 @@
 #
 # Usage:
 #
-#   i.  Source into existing bash shell.
-#
-#       $ source bootstrap.sh
-#       $ source path/to/bootstrap.sh
-#       $ source <(wget path.to/bootstrap.sh)
-#
-#   ii. Run in new bash shell.
+#   i. Run in new bash shell.
 #
 #       $ bash bootstrap.sh
 #       $ bash path/to/bootstrap.sh
 #       $ bash <(wget path.to/bootstrap.sh)
+#
+#   ii.  Source into existing bash shell.
+#
+#       $ source bootstrap.sh
+#       $ source path/to/bootstrap.sh
+#       $ source <(wget path.to/bootstrap.sh)
 #
 #
 # Configuration:
@@ -34,16 +34,12 @@ set -o pipefail
 echo "setting up..."
 
 # Variables: git
-if [ -z "$REPOSITORY" ]; then
-    export REPOSITORY="andrejusk/dotfiles"
-fi
+if [ -z "$REPOSITORY" ]; then export REPOSITORY="andrejusk/dotfiles"; fi
 readonly repository_url="https://github.com/$REPOSITORY.git"
 echo "using repository: $repository_url"
 
 # Variables: workspace
-if [ -z "$WORKSPACE" ]; then
-    export WORKSPACE="$HOME/workspace"
-fi
+if [ -z "$WORKSPACE" ]; then export WORKSPACE="$HOME/workspace"; fi
 readonly dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
 
