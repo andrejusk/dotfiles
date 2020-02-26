@@ -4,20 +4,20 @@
 #
 
 update() {
-    sudo apt-get update -qqy
+    sudo apt-get update -y
 }
 
 # Non-interactive upgrade
 upgrade() {
     DEBIAN_FRONTEND=noninteractive \
-        sudo apt-get upgrade -qqy \
+        sudo apt-get upgrade -y \
         -o Dpkg::Options::="--force-confdef" \
         -o Dpkg::Options::="--force-confold"
 }
 
 # @arg $1 packages to install
 install() {
-    sudo apt-get install -qqy $1
+    sudo apt-get install -y $1
 }
 
 # @arg $1 repository to add
