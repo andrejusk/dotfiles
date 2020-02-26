@@ -22,18 +22,18 @@ install() {
 
 # @arg $1 repository to add
 app_ppa() {
-    sudo add-apt-repository -y ppa:"$1" &>/dev/null
+    sudo add-apt-repository -y ppa:$1 &>/dev/null
 }
 
 # @arg $1 url to add
 add_key() {
-    curl -fsSL "$1" | sudo apt-key add -
+    curl -fsSL $1 | sudo apt-key add -
 }
 
 # @arg $1 URL to run
 # @arg $2 binary to use
 run() {
-    curl -fsSL "$1" | "$2"
+    curl -fsSL $1 | $2
 }
 
 # Symlink contents of source folder to target
@@ -41,7 +41,7 @@ run() {
 # @arg $1 source folder
 # @arg $2 target folder
 link_folder() {
-    cp -srf "$1/." "$2"
+    cp -srf $1/. $2
 }
 
 indent() { sed 's/^/  /'; }
