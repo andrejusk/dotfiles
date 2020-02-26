@@ -40,7 +40,8 @@ for script in $script_filter; do
     source "$script" | indent
     printf "${C_NC}"
 
-done
+# Clean up if fails
+done || make clean
 
 # Clean up and exit
 printf "Done! Cleaning up...\n${C_DGRAY}"
