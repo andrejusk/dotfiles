@@ -1,7 +1,8 @@
-#!/usr/bin/env bash -euo pipefail
+#!/usr/bin/env bash
 #
 # Invokes all install scripts.
 #
+set -euo pipefail
 source "$dotfiles_dir/utils.sh"
 printf "Installing ${C_CYAN}$REPOSITORY${C_NC}"
 printf " as ${C_YELLOW}$USER${C_NC}\n\n"
@@ -21,6 +22,9 @@ if [ -f "$install_lock_file" ]; then
     exit 1
 fi
 touch "$install_lock_file" # Requires clean
+
+# Ensure MAKE is installed
+if not_installed "make"; then install make; fi
 
 # Run all install scripts
 readonly install_dir="$dotfiles_dir/install"

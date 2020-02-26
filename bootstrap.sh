@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -o pipefail
+#!/usr/bin/env bash
 #
 # Script to set up dotfiles repository and run installer.
 #
@@ -33,6 +33,7 @@
 #       @default "install.sh"
 #
 #
+set -o pipefail
 echo "setting up..."
 
 # Variables: $REPOSITORY
