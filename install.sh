@@ -23,9 +23,6 @@ if [ -f "$install_lock_file" ]; then
 fi
 touch "$install_lock_file" # Requires clean
 
-# Ensure MAKE is installed
-if not_installed "make"; then install make; fi
-
 # Run all install scripts
 readonly install_dir="$dotfiles_dir/install"
 readonly script_filter="$install_dir/*.sh" # Don't escape to unwrap glob
