@@ -26,8 +26,8 @@ touch "$install_lock_file" # Requires clean
 
 # Run all install scripts
 readonly install_dir="$dotfiles_dir/install"
-readonly script_filter="$install_dir/*.sh"
-for script in "$script_filter"; do
+readonly script_filter="$install_dir/*.sh" # Don't escape to unwrap glob
+for script in $script_filter; do
 
     # Avoid pattern matching self
     [ -e "$script" ] || continue
