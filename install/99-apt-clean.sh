@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 # Clean up
-sudo apt-get -qqy autoremove
-sudo apt-get -qqy autoclean
+sudo apt-get -y autoremove
+sudo apt-get -y autoclean

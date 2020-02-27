@@ -4,15 +4,16 @@
 #
 # Install list of packages in ./00-apt-pkglist
 #
-readonly package_list_file="00-apt-pkglist"
 
-# apt update and upgrade non-interactively
+# apt update, upgrade if not fast
 update
-upgrade
+if [ -z "$FAST_MODE" ]; then
+    upgrade
+fi
 
 # Package installs
-readonly package_list=$(cat $install_dir/$package_list_file) # Don't escape list
-install $package_list
+readonly package_list_file="$install_dir/00-apt-pkglist"
+install_file $package_list_file
 
 # Log version
 cat /etc/os-release

@@ -4,20 +4,27 @@
 #
 
 update() {
-    sudo apt-get update -y
+    sudo apt-get update -qq
 }
 
 # Non-interactive upgrade
 upgrade() {
     DEBIAN_FRONTEND=noninteractive \
-        sudo apt-get dist-upgrade -y \
+        sudo apt-get dist-upgrade -qq \
         -o Dpkg::Options::="--force-confdef" \
         -o Dpkg::Options::="--force-confold"
 }
 
 # @arg $1 packages to install
 install() {
-    sudo apt-get install -y $1
+    sudo apt-get install -qq $1
+    refresh
+}
+
+# @arg $1 package list file to install
+install_file() {
+    sudo apt-get install -qq $(cat $1)
+    refresh
 }
 
 # @arg $1 repository to add
@@ -41,6 +48,7 @@ run() {
 # @arg $1 source folder
 # @arg $2 target folder
 link_folder() {
+    mkdir -p $2
     cp -srf $1/. $2
 }
 
@@ -49,6 +57,18 @@ indent() { sed 's/^/  /'; }
 # @arg $1 binary to test
 not_installed() {
     ! [ -x "$(command -v $1)" ]
+}
+
+# Refreshes PATH
+refresh() {
+    hash -r
+}
+
+# Add to PATH and refresh
+# @arg $1 path to add to PATH
+add_path() {
+    export PATH="$1:$PATH"
+    refresh
 }
 
 # Colors

@@ -17,6 +17,7 @@ Shell: 🐟 fish (+ fisher)
 Tools:
 * docker (+ docker-compose)
 * keybase
+* screenfetch
 
 Languages:
 * python (+ poetry, pyenv)

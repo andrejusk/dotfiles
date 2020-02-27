@@ -15,14 +15,20 @@ if not_installed "pyenv"; then
         libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
         xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
 
+    # Add to install path
+    add_path "$HOME/.pyenv/bin"
+    
     # Install pyenv
     # see https://github.com/pyenv/pyenv-installer
-    run "https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer" bash
+    run "https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer" \
+        "bash"
+    refresh
 
-    # Add to install path and refresh
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    hash -r
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
 
 fi
-printf "pyenv is installed\n"
+printf "pyenv is installed, upgrading...\n"
+readonly pyenv_root=$(pyenv root)
+git --git-dir="$pyenv_root" pull
 pyenv --version

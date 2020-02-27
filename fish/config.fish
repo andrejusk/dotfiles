@@ -1,9 +1,7 @@
-# Ensure fisher is installed
-if not functions -q fisher
-    set -q XDG_CONFIG_HOME; or set XDG_CONFIG_HOME ~/.config
-    curl https://git.io/fisher --create-dirs -sLo $XDG_CONFIG_HOME/fish/functions/fisher.fish
-    fish -c fisher
-end
+# Pyenv
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval (pyenv init -)
+eval (pyenv virtualenv-init -)
 
 # Poetry
 set -gx PATH $HOME/.poetry/bin $PATH

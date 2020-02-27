@@ -10,7 +10,9 @@ if not_installed "poetry"; then
     printf "Installing poetry...\n"
 
     # Install poetry
-    run "https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py" "python"
+    pip3 install --user poetry
 
 fi
-printf "poetry is installed\n"
+printf "poetry is installed, upgrading...\n"
+pip3 install --upgrade poetry
+poetry --version

@@ -24,25 +24,32 @@
 # Configuration:
 #
 #   $REPOSITORY - GitHub repository to clone
-#       @default "andrejusk/dotfiles"
+#                 @default "andrejusk/dotfiles"
 #
 #   $WORKSPACE  - parent directory to clone repository into
-#       @default "$HOME/workspace"
+#                 @default "$HOME/workspace"
 #
 #   $INSTALLER  - installer file name
-#       @default "install.sh"
+#                 @default "install.sh"
+#
+#   $FAST_MODE  - whether to skip git (and speed up install steps)
+#                 @defualt unset
 #
 #
 set -o pipefail
 echo "setting up..."
 
 # Variables: $REPOSITORY
-if [ -z "$REPOSITORY" ]; then REPOSITORY="andrejusk/dotfiles"; fi
+if [ -z "$REPOSITORY" ]; then
+    REPOSITORY="andrejusk/dotfiles"
+fi
 readonly repository_url="git@github.com:$REPOSITORY.git"
 echo "using repository: $repository_url"
 
 # Variables: $WORKSPACE
-if [ -z "$WORKSPACE" ]; then WORKSPACE="$HOME/workspace"; fi
+if [ -z "$WORKSPACE" ]; then
+    WORKSPACE="$HOME/workspace"
+fi
 readonly dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
 
@@ -51,23 +58,29 @@ if [ -z "$INSTALLER" ]; then INSTALLER="install.sh"; fi
 readonly installer="$dotfiles_dir/$INSTALLER"
 echo "using installer: $installer"
 
-# Ensure git is installed
-if ! [ -x "$(command -v git)" ]; then
-    echo "installing git..."
-    sudo apt-get update -qqy
-    sudo apt-get install git -qqy
-fi
+# Pull latest git if not skipped
+if [ -z "$FAST_MODE" ]; then
 
-# Ensure repository is up to date
-echo "pulling latest..."
-if [[ ! -d $dotfiles_dir ]]; then
-    mkdir -p "$dotfiles_dir"
-    git clone -q "$repository_url" "$dotfiles_dir"
-else
-    git --git-dir="$dotfiles_dir/.git" fetch -q
-    git --git-dir="$dotfiles_dir/.git" rebase -q --autostash FETCH_HEAD
+    # Ensure git is installed
+    if ! [ -x "$(command -v git)" ]; then
+        echo "installing git..."
+        sudo apt-get update -qqy
+        sudo apt-get install git -qqy
+    fi
+
+    # Ensure latest is pulled
+    echo "pulling latest..."
+    if [[ ! -d $dotfiles_dir ]]; then
+        mkdir -p "$dotfiles_dir"
+        git clone -q "$repository_url" "$dotfiles_dir"
+    else
+        git --git-dir="$dotfiles_dir/.git" fetch -q
+        git --git-dir="$dotfiles_dir/.git" rebase -q --autostash FETCH_HEAD
+    fi
+
 fi
 
 # Install dotfiles
 cd "$dotfiles_dir"
 source "$installer"
+echo "done!"

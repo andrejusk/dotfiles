@@ -27,6 +27,10 @@ if not_installed "docker"; then
     # Install
     install docker-ce
 
+    # Chown
+    sudo chown "$USER":"$USER" "$HOME/.docker" -R
+    sudo chmod g+rwx "$HOME/.docker" -R
+
 fi
 printf "docker is installed\n"
 docker --version
@@ -37,12 +41,12 @@ if not_installed "docker-compose"; then
     printf "Installing docker-compose...\n"
 
     # Docker-compose
-    readonly docker_compose_url="https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m)"
-    sudo curl -L "$docker_compose_url" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    pip3 install --user docker-compose
+
 
 fi
-printf "docker-compose is installed\n"
+printf "docker-compose is installed, upgrading\n"
+pip3 install --upgrade docker-compose
 docker-compose --version
 
 # 3. docker group exists
