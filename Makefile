@@ -5,9 +5,7 @@
 .PHONY: install clean
 
 # Install dotfiles locally
-install: SHELL:=/bin/bash
 install:
-	chmod +x ./bootstrap.sh
 	./bootstrap.sh
 
 # Clean up after install
@@ -17,12 +15,16 @@ clean:
 # ---------------------------------------------------------------------------- #
 #	Docker commands
 # ---------------------------------------------------------------------------- #
-.PHONY: build run
+.PHONY: build run use
 
-# Build and tag latest docker image
+# Build and tag docker image
 build:
-	docker build . -t dotfiles:latest
+	docker build . -t dotfiles
 
-# Run latest docker container
+# Run tests in docker container
 run:
-	docker run -it dotfiles:latest /bin/bash
+	docker run dotfiles
+
+# Launch bash in docker container
+use:
+	docker run -it dotfiles /bin/bash

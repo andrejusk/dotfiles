@@ -1,9 +1,14 @@
-# Pyenv
-setenv PYENV_ROOT "$HOME/.pyenv"
-setenv PATH "$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+# .local
+set -x PATH $HOME/.local/bin $PATH
 
-# Poetry
-set -gx PATH $HOME/.poetry/bin $PATH
+# pyenv
+set PYENV_ROOT $HOME/.pyenv
+set -x PATH $PYENV_ROOT/bin $PATH
+set -x PATH $PYENV_ROOT/shims $PATH
+
+# poetry
+set PYENV_ROOT $HOME/.pyenv
+set -x PATH $PYENV_ROOT/bin $PATH
 
 # Wipe greeting
 set fish_greeting
