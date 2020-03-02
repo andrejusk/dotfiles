@@ -8,13 +8,19 @@
 #
 # Usage:
 #
-#   i. Run in new bash shell.
+#   i. Run script.
 #
 #       $ bash bootstrap.sh
 #       $ bash /path/to/bootstrap.sh
 #       $ wget path.to/bootstrap.sh -qO - | bash
 #
-#   ii.  Source into existing bash shell.
+#   ii. Run explicitly in a bash shell.
+#
+#       $ bash bootstrap.sh
+#       $ bash /path/to/bootstrap.sh
+#       $ wget path.to/bootstrap.sh -qO - | bash
+#
+#   iii. Source into existing shell.
 #
 #       $ source bootstrap.sh
 #       $ source /path/to/bootstrap.sh
@@ -33,7 +39,7 @@
 #                 @default "install.sh"
 #
 #   $FAST_MODE  - whether to skip git (and speed up install steps)
-#                 @defualt unset
+#                 @defualt unset, i.e. false
 #
 #
 set -o pipefail
@@ -41,25 +47,30 @@ echo "setting up..."
 
 # Variables: $REPOSITORY
 if [ -z "$REPOSITORY" ]; then
-    REPOSITORY="andrejusk/dotfiles"
+    export REPOSITORY="andrejusk/dotfiles"
 fi
-readonly repository_url="git@github.com:$REPOSITORY.git"
+export repository_url="https://github.com/$REPOSITORY.git"
 echo "using repository: $repository_url"
 
 # Variables: $WORKSPACE
 if [ -z "$WORKSPACE" ]; then
-    WORKSPACE="$HOME/workspace"
+    export WORKSPACE="$HOME/workspace"
 fi
-readonly dotfiles_dir="$WORKSPACE/dotfiles"
+export dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
 
 # Variables: $INSTALLER
-if [ -z "$INSTALLER" ]; then INSTALLER="install.sh"; fi
-readonly installer="$dotfiles_dir/$INSTALLER"
+if [ -z "$INSTALLER" ]; then 
+    export INSTALLER="install.sh"; 
+fi
+export installer="$dotfiles_dir/$INSTALLER"
 echo "using installer: $installer"
 
 # Pull latest git if not skipped
 if [ -z "$FAST_MODE" ]; then
+
+    # Set to falsy variable
+    export FAST_MODE=false
 
     # Ensure git is installed
     if ! [ -x "$(command -v git)" ]; then
@@ -81,6 +92,8 @@ if [ -z "$FAST_MODE" ]; then
 fi
 
 # Install dotfiles
+echo "installing..."
 cd "$dotfiles_dir"
-source "$installer"
+chmod +x "$installer"
+"$installer"
 echo "done!"

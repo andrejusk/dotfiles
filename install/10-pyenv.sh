@@ -5,30 +5,22 @@
 #
 
 # 1. pyenv is installed
+export PYENV_ROOT="$HOME/.pyenv"
 if not_installed "pyenv"; then
 
     printf "Installing pyenv...\n"
 
     # Install pyenv prerequisites
     # see https://github.com/pyenv/pyenv/wiki/common-build-problems
-    install make build-essential libssl-dev zlib1g-dev libbz2-dev \
-        libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
-        xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+    pyenv_list_file="$install_dir/10-pyenv-pkglist"
+    install_file "$pyenv_list_file"
 
-    # Add to install path
-    add_path "$HOME/.pyenv/bin"
-    
     # Install pyenv
     # see https://github.com/pyenv/pyenv-installer
     run "https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer" \
         "bash"
-    refresh
-
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
 
 fi
 printf "pyenv is installed, upgrading...\n"
-readonly pyenv_root=$(pyenv root)
-git --git-dir="$pyenv_root" pull
+git --git-dir="$PYENV_ROOT/.git" pull
 pyenv --version

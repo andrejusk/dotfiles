@@ -8,9 +8,13 @@
 #
 
 # 1. docker is installed
+DOCKER_FOLDER="$HOME/.docker"
 if not_installed "docker"; then
 
     printf "Installing docker...\n"
+    
+    # Create folder
+    mkdir -p "$DOCKER_FOLDER"
 
     # Requirements
     install apt-transport-https ca-certificates curl gnupg-agent \
@@ -28,8 +32,8 @@ if not_installed "docker"; then
     install docker-ce
 
     # Chown
-    sudo chown "$USER":"$USER" "$HOME/.docker" -R
-    sudo chmod g+rwx "$HOME/.docker" -R
+    sudo chown "$USER":"$USER" "$DOCKER_FOLDER" -R
+    sudo chmod g+rwx "$DOCKER_FOLDER" -R
 
 fi
 printf "docker is installed\n"
@@ -42,7 +46,6 @@ if not_installed "docker-compose"; then
 
     # Docker-compose
     pip3 install --user docker-compose
-
 
 fi
 printf "docker-compose is installed, upgrading\n"

@@ -24,7 +24,7 @@ fi
 touch "$install_lock_file" # Requires clean
 
 # Run all install scripts
-readonly install_dir="$dotfiles_dir/install"
+export install_dir="$dotfiles_dir/install"
 readonly script_filter="$install_dir/*.sh" # Don't escape to unwrap glob
 for script in $script_filter; do
 
@@ -36,7 +36,8 @@ for script in $script_filter; do
     printf "\nRunning ${C_YELLOW}$script_name${C_NC}...\n${C_DGRAY}"
 
     # Run and indent output
-    source "$script" | indent
+    chmod +x "$script"
+    source "$HOME/.bashrc" && "$script" | indent
     printf "${C_NC}"
 
 # Clean up if fails

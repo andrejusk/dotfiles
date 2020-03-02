@@ -4,6 +4,7 @@
 #   1. fish shell is installed
 #   2. fish shell is default login shell
 #   3. fish dotfiles are symlinked
+#   4. fisher is installed
 #
 
 # 1. fish shell is installed
@@ -12,24 +13,22 @@ if not_installed "fish"; then
     printf "Installing fish...\n"
 
     # Add fish repository
-    app_ppa "fish-shell/release-3"
+    add_ppa "fish-shell/release-3"
     update
 
     # Install fish
     install fish
-
-    # Install fisher
-    set -q XDG_CONFIG_HOME; or set XDG_CONFIG_HOME ~/.config
-    curl https://git.io/fisher --create-dirs -sLo $XDG_CONFIG_HOME/fish/functions/fisher.fish
-    fish -c fisher
 
 fi
 printf "fish is installed\n"
 fish --version
 
 # 2. fish shell is default login shell
-readonly fish_path="$(which fish)"
-if [ "$SHELL" != fish_path ]; then
+current_shell="$(getent passwd $USER | cut -d: -f7)"
+fish_path="$(which fish)"
+if [ "$current_shell" != "$fish_path" ]; then
+
+    printf "setting fish as default, current shell was $current_shell\n"
 
     # Update default login shell
     sudo chsh -s "$fish_path" "$USER"
@@ -39,7 +38,24 @@ fi
 printf "fish is default login shell\n"
 
 # 3. fish dotfiles are symlinked
-readonly fish_source="$dotfiles_dir/fish"
-readonly fish_target="$HOME/.config/fish"
+fish_source="$dotfiles_dir/fish"
+fish_target="$HOME/.config/fish"
 link_folder "$fish_source" "$fish_target"
 printf "fish dotfiles linked\n"
+
+# 4. fisher is installed
+XDG_CONFIG_HOME="$HOME/.config"
+fisher_location="$XDG_CONFIG_HOME/fish/functions/fisher.fish"
+if ! [ -f "$fisher_location" ]; then
+
+    printf "Installing fisher...\n"
+
+    # Install fisher
+    curl https://git.io/fisher --create-dirs -sLo "$fisher_location"
+
+fi
+printf "fisher is installed, updating...\n"
+fish -c "fisher"
+fish -c "fisher --version"
+
+export XDG_CONFIG_HOME

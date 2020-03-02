@@ -3,12 +3,22 @@
 # Alias commands and utilities.
 #
 
+# ---------------------------------------------------------------------------- #
+#	Helper functions
+# ---------------------------------------------------------------------------- #
+
+clean() {
+    sudo apt-get clean
+}
+
 update() {
     sudo apt-get update -qq
 }
 
 # Non-interactive upgrade
+# Skip if FAST_MODE is defined
 upgrade() {
+    [ "$FAST_MODE" != false ] && return
     DEBIAN_FRONTEND=noninteractive \
         sudo apt-get dist-upgrade -qq \
         -o Dpkg::Options::="--force-confdef" \
@@ -23,18 +33,20 @@ install() {
 
 # @arg $1 package list file to install
 install_file() {
-    sudo apt-get install -qq $(cat $1)
+    sudo apt-get install -fqq $(cat $1)
     refresh
 }
 
 # @arg $1 repository to add
-app_ppa() {
+add_ppa() {
     sudo add-apt-repository -y ppa:$1
 }
 
 # @arg $1 url to add
 add_key() {
-    curl -fsSL $1 | sudo apt-key add -
+    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=true \
+        curl -fsSL $1 \
+        | sudo apt-key add -
 }
 
 # @arg $1 URL to run
@@ -71,7 +83,17 @@ add_path() {
     refresh
 }
 
-# Colors
+# ---------------------------------------------------------------------------- #
+#	Function exports
+# ---------------------------------------------------------------------------- #
+
+export -f clean update upgrade install install_file add_ppa add_key run \
+    link_folder indent not_installed refresh add_path
+
+# ---------------------------------------------------------------------------- #
+#	Shell colours
+# ---------------------------------------------------------------------------- #
+
 C_BLACK='\033[0;30m'
 C_DGRAY='\033[1;30m'
 C_RED='\033[0;31m'

@@ -1,19 +1,28 @@
-.PHONY: clean
+# dotfiles Makefile
+# ---------------------------------------------------------------------------- #
+#	Local target commands (warning: affects local environment)
+# ---------------------------------------------------------------------------- #
+.PHONY: install clean
+
+# Install dotfiles locally
+install: SHELL:=/bin/bash
+install:
+	chmod +x ./bootstrap.sh
+	./bootstrap.sh
+
+# Clean up after install
 clean:
 	rm -f .dotlock
 
-.PHONY: install
-install:
-	bash bootstrap.sh
+# ---------------------------------------------------------------------------- #
+#	Docker commands
+# ---------------------------------------------------------------------------- #
+.PHONY: build run
 
-.PHONY: test
-test:
-	bash test.sh
-
-.PHONY: build
+# Build and tag latest docker image
 build:
 	docker build . -t dotfiles:latest
 
-.PHONY: run
+# Run latest docker container
 run:
 	docker run -it dotfiles:latest /bin/bash

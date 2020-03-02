@@ -1,7 +1,6 @@
 # Pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval (pyenv init -)
-eval (pyenv virtualenv-init -)
+setenv PYENV_ROOT "$HOME/.pyenv"
+setenv PATH "$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 
 # Poetry
 set -gx PATH $HOME/.poetry/bin $PATH

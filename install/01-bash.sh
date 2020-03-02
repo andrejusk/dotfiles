@@ -5,7 +5,7 @@
 #
 
 # 1. bash dotfiles are symlinked
-readonly bash_source="$dotfiles_dir/bash"
-readonly bash_target="$HOME"
+bash_source="$dotfiles_dir/bash"
+bash_target="$HOME"
 link_folder "$bash_source" "$bash_target"
 printf "bash dotfiles are linked\n"

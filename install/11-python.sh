@@ -11,7 +11,6 @@ if not_installed "pip3"; then
 
     pyenv install 3.7.0
     pyenv global 3.7.0
-    pyenv local 3.7.0
 
 fi
 printf "python3 and pip3 are installed, upgrading...\n"

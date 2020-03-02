@@ -1,7 +1,11 @@
+# .local
+export PATH="$HOME/.local/bin:$PATH"
+
 # pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+export PATH="$PYENV_ROOT/shims:$PATH"
 
 # poetry
-export PATH="$HOME/.poetry/bin:$PATH"
+POETRY_ROOT="$HOME/.poetry"
+export PATH="$POETRY_ROOT/bin:$PATH"
