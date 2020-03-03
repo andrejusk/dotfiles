@@ -26,18 +26,19 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
 #   Filesystem copy steps
 # ---------------------------------------------------------------------------- #
 
-ADD --chown=test-user . "$WORKSPACE/dotfiles"
 WORKDIR "$WORKSPACE/dotfiles"
+ADD --chown=test-user . .
+USER test-user
 
 # ---------------------------------------------------------------------------- #
 #   Install steps
 # ---------------------------------------------------------------------------- #
 
-USER test-user
-RUN make install
+RUN make
 
 # ---------------------------------------------------------------------------- #
 #   Test steps
 # ---------------------------------------------------------------------------- #
 
-CMD ["cd", "tests", "&&", "make"]
+WORKDIR "$WORKSPACE/dotfiles/tests"
+ENTRYPOINT ["make"]

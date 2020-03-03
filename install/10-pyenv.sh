@@ -5,7 +5,6 @@
 #
 
 # 1. pyenv is installed
-export PYENV_ROOT="$HOME/.pyenv"
 if not_installed "pyenv"; then
 
     printf "Installing pyenv...\n"

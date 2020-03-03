@@ -2,10 +2,10 @@
 # ---------------------------------------------------------------------------- #
 #	Local target commands (warning: affects local environment)
 # ---------------------------------------------------------------------------- #
-.PHONY: install clean
+.PHONY: clean
 
 # Install dotfiles locally
-install:
+all:
 	./bootstrap.sh
 
 # Clean up after install
@@ -15,16 +15,17 @@ clean:
 # ---------------------------------------------------------------------------- #
 #	Docker commands
 # ---------------------------------------------------------------------------- #
-.PHONY: build run use
+.PHONY: build test start
 
 # Build and tag docker image
 build:
-	docker build . -t dotfiles
+	docker build . -t dotfiles --build-arg
 
-# Run tests in docker container
-run:
+# Run tests in docker container (args to specify test)
+test:
+	docker build . -t dotfiles --build-args
 	docker run dotfiles
 
 # Launch bash in docker container
-use:
+start:
 	docker run -it dotfiles /bin/bash

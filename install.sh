@@ -27,13 +27,16 @@ touch "$install_lock_file" # Requires clean
 export install_dir="$dotfiles_dir/install"
 readonly script_filter="$install_dir/*.sh" # Don't escape to unwrap glob
 for script in $script_filter; do
-
-    # Avoid pattern matching self
     [ -e "$script" ] || continue
 
-    # Log execution
+    # Get script name, split by dash
     script_name="$(basename "$script" ".sh")"
-    printf "\nRunning ${C_YELLOW}$script_name${C_NC}...\n${C_DGRAY}"
+    IFS='-' read -a script_fields <<< "$script_name"
+    script_number=${script_fields[0]}
+    script_target=${script_fields[1]}
+
+    # Log execution
+    printf "\nRunning #$script_number ${C_YELLOW}$script_target${C_NC}...\n${C_DGRAY}"
 
     # Run and indent output
     chmod +x "$script"

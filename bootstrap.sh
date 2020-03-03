@@ -1,33 +1,38 @@
 #!/usr/bin/env bash
 #
-# Script to set up dotfiles repository and run installer.
+# Script to set up and run dotfiles installer
 #
-# Installs git using apt-get if not in $PATH.
-# Pulls latest dotfiles repository.
+#   Installs git using `apt-get` if not in $PATH
+#       step may be skipped, 
+#       @see $FAST_MODE
 #
+#   Pulls latest target repository using git 
+#       @see $REPOSITORY
 #
-# Usage:
+#   Creates workspace if one doesn't already exist 
+#       @see $WORKSPACE
 #
-#   i. Run script.
-#
-#       $ bash bootstrap.sh
-#       $ bash /path/to/bootstrap.sh
-#       $ wget path.to/bootstrap.sh -qO - | bash
-#
-#   ii. Run explicitly in a bash shell.
-#
-#       $ bash bootstrap.sh
-#       $ bash /path/to/bootstrap.sh
-#       $ wget path.to/bootstrap.sh -qO - | bash
-#
-#   iii. Source into existing shell.
-#
-#       $ source bootstrap.sh
-#       $ source /path/to/bootstrap.sh
-#       $ source <(wget -q path.to/bootstrap.sh)
+#   Runs installer 
+#       @see $INSTALLER
 #
 #
-# Configuration:
+# Usage
+#
+#   i.  Run script
+#
+#       $ ./bootstrap.sh
+#       $ /path/to/bootstrap.sh
+#
+#   ii. Download and run script
+#
+#       a.  non-interactively
+#           $ wget path.to/bootstrap.sh -qO - | bash
+#
+#       b. interactively
+#           $ bash <(wget -qO- path.to/bootstrap.sh)
+#
+#
+# Configuration
 #
 #   $REPOSITORY - GitHub repository to clone
 #                 @default "andrejusk/dotfiles"
@@ -39,7 +44,7 @@
 #                 @default "install.sh"
 #
 #   $FAST_MODE  - whether to skip git (and speed up install steps)
-#                 @defualt unset, i.e. false
+#                 @defualt false
 #
 #
 set -o pipefail
@@ -81,7 +86,7 @@ if [ -z "$FAST_MODE" ]; then
 
     # Ensure latest is pulled
     echo "pulling latest..."
-    if [[ ! -d $dotfiles_dir ]]; then
+    if ! [ -d "$dotfiles_dir" ]; then
         mkdir -p "$dotfiles_dir"
         git clone -q "$repository_url" "$dotfiles_dir"
     else

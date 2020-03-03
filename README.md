@@ -2,7 +2,7 @@
 
 Collection of tracked dotfiles and supporting install scripts.
 Tested on and compatible with:
-  * Ubuntu 19.04
+  * Ubuntu 18.04
 
 ## Install
 

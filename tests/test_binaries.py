@@ -1,17 +1,45 @@
 #!/usr/bin/env python3
 #
-# Verifies dotfiles install
+# Verifies dotfiles installed binaries correctly
 #
 from distutils.spawn import find_executable
 from typing import List
+from subprocess import run, CalledProcessError
 import pytest
 
 
-# List of binaries to test
+# ---------------------------------------------------------------------------- #
+#	Helper functions
+# ---------------------------------------------------------------------------- #
+def in_path(binary: str) -> bool:
+    """
+    Helper function to check whether `binary` is in PATH.
+    """
+    return find_executable(binary) is not None
+
+def in_shell_path(shell: str, binary: str) -> bool:
+    """
+    Helper function to check whether `binary` is in interactive shell's PATH.
+    """
+    command = "{0} -i -c 'command -v {1}'".format(shell, binary)
+    try:
+        result = run(command, shell=True)
+        return (result.returncode == 0)
+    except:
+        return False
+
+
+# ---------------------------------------------------------------------------- #
+#	Test fixtures
+# ---------------------------------------------------------------------------- #
+shells: List[str] = [
+    'sh', 'bash', 'fish',
+]
+
 binaries: List[str] = [
 
-    # shells
-    "sh", "bash", "fish",
+    # extend shells
+    *shells,
 
     # tools
     "git",
@@ -19,25 +47,25 @@ binaries: List[str] = [
     "docker", "docker-compose",
     "screenfetch",
 
-    # languages
-    "pyenv",
-    "python3",
-    "poetry",
+    # language: python
+    "pyenv", "python3", "pip3", "poetry",
+
+    # langauge: node
+    "nvm", "node", "npm", "yarn",
     
 ]
 
 
-def binary_in_path(binary: str) -> bool:
-    """ 
-    Helper function to check whether `binary` is in PATH.    
-    """
-
-    return find_executable(binary) is not None
-
+# ---------------------------------------------------------------------------- #
+#	Tests
+# ---------------------------------------------------------------------------- #
+@pytest.mark.parametrize("shell", shells)
+def test_shells(shell: str):
+    """ Assert all shells we expect are in PATH. """
+    assert in_path(shell)
 
 @pytest.mark.parametrize("binary", binaries)
-def test_binaries(binary: str):
-    """
-    Asserts all binaries are in PATH.
-    """
-    assert binary_in_path(binary)
+@pytest.mark.parametrize("shell", shells)
+def test_binaries(shell: str, binary: str):
+    """ Asserts all binaries are in all shells. """
+    assert in_shell_path(shell, binary)

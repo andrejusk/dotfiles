@@ -39,12 +39,11 @@ printf "fish is default login shell\n"
 
 # 3. fish dotfiles are symlinked
 fish_source="$dotfiles_dir/fish"
-fish_target="$HOME/.config/fish"
+fish_target="$XDG_CONFIG_HOME/fish"
 link_folder "$fish_source" "$fish_target"
 printf "fish dotfiles linked\n"
 
 # 4. fisher is installed
-XDG_CONFIG_HOME="$HOME/.config"
 fisher_location="$XDG_CONFIG_HOME/fish/functions/fisher.fish"
 if ! [ -f "$fisher_location" ]; then
 
@@ -57,5 +56,3 @@ fi
 printf "fisher is installed, updating...\n"
 fish -c "fisher"
 fish -c "fisher --version"
-
-export XDG_CONFIG_HOME

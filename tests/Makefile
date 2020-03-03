@@ -1,6 +1,6 @@
 # dotfiles tests Makefile
-all: SHELL:=/bin/bash
+SHELL := /bin/bash
 all:
-	source ~/.bashrc
+	source ${HOME}/.bashrc
 	poetry install
 	poetry run pytest

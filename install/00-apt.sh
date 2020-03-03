@@ -2,7 +2,7 @@
 #
 # apt update and upgrade
 #
-# Install list of packages in ./00-apt-pkglist
+# Install list of packages in 00-apt-pkglist
 #
 
 # pre clean
