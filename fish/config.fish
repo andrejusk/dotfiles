@@ -24,9 +24,6 @@ set -x PATH $POETRY_ROOT/bin $PATH
 # nvm
 # set NVM_ROOT $HOME/.nvm
 # set -x PATH $NVM_ROOT/bin $PATH
-#
-#
-
 
 # ---------------------------------------------------------------------------- #
 #   Fish specific

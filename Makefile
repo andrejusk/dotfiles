@@ -19,12 +19,12 @@ clean:
 
 # Build and tag docker image
 build:
-	docker build . -t dotfiles
+	docker build . -t dotfiles:latest
 
 # Run tests in docker container (args to specify test)
 test:
-	docker run dotfiles
+	docker run dotfiles:latest
 
 # Launch bash in docker container
 start:
-	docker run -it dotfiles /bin/bash
+	docker run -it dotfiles:latest /bin/bash

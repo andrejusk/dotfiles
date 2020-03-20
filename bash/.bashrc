@@ -1,37 +1,3 @@
-# ---------------------------------------------------------------------------- #
-#   Cross-shell
-# ---------------------------------------------------------------------------- #
-
-# config
-XDG_CONFIG_HOME="$HOME/.config"
-
-# workspace
-WORKSPACE="$HOME/workspace"
-
-# .local
-export PATH="$HOME/.local/bin:$PATH"
-
-# pyenv
-PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-export PATH="$PYENV_ROOT/shims:$PATH"
-[ -x "$(command -v pyenv)" ] && eval "$(pyenv init -)"
-
-# poetry
-POETRY_ROOT="$HOME/.poetry"
-export PATH="$POETRY_ROOT/bin:$PATH"
-
-# nvm
-NVM_DIR="$HOME/.nvm"
-export PATH="$NVM_DIR/bin:$PATH"
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
-
-
-# ---------------------------------------------------------------------------- #
-#   Bash specific
-# ---------------------------------------------------------------------------- #
-
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
