@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-#
-# After running this script:
-#   1. pyenv is installed
-#
 
 # 1. pyenv is installed
 if not_installed "pyenv"; then
 
-    printf "Installing pyenv...\n"
+    echo "Installing pyenv..."
 
     # Install pyenv prerequisites
     # see https://github.com/pyenv/pyenv/wiki/common-build-problems
@@ -20,6 +16,6 @@ if not_installed "pyenv"; then
         "bash"
 
 fi
-printf "pyenv is installed, upgrading...\n"
+echo "pyenv is installed, upgrading..."
 git --git-dir="$PYENV_ROOT/.git" pull
 pyenv --version

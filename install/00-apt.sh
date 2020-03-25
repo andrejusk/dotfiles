@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
-#
-# apt update and upgrade
-#
-# Install list of packages in 00-apt-pkglist
-#
 
-# pre clean
+# apt clean, update, upgrade
 clean
-
-# apt update, upgrade
 update
 upgrade
 
-# Package installs
+# Install list of packages in 00-apt-pkglist
 package_list_file="$install_dir/00-apt-pkglist"
 install_file "$package_list_file"
 
-# Log version
+# Log OS version
 cat /etc/os-release

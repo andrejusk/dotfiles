@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# After running this script:
-#   1. nvm is installed
-#
 
 # 1. nvm is installed
 if not_installed "nvm"; then
@@ -10,10 +6,12 @@ if not_installed "nvm"; then
     printf "Installing nvm...\n"
 
     # Install nvm
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
-    refresh
+    run "https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh" \
+        "bash"
+    source "$NVM_DIR/nvm.sh"
 
 fi
+
 printf "nvm is installed, upgrading...\n"
 git --git-dir="$NVM_DIR/.git" pull
 nvm update --lts node

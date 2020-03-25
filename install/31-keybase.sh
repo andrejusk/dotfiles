@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# After running this script:
-#   1. keybase is installed
-#
 
 # 1.keybase is installed
 if not_installed "keybase"; then

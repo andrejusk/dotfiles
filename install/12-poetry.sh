@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# After running this script:
-#   1. poetry is installed
-#
 
 # 1. poetry is installed
 if not_installed "poetry"; then

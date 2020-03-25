@@ -1,44 +1,27 @@
-from ubuntu:bionic
+from ubuntu:bionic as install
 
-# ---------------------------------------------------------------------------- #
-#   (usually) Cached steps
-# ---------------------------------------------------------------------------- #
-
-# See bootstrap.sh
-ENV FAST_MODE="true"
-ENV WORKSPACE="$HOME/workspace"
-
-# Set Noninteractive
+# Install sudo and make, git since built-in is skipped
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
-# Install sudo for compatibility, git since built-in is skipped, make
-RUN apt-get -y update \
-    && apt-get -y install sudo git make
+RUN apt-get -qqy update \
+    && apt-get -qqy install sudo git make
 
 # Create user with sudo priviledge
-ENV USER="test-user"
+ARG USER="test-user"
 RUN useradd --create-home -m "$USER" \
     && adduser "$USER" sudo
 RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
-    >> /etc/sudoers
+    >>/etc/sudoers
 
-# ---------------------------------------------------------------------------- #
-#   Filesystem copy steps
-# ---------------------------------------------------------------------------- #
-
+# Filesystem steps
+ENV WORKSPACE="/home/$USER/workspace"
 ADD --chown=test-user . "$WORKSPACE/dotfiles"
 WORKDIR "$WORKSPACE/dotfiles"
 
-# ---------------------------------------------------------------------------- #
-#   Install steps
-# ---------------------------------------------------------------------------- #
-
+# Install steps
 USER test-user
-RUN make
+ENV FAST_MODE="true"
+ARG TARGET="all"
+RUN make TARGET=$TARGET
 
-# ---------------------------------------------------------------------------- #
-#   Test steps
-# ---------------------------------------------------------------------------- #
-
-WORKDIR "$WORKSPACE/dotfiles/tests"
-ENTRYPOINT ["make"]
+# Test entrypoint
+ENTRYPOINT [ "make", "--directory", "tests", "TARGET=$TARGET" ]

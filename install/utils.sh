@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# Alias commands and utilities.
-#
-
 # ---------------------------------------------------------------------------- #
 #	Helper functions
 # ---------------------------------------------------------------------------- #
@@ -82,10 +78,6 @@ add_path() {
     export PATH="$1:$PATH"
     refresh
 }
-
-# ---------------------------------------------------------------------------- #
-#	Function exports
-# ---------------------------------------------------------------------------- #
 
 export -f clean update upgrade install install_file add_ppa add_key run \
     link_folder indent not_installed refresh add_path

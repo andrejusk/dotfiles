@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-#
-# After running this script:
-#   1. docker is installed
-#   2. docker-compose if installed
-#   3. docker group exists
-#   4. user is in docker group
-#
 
 # 1. docker is installed
 DOCKER_FOLDER="$HOME/.docker"

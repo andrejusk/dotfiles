@@ -1,12 +1,10 @@
 on: [push]
 
 jobs:
-    build:
+    tests:
         runs-on: ubuntu-latest
-        name: 
+        name: tests
         steps:
             - uses: actions/checkout@v2
-            - name: Build Docker image
-              run: make build
-            - name: Test Docker image
+            - name: Run tests
               run: make test

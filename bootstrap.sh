@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
+set -o pipefail
+
+# Script to set up dependencies and run installer
 #
-# Script to set up and run dotfiles installer
+#   1. Install git using `apt-get` if not already in $PATH
+#       * see $FAST_MODE
 #
-#   Installs git using `apt-get` if not in $PATH
-#       step may be skipped, 
-#       @see $FAST_MODE
+#   2. Create workspace folder if one doesn't already exist 
+#       * see $WORKSPACE
 #
-#   Pulls latest target repository using git 
-#       @see $REPOSITORY
+#   3. Pull latest target repository using `git`
+#       * see $REPOSITORY, $FAST_MODE
 #
-#   Creates workspace if one doesn't already exist 
-#       @see $WORKSPACE
-#
-#   Runs installer 
-#       @see $INSTALLER
+#   4. Run installer 
+#       * see $INSTALLER
 #
 #
 # Usage
 #
 #   i.  Run script
 #
-#       $ ./bootstrap.sh
-#       $ /path/to/bootstrap.sh
+#       * $ ./bootstrap.sh
+#       * $ /path/to/bootstrap.sh
 #
 #   ii. Download and run script
 #
 #       a.  non-interactively
-#           $ wget path.to/bootstrap.sh -qO - | bash
+#           * $ wget path.to/bootstrap.sh -qO - | bash
 #
 #       b. interactively
-#           $ bash <(wget -qO- path.to/bootstrap.sh)
+#           * $ bash <(wget -qO- path.to/bootstrap.sh)
 #
 #
 # Configuration
@@ -45,46 +45,38 @@
 #
 #   $FAST_MODE  - whether to skip git (and speed up install steps)
 #                 @defualt false
-#
-#
-set -o pipefail
+
 echo "setting up..."
 
-# Variables: $REPOSITORY
-if [ -z "$REPOSITORY" ]; then
-    export REPOSITORY="andrejusk/dotfiles"
-fi
-export repository_url="https://github.com/$REPOSITORY.git"
-echo "using repository: $repository_url"
-
-# Variables: $WORKSPACE
+# Inistialise variables
 if [ -z "$WORKSPACE" ]; then
     export WORKSPACE="$HOME/workspace"
 fi
 export dotfiles_dir="$WORKSPACE/dotfiles"
 echo "using dir: $dotfiles_dir"
 
-# Variables: $INSTALLER
-if [ -z "$INSTALLER" ]; then 
-    export INSTALLER="install.sh"; 
+if [ -z "$REPOSITORY" ]; then
+    export REPOSITORY="andrejusk/dotfiles"
 fi
-export installer="$dotfiles_dir/$INSTALLER"
+repository_url="git@github.com:$REPOSITORY.git"
+echo "using repository: $repository_url"
+
+if [ -z "$INSTALLER" ]; then 
+    INSTALLER="install.sh"; 
+fi
+installer="$dotfiles_dir/$INSTALLER"
 echo "using installer: $installer"
 
-# Pull latest git if not skipped
+# Ensure repo is available
 if [ -z "$FAST_MODE" ]; then
-
-    # Set to falsy variable
     export FAST_MODE=false
 
-    # Ensure git is installed
     if ! [ -x "$(command -v git)" ]; then
         echo "installing git..."
         sudo apt-get update -qqy
         sudo apt-get install git -qqy
     fi
 
-    # Ensure latest is pulled
     echo "pulling latest..."
     if ! [ -d "$dotfiles_dir" ]; then
         mkdir -p "$dotfiles_dir"
@@ -96,9 +88,10 @@ if [ -z "$FAST_MODE" ]; then
 
 fi
 
-# Install dotfiles
+# Run installer
 echo "installing..."
-cd "$dotfiles_dir"
+source "$dotfiles_dir/bash/.profile"
 chmod +x "$installer"
 "$installer"
+
 echo "done!"

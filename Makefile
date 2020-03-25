@@ -1,14 +1,12 @@
-# dotfiles Makefile
+SHELL := /bin/bash
 # ---------------------------------------------------------------------------- #
-#	Local target commands (warning: affects local environment)
+#	Local commands 
 # ---------------------------------------------------------------------------- #
 .PHONY: clean
 
-# Install dotfiles locally
 all:
 	./bootstrap.sh
 
-# Clean up after install
 clean:
 	rm -f .dotlock
 
@@ -21,9 +19,12 @@ clean:
 build:
 	docker build . -t dotfiles:latest
 
-# Run tests in docker container (args to specify test)
+# Run tests in docker container
+# @arg $TARGET binary to install and test
 test:
-	docker run dotfiles:latest
+	docker build . -t dotfiles:localtest \
+		--build-arg TARGET=$$TARGET \
+	&& docker run dotfiles:localtest
 
 # Launch bash in docker container
 start:

@@ -1,14 +1,22 @@
 # set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/bin" ] ; then
+if [ -d "$HOME/bin" ]; then
     PATH="$HOME/bin:$PATH"
 fi
 
 # config
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CONFIG_HOME="$HOME/.config"
+if [ -z "$XDG_DATA_HOME" ]; then
+    export XDG_DATA_HOME="$HOME/.local/share"
+    mkdir -p "$XDG_DATA_HOME"
+fi
+if [ -z "$XDG_CONFIG_HOME" ]; then
+    export XDG_CONFIG_HOME="$HOME/.config"
+    mkdir -p "$XDG_CONFIG_HOME"
+fi
 
 # workspace
-export WORKSPACE="$HOME/workspace"
+if [ -z "$WORKSPACE" ]; then
+    export WORKSPACE="$HOME/workspace"
+fi
 
 # .local
 export PATH="$HOME/.local/bin:$PATH"
@@ -24,6 +32,6 @@ export POETRY_ROOT="$HOME/.poetry"
 export PATH="$POETRY_ROOT/bin:$PATH"
 
 # nvm
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$XDG_CONFIG_HOME/nvm"
 export PATH="$NVM_DIR/bin:$PATH"
 [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
