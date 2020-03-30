@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. nvm is installed
+# nvm is installed
 if not_installed "nvm"; then
 
     printf "Installing nvm...\n"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. python3 and pip3 are installed
+# python3 and pip3 are installed
 if not_installed "pip3"; then
 
     echo "Installing python3 and pip3..."

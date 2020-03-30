@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. docker is installed
+# docker is installed
 DOCKER_FOLDER="$HOME/.docker"
 if not_installed "docker"; then
 
@@ -32,7 +32,7 @@ fi
 printf "docker is installed\n"
 docker --version
 
-# 2. docker-compose if installed
+# docker-compose if installed
 if not_installed "docker-compose"; then
 
     printf "Installing docker-compose...\n"
@@ -45,14 +45,14 @@ printf "docker-compose is installed, upgrading\n"
 pip3 install --upgrade docker-compose
 docker-compose --version
 
-# 3. docker group exists
+# docker group exists
 readonly docker_group='docker'
 if ! grep -q "$docker_group" /etc/group; then
     sudo groupadd "$docker_group"
 fi
 printf "group '$docker_group' is created\n"
 
-# 4. user is in docker group
+# user is in docker group
 if ! groups "$USER" | grep -q "\b$docker_group\b"; then
     sudo usermod -aG docker "$USER"
 fi

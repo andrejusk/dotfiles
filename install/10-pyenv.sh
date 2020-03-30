@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. pyenv is installed
+# pyenv is installed
 if not_installed "pyenv"; then
 
     echo "Installing pyenv..."

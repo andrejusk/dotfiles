@@ -3,5 +3,4 @@ make
 net-tools
 openssh-client
 openssh-server
-screenfetch
 software-properties-common

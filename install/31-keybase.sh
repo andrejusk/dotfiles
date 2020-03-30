@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1.keybase is installed
+# keybase is installed
 if not_installed "keybase"; then
 
     printf "Installing keybase...\n"

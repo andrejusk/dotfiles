@@ -22,8 +22,12 @@ set POETRY_ROOT $HOME/.poetry
 set -x PATH $POETRY_ROOT/bin $PATH
 
 # nvm
-# set NVM_ROOT $HOME/.nvm
-# set -x PATH $NVM_ROOT/bin $PATH
+set NVM_ROOT $HOME/.nvm
+set -x PATH $NVM_ROOT/bin $PATH
+
+# yarn
+set YARN_DIR $HOME/.yarn
+set -x PATH $YARN_DIR/bin $PATH
 
 # ---------------------------------------------------------------------------- #
 #   Fish specific

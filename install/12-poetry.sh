@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. poetry is installed
+# poetry is installed
 if not_installed "poetry"; then
 
     printf "Installing poetry...\n"

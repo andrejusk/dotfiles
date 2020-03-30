@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-# post clean
+echo "cleaning"
 clean
