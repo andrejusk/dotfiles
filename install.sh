@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 export install_dir="$dotfiles_dir/install"
 source "$install_dir/utils.sh"
@@ -23,8 +23,9 @@ fi
 touch "$install_lock_file"
 
 # Install all scripts by default
+
 if [ -z "$TARGET" ]; then
-    TARGET="all"
+    export TARGET="all"
 fi
 
 if [ "$TARGET" == "all" ]; then

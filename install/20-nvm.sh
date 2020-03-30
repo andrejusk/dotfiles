@@ -14,9 +14,6 @@ fi
 
 printf "nvm is installed, upgrading...\n"
 git --git-dir="$NVM_DIR/.git" pull
-nvm update --lts node
-nvm update node
-nvm update npm
 nvm --version
 node --version
 npm --version
