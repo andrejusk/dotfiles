@@ -43,7 +43,7 @@ binaries: List[str] = [
 
     # tools
     "git",
-    "keybase",
+    "keybase", "firebase", "aws", "terraform",
     "docker", "docker-compose",
     "screenfetch",
 
