@@ -3,7 +3,7 @@ from ubuntu:bionic as install
 # Install sudo and make, git since built-in is skipped
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get -qqy update \
-    && apt-get -qqy install sudo git make
+    && apt-get -qqy install curl git make software-properties-common sudo
 
 # Create user with sudo priviledge
 ARG USER="test-user"

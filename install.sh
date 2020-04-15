@@ -23,7 +23,6 @@ fi
 touch "$install_lock_file"
 
 # Install all scripts by default
-
 if [ -z "$TARGET" ]; then
     export TARGET="all"
 fi
@@ -31,7 +30,7 @@ fi
 if [ "$TARGET" == "all" ]; then
     scripts=($install_dir/*.sh)
 else
-    scripts=($install_dir/*-{apt,bash,$TARGET}.sh)
+    scripts=($install_dir/*-{bash,$TARGET}.sh)
 fi
 for script in "${scripts[@]}"; do
 
