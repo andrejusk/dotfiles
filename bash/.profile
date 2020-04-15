@@ -1,9 +1,13 @@
 if [ -z "$PROFILE_LOCK" ]; then
+    echo "acquiring profile lock"
     export PROFILE_LOCK=1
 
     # set PATH so it includes user's private bin if it exists
     if [ -d "$HOME/bin" ]; then
-        PATH="$HOME/bin:$PATH"
+        export PATH="$HOME/bin:$PATH"
+    fi
+    if [ -d "$HOME/.local/bin" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
     fi
 
     # config
@@ -19,32 +23,40 @@ if [ -z "$PROFILE_LOCK" ]; then
     # workspace
     if [ -z "$WORKSPACE" ]; then
         export WORKSPACE="$HOME/workspace"
+        mkdir -p "$WORKSPACE"
     fi
-
-    # .local
-    export PATH="$HOME/.local/bin:$PATH"
 
     # pyenv
     export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/bin:$PATH"
-    export PATH="$PYENV_ROOT/shims:$PATH"
-    [ -x "$(command -v pyenv)" ] && eval "$(pyenv init -)"
+    if [ -d "$PYENV_ROOT" ]; then
+        export PATH="$PYENV_ROOT/bin:$PATH"
+        export PATH="$PYENV_ROOT/shims:$PATH"
+        [ -x "$(command -v pyenv)" ] && eval "$(pyenv init -)"
+    fi
 
     # poetry
     export POETRY_ROOT="$HOME/.poetry"
-    export PATH="$POETRY_ROOT/bin:$PATH"
+    if [ -d "$POETRY_ROOT" ]; then
+        export PATH="$POETRY_ROOT/bin:$PATH"
+    fi
 
     # nvm
     export NVM_DIR="$XDG_CONFIG_HOME/nvm"
-    export PATH="$NVM_DIR/bin:$PATH"
-    # [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+    if [ -d "$NVM_DIR" ]; then
+        export PATH="$NVM_DIR/bin:$PATH"
+        # [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+    fi
 
     # yarn
     export YARN_DIR="$HOME/.yarn"
-    if ! [ -x "$(command -v yarn)" ]; then
+    if [ -d "$YARN_DIR" ]; then
         export PATH="$YARN_DIR/bin:$PATH"
-    else
-        export PATH="$(yarn global bin):$PATH"
     fi
+
+    # if ! [ -x "$(command -v yarn)" ]; then
+    #     export PATH="$YARN_DIR/bin:$PATH"
+    # else
+    #     export PATH="$(yarn global bin):$PATH"
+    # fi
 
 fi
