@@ -4,3 +4,5 @@ net-tools
 openssh-client
 openssh-server
 software-properties-common
+tmux
+
