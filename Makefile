@@ -8,7 +8,7 @@ all:
 	./bootstrap.sh
 
 clean:
-	rm -f .dotlock
+	rm -rf .dotlock tmp
 
 # ---------------------------------------------------------------------------- #
 #	Docker commands
