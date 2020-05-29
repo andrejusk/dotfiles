@@ -1,5 +1,6 @@
 curl
 make
+neovim
 net-tools
 openssh-client
 openssh-server
