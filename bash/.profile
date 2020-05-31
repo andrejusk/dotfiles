@@ -43,7 +43,6 @@ if [ -z "$PROFILE_LOCK" ]; then
     export NVM_DIR="$XDG_CONFIG_HOME/nvm"
     if [ -d "$NVM_DIR" ]; then
         export PATH="$NVM_DIR/bin:$PATH"
-        # [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
     fi
 
     # yarn
