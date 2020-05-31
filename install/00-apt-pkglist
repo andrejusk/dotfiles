@@ -4,6 +4,7 @@ neovim
 net-tools
 openssh-client
 openssh-server
+ruby-full
 software-properties-common
 tmux
 
