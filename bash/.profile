@@ -1,5 +1,4 @@
 if [ -z "$PROFILE_LOCK" ]; then
-    echo "acquiring profile lock"
     export PROFILE_LOCK=1
 
     # set PATH so it includes user's private bin if it exists
@@ -52,11 +51,5 @@ if [ -z "$PROFILE_LOCK" ]; then
     if [ -d "$YARN_DIR" ]; then
         export PATH="$YARN_DIR/bin:$PATH"
     fi
-
-    # if ! [ -x "$(command -v yarn)" ]; then
-    #     export PATH="$YARN_DIR/bin:$PATH"
-    # else
-    #     export PATH="$(yarn global bin):$PATH"
-    # fi
 
 fi

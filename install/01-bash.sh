@@ -5,4 +5,6 @@ bash_target="$HOME"
 link_folder "$bash_source" "$bash_target"
 echo "bash dotfiles are linked"
 
+sudo chmod -R 0644 /etc/update-motd.d/
+
 bash --version

@@ -5,9 +5,11 @@ SHELL := /bin/bash
 .PHONY: clean
 
 all:
+	# Install dotfiles 
 	./bootstrap.sh
 
 clean:
+	# Remove all temporary files and artefacts
 	rm -rf .dotlock tmp
 
 # ---------------------------------------------------------------------------- #

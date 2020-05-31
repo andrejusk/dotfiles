@@ -9,6 +9,8 @@ if not_installed "nvm"; then
     run "https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh" \
         "bash"
     source "$NVM_DIR/nvm.sh"
+    nvm alias default lts
+    nvm default
 
 fi
 
