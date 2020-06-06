@@ -112,6 +112,9 @@ inoremap <silent><expr> <TAB>
 "Close preview window when completion is done.
 autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
 
+" Allow use of :Prettier
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+
 " === NeoSnippet === "
 " Map <C-k> as shortcut to activate snippet if available
 imap <C-k> <Plug>(neosnippet_expand_or_jump)
@@ -387,10 +390,12 @@ nmap <C-l> <C-w>l
 "   <leader>dr    - Jump to references of current symbol
 "   <leader>dj    - Jump to implementation of current symbol
 "   <leader>ds    - Fuzzy search current project symbols
+"   <leader>p     - Run Prettier formatter on file
 nmap <silent> <leader>dd <Plug>(coc-definition)
 nmap <silent> <leader>dr <Plug>(coc-references)
 nmap <silent> <leader>dj <Plug>(coc-implementation)
 nnoremap <silent> <leader>ds :<C-u>CocList -I -N --top symbols<CR>
+nmap <silent> <leader>p  :Prettier<CR>
 
 " === vim-better-whitespace === "
 "   <leader>y - Automatically remove trailing whitespace
@@ -417,7 +422,6 @@ nmap <leader>z :JsDoc<CR>
 " Used when you want to paste over something without it getting copied to
 " Vim's default buffer
 vnoremap <leader>p "_dP
-
 
 " ============================================================================ "
 " ===                                 MISC.                                === "

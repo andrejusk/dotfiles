@@ -13,7 +13,7 @@ if not_installed "nvm"; then
     nvm install node
     nvm install iojs
     nvm alias default lts/erbium
-    
+
 fi
 
 printf "nvm is installed, upgrading...\n"

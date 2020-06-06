@@ -14,9 +14,10 @@ fi
 nvim -E PlugInstall -c q
 nvim -E PluginInstall -c q
 
-sudo pip3 install neovim
-sudo yarn global add neovim
-sudo gen install neovim
+pip3 install neovim
+node --version
+yarn global add neovim
+sudo gem install neovim
 
 nvim --version
 
