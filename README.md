@@ -7,7 +7,7 @@ Tested on and compatible with:
 
 ## Install
 
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/setup -qO - | perl
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/setup.pl -qO - | perl
 
 ## Stack
 
