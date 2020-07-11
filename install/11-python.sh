@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 # python3 and pip3 are installed
 if not_installed "pip3"; then

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 vim_source="$dotfiles_dir/vim"
 vim_target="$XDG_CONFIG_HOME/nvim"

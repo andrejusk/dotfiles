@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 if not_installed "screenfetch"; then
     echo "Installing screenfetch..."

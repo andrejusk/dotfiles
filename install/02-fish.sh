@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 if not_installed "fish"; then
     echo "installing fish..."
     add_ppa "fish-shell/release-3"
     update
     install fish
-
 fi
 echo "fish is installed"
 

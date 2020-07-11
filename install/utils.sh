@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------- #
+#       Helper variables                                                       #
+# ---------------------------------------------------------------------------- #
+install_dir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )";
+dotfiles_dir="$(dirname "$install_dir")";
+
+# ---------------------------------------------------------------------------- #
 #	Helper functions
 # ---------------------------------------------------------------------------- #
 
@@ -8,28 +14,28 @@ clean() {
 }
 
 update() {
-    sudo apt-get update -qq
+    sudo apt-get update
 }
 
 # Non-interactive upgrade
-# Skip if FAST_MODE is defined
 upgrade() {
-    [ "$FAST_MODE" != false ] && return
     DEBIAN_FRONTEND=noninteractive \
-        sudo apt-get dist-upgrade -qq \
+        sudo apt-get \
         -o Dpkg::Options::="--force-confdef" \
-        -o Dpkg::Options::="--force-confold"
+        -o Dpkg::Options::="--force-confold" \
+        -y \
+        dist-upgrade
 }
 
 # @arg $1 packages to install
 install() {
-    sudo apt-get install -qq $1
+    sudo apt-get install $1
     refresh
 }
 
 # @arg $1 package list file to install
 install_file() {
-    sudo apt-get install -fqq $(cat $1)
+    sudo apt-get install -f $(cat $1)
     refresh
 }
 

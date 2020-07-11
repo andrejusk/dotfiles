@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 # git dotfiles are symlinked
 git_source="$dotfiles_dir/git"

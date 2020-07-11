@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname $0)/utils.sh"
 
 # ssh key exists
 ssh_target="$HOME/.ssh"

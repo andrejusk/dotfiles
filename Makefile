@@ -1,16 +1,11 @@
-SHELL := /bin/bash
 # ---------------------------------------------------------------------------- #
-#	Local commands 
+#	Local commands
 # ---------------------------------------------------------------------------- #
 .PHONY: clean
 
+# @arg $TARGET binary to install
 all:
-	# Install dotfiles 
-	./bootstrap.sh
-
-clean:
-	# Remove all temporary files and artefacts
-	rm -rf .dotlock tmp
+	./install.pl
 
 # ---------------------------------------------------------------------------- #
 #	Docker commands

@@ -4,6 +4,7 @@ use warnings;
 
 
 use Archive::Tar;
+use File::Copy;
 use File::Temp ();
 use IPC::System::Simple qw(capture);
 use LWP::Simple;
@@ -18,8 +19,11 @@ my $branch =     $ENV{'DOTFILES_BRANCH'}     // 'master';
 print "Using repository $author/$repository at $branch\n";
 
 # Installer filename
-my $installer = $ENV{'DOTFILES_INSTALLER'} // 'install.sh';
+my $installer = $ENV{'DOTFILES_INSTALLER'} // 'install.pl';
 print "Using installer $installer\n";
+
+# Install location
+my $dotfiles_dir = $ENV{'DOTFILES_DIR'} // "$ENV{'HOME'}/.dotfiles";
 
 # Download repo
 my $repository_url = "https://github.com/$author/$repository/archive/$branch.tar.gz";
@@ -36,8 +40,13 @@ $tar->read($repository_temp);
 $tar->setcwd($temp_dir);
 $tar->extract();
 
+# Move dotfiles out of temporary dir
+my $temp_dotfiles_dir = "$temp_dir/$repository-$branch";
+print "Moving $temp_dotfiles_dir to $dotfiles_dir\n";
+move($temp_dotfiles_dir, $dotfiles_dir);
+
 # Install repo
-my $installer_path = "$temp_dir/$repository-$branch/$installer";
-print 'Running installer <' . $installer_path . ">\n";
+my $installer_path = "$dotfiles_dir/$installer";
+print 'Running installer ' . $installer_path . "\n";
 my $output = capture([0,1,2], $^X, $installer_path);
 print $output;
