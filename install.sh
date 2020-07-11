@@ -41,7 +41,7 @@ for script in "${scripts[@]}"; do
 
     printf "\nRunning #$script_number ${C_YELLOW}$script_target${C_NC}...\n${C_DGRAY}"
     chmod +x "$script"
-    source "$HOME/.bashrc" && "$script" | indent
+    source "$script" | indent
     printf "${C_NC}"
 
 # Clean up if fails
