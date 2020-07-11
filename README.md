@@ -1,13 +1,13 @@
 # dotfiles
 
-Collection of tracked dotfiles and supporting install scripts.
+Collection of experimental dotfiles and supporting install scripts.
 Tested on and compatible with:
   * Ubuntu 18.04
   * Ubuntu 20.04
 
 ## Install
 
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/bootstrap.sh -qO - | bash
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/setup -qO - | perl
 
 ## Stack
 
@@ -20,8 +20,10 @@ Tools:
 * docker (+ docker-compose)
 * firebase
 * terraform
+* screenfetch
 
 Languages:
+* elm
 * java
 * node (+ yarn, nvm)
 * python (+ poetry, pyenv)
