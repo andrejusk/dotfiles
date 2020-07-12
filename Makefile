@@ -1,11 +1,17 @@
 # ---------------------------------------------------------------------------- #
 #	Local commands
 # ---------------------------------------------------------------------------- #
-.PHONY: clean
+.PHONY: clean install
+
+all:
+	./bootstrap.pl
 
 # @arg $TARGET binary to install
-all:
+install:
 	./install.pl
+
+clean:
+	rm ./.install.*.log
 
 # ---------------------------------------------------------------------------- #
 #	Docker commands

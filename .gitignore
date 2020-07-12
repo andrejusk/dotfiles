@@ -1,7 +1,7 @@
 # install
 tmp
-.dotlock
 *.deb
+*.log
 
 # pytest
 **/__pycache__

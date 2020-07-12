@@ -18,10 +18,6 @@ my $repository = $ENV{'DOTFILES_REPOSITORY'} // 'dotfiles';
 my $branch =     $ENV{'DOTFILES_BRANCH'}     // 'master';
 print "Using repository $author/$repository at $branch\n";
 
-# Installer filename
-my $installer = $ENV{'DOTFILES_INSTALLER'} // 'install.pl';
-print "Using installer $installer\n";
-
 # Install location
 my $dotfiles_dir = $ENV{'DOTFILES_DIR'} // "$ENV{'HOME'}/.dotfiles";
 
@@ -46,7 +42,5 @@ print "Moving $temp_dotfiles_dir to $dotfiles_dir\n";
 move($temp_dotfiles_dir, $dotfiles_dir);
 
 # Install repo
-my $installer_path = "$dotfiles_dir/$installer";
-print 'Running installer ' . $installer_path . "\n";
-my $output = capture([0,1,2], $^X, $installer_path);
-print $output;
+print "Running installer\n";
+my @output = capture([0,1,2], $^X, 'make install');
