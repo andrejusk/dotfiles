@@ -7,8 +7,8 @@ if not_installed "fish"; then
     update
     install fish
 fi
-echo "fish is installed"
 
+echo "fish is installed"
 fish --version
 
 fisher_location="$XDG_CONFIG_HOME/fish/functions/fisher.fish"
@@ -17,7 +17,7 @@ if ! [ -f "$fisher_location" ]; then
     curl https://git.io/fisher --create-dirs -sLo "$fisher_location"
 fi
 echo "fisher is installed, updating..."
-sh -c 'env HOME=$(mktemp -d) fish -c "fisher"'
+`fish -c "fisher"`;
 
 fish -c "fisher --version"
 

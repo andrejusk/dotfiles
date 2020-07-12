@@ -19,7 +19,8 @@ if ($log_target ne 'STDOUT') {
     # Generate unique logfile
     my $log_dir = "$dir/logs";
     `mkdir -p $log_dir`;
-    my $uuid = chomp `uuidgen`;
+    my $uuid = `uuidgen`;
+    chomp $uuid;
     $log_path = "$log_dir/$uuid.log";
 }
 print "Logs: $log_path\n";
@@ -28,10 +29,10 @@ print "Logs: $log_path\n";
 # @arg 0 command to run
 sub log_execute {
     my $command = $log_path ne ''
-                   ? "$_[0] &> $log_path"
+                   ? "$_[0] >> $log_path 2>&1"
                    : $_[0];
-    print "# $command\n";
-    return system($command);
+    system($command) == 0
+        or die "system $command failed: $?";
 }
 
 
@@ -57,9 +58,5 @@ if ($target ne 'all') {
 }
 foreach my $file (@files) {
     print "Running $file...\r";
-    my $exit_status =  log_execute("/bin/bash -l $install_dir/$file");
-    if ($exit_status != 0) {
-        print "Failure in $file, see above and logs for more detail.\n";
-        exit ($exit_status);
-    }
+    log_execute("$install_dir/$file");
 }

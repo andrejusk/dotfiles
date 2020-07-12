@@ -17,7 +17,7 @@ if not_installed "pyenv"; then
         "bash"
 
 fi
-echo "pyenv is installed, upgrading..."
+echo "pyenv is installed, upgrading $PYENV_ROOT..."
 git --git-dir="$PYENV_ROOT/.git" fetch -q
 git --git-dir="$PYENV_ROOT/.git" rebase -q --autostash FETCH_HEAD
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 source "$(dirname $0)/utils.sh"
+export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
 # poetry is installed
 if not_installed "poetry"; then
