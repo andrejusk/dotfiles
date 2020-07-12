@@ -43,4 +43,4 @@ move($temp_dotfiles_dir, $dotfiles_dir);
 
 # Install repo
 print "Running installer\n";
-`make -C $dotfiles_dir install`;
+`$dotfiles_dir/install.pl`;
