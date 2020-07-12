@@ -4,7 +4,6 @@ use warnings;
 use autodie;
 
 use File::Basename;
-use File::Path qw( make_path );
 
 # Prevent running as root
 if ($< == 0) {
@@ -19,7 +18,7 @@ my $log_path = '';
 if ($log_target ne 'STDOUT') {
     # Generate unique logfile
     my $log_dir = "$dir/logs";
-    make_path $log_dir or die "Failed to create path: $log_dir";
+    `mkdir -p $log_dir`;
     my $uuid = `uuidgen`;
     chomp $uuid;
     $log_path = "$log_dir/$uuid.log";
@@ -37,7 +36,7 @@ sub execute {
 
 
 # Ensure dependencies installed
-execute("sudo apt-get update -qqy && sudo apt-get install -qqy liblocal-lib-perl cpanminus stow");
+execute("sudo apt-get update -qqy && sudo apt-get install -qqy build-essential liblocal-lib-perl cpanminus stow");
 
 # Bootstrap files
 execute("make -C $dir");
