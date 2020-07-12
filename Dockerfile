@@ -14,14 +14,14 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
 
 # Filesystem steps
 ENV WORKSPACE="/home/$USER/workspace"
+ENV LOG_TARGET="STDOUT"
 ADD --chown=test-user . "$WORKSPACE/dotfiles"
 WORKDIR "$WORKSPACE/dotfiles"
 
 # Install steps
 USER test-user
-ENV FAST_MODE="true"
 ARG TARGET="all"
-RUN make TARGET=$TARGET
+RUN make install TARGET=$TARGET
 
 # Test entrypoint
 ENTRYPOINT [ "make", "--directory", "tests", "TARGET=$TARGET" ]

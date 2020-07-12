@@ -1,3 +1,5 @@
+echo "Loading bash profile"
+
 # Load .profile, containing login, non-bash related initializations.
 source "$HOME/.profile"
 

@@ -7,16 +7,17 @@ use Cwd;
 use Stow;
 
 
-# Stow files
 my $dir = getcwd;
+my $target = $ENV{'HOME'};
+print "Stowing $dir/files to $target\n";
+
 my %stow_options = ( dir => $dir,
-	             target => $ENV{'HOME'});
+	             target => $target);
 my $stow = new Stow(%stow_options);
 
 my @pkgs = ('files');
 $stow->plan_stow(@pkgs);
 
-# my %conflicts = $stow->get_conflicts();
 $stow->process_tasks();
 print "done\n";
 

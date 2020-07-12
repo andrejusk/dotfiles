@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------- #
-#       Helper variables                                                       #
-# ---------------------------------------------------------------------------- #
-install_dir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )";
-dotfiles_dir="$(dirname "$install_dir")";
-
-# ---------------------------------------------------------------------------- #
 #	Helper functions
 # ---------------------------------------------------------------------------- #
-
 clean() {
     sudo apt-get clean
 }
@@ -29,13 +22,13 @@ upgrade() {
 
 # @arg $1 packages to install
 install() {
-    sudo apt-get install $1
+    sudo apt-get install -qqy $1
     refresh
 }
 
 # @arg $1 package list file to install
 install_file() {
-    sudo apt-get install -f $(cat $1)
+    sudo apt-get install -qqyf $(cat $1)
     refresh
 }
 
@@ -109,3 +102,12 @@ C_LCYAN='\033[1;36m'
 C_LGRAY='\033[0;37m'
 C_WHITE='\033[1;37m'
 C_NC='\033[0m'
+
+# ---------------------------------------------------------------------------- #
+#       Helper variables                                                       #
+# ---------------------------------------------------------------------------- #
+install_dir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+dotfiles_dir="$(dirname "$install_dir")"
+source "$dotfiles_dir/files/.bash_profile"
+refresh
+

@@ -27,28 +27,22 @@ if [ -z "$PROFILE_LOCK" ]; then
 
     # pyenv
     export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    export PATH="$PYENV_ROOT/shims:$PATH"
     if [ -d "$PYENV_ROOT" ]; then
-        export PATH="$PYENV_ROOT/bin:$PATH"
-        export PATH="$PYENV_ROOT/shims:$PATH"
         [ -x "$(command -v pyenv)" ] && eval "$(pyenv init -)"
     fi
 
     # poetry
     export POETRY_ROOT="$HOME/.poetry"
-    if [ -d "$POETRY_ROOT" ]; then
-        export PATH="$POETRY_ROOT/bin:$PATH"
-    fi
+    export PATH="$POETRY_ROOT/bin:$PATH"
 
     # nvm
     export NVM_DIR="$XDG_CONFIG_HOME/nvm"
-    if [ -d "$NVM_DIR" ]; then
-        export PATH="$NVM_DIR/bin:$PATH"
-    fi
+    export PATH="$NVM_DIR/bin:$PATH"
 
     # yarn
     export YARN_DIR="$HOME/.yarn"
-    if [ -d "$YARN_DIR" ]; then
-        export PATH="$YARN_DIR/bin:$PATH"
-    fi
+    export PATH="$YARN_DIR/bin:$PATH"
 
 fi

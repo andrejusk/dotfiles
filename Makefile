@@ -3,6 +3,7 @@
 # ---------------------------------------------------------------------------- #
 .PHONY: clean install
 
+# Install dotfiles to home folder
 all:
 	./bootstrap.pl
 
@@ -11,7 +12,7 @@ install:
 	./install.pl
 
 clean:
-	rm ./.install.*.log
+	rm -rf logs
 
 # ---------------------------------------------------------------------------- #
 #	Docker commands
