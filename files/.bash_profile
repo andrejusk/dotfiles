@@ -1,10 +1,8 @@
-echo "Loading bash profile"
-
 # Load .profile, containing login, non-bash related initializations.
-source "$HOME/.profile"
+[-f "$HOME/.profile"] && source "$HOME/.profile"
 
 # Load .bashrc, containing non-login related bash initializations.
-source "$HOME/.bashrc"
+[-f "$HOME/.bashrc"] && source "$HOME/.bashrc"
 
 
 # References:
