@@ -3,6 +3,13 @@ tmp
 *.deb
 *.log
 
+**/plugged
+**/autoload
+**/functions
+**/completions
+**/conf.d
+**/fish_variables
+
 # pytest
 **/__pycache__
 **/.pytest_cache

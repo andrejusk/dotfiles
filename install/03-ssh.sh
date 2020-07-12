@@ -11,8 +11,4 @@ if [ ! -f "$ssh_key" ]; then
 fi
 echo "ssh key exists"
 
-# ssh dotfiles are symlinked
-ssh_source="$dotfiles_dir/ssh"
-link_folder "$ssh_source" "$ssh_target"
-echo "ssh dotfiles are symlinked"
 cat "$ssh_pub"

@@ -9,11 +9,6 @@ if not_installed "fish"; then
 fi
 echo "fish is installed"
 
-fish_source="$dotfiles_dir/fish"
-fish_target="$XDG_CONFIG_HOME/fish"
-link_folder "$fish_source" "$fish_target"
-echo "fish dotfiles linked"
-
 fish --version
 
 fisher_location="$XDG_CONFIG_HOME/fish/functions/fisher.fish"
