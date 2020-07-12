@@ -19,11 +19,10 @@ if ($log_target ne 'STDOUT') {
     # Generate unique logfile
     my $log_dir = "$dir/logs";
     `mkdir -p $log_dir`;
-    my $uuid = `uuidgen`;
-    chomp $uuid;
+    my $uuid = chomp `uuidgen`;
     $log_path = "$log_dir/$uuid.log";
-    print "Logs: $log_target\n";
 }
+print "Logs: $log_path\n";
 
 # Execute given command and log appropriately
 # @arg 0 command to run
