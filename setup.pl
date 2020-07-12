@@ -43,4 +43,4 @@ move($temp_dotfiles_dir, $dotfiles_dir);
 
 # Install repo
 print "Running installer\n";
-my @output = capture([0,1,2], $^X, 'make install');
+return capture([0,1,2], $^X, "make -C $dotfiles_dir install");
