@@ -27,7 +27,7 @@ if ($log_target ne 'STDOUT') {
 
 # Execute given command and log appropriately
 # @arg 0 command to run
-sub execute {
+sub log_execute {
     my $command = $log_path ne ''
                    ? "$_[0] &> $log_path"
                    : $_[0];
@@ -37,10 +37,10 @@ sub execute {
 
 
 # Ensure dependencies installed
-execute("sudo apt-get update -qqy && sudo apt-get install -qqy build-essential liblocal-lib-perl cpanminus stow");
+log_execute("sudo apt-get update -qqy && sudo apt-get install -qqy build-essential liblocal-lib-perl cpanminus stow");
 
 # Bootstrap files
-execute("make -C $dir");
+log_execute("make -C $dir");
 
 # Read scripts to be installed
 my $install_dir = "$dir/install";
@@ -58,7 +58,7 @@ if ($target ne 'all') {
 }
 foreach my $file (@files) {
     print "Running $file...\r";
-    my $exit_status =  execute("/bin/bash -l $install_dir/$file");
+    my $exit_status =  log_execute("/bin/bash -l $install_dir/$file");
     if ($exit_status != 0) {
         print "Failure in $file, see above and logs for more detail.\n";
         exit ($exit_status);
