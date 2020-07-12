@@ -31,6 +31,7 @@ sub execute {
     my $command = $log_path ne ''
                    ? "$_[0] &> $log_path"
                    : $_[0];
+    print "# $command\n";
     return system($command);
 }
 
