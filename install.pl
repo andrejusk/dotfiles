@@ -40,7 +40,7 @@ sub execute {
 execute("sudo apt-get update -qqy && sudo apt-get install -qqy liblocal-lib-perl cpanminus stow");
 
 # Bootstrap files
-execute("./bootstrap.pl");
+execute("make");
 
 # Read scripts to be installed
 my $install_dir = "$dir/install";
