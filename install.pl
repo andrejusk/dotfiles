@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use autodie;
 
-use Cwd;
+use File::Basename;
 use File::Path qw( make_path );
 
 # Prevent running as root
@@ -12,7 +12,7 @@ if ($< == 0) {
     exit (1);
 }
 
-my $dir = getcwd;
+my $dir = dirname(__FILE__);
 
 my $log_target = $ENV{'LOG_TARGET'} // '';
 my $log_path = '';
@@ -40,7 +40,7 @@ sub execute {
 execute("sudo apt-get update -qqy && sudo apt-get install -qqy liblocal-lib-perl cpanminus stow");
 
 # Bootstrap files
-execute("make");
+execute("make -C $dir");
 
 # Read scripts to be installed
 my $install_dir = "$dir/install";
