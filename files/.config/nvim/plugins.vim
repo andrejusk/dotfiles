@@ -3,12 +3,44 @@
 " ============================================================================ "
 call plug#begin('~/.config/nvim/plugged')
 
+
 " Sensible (?) defaults
 Plug 'tpope/vim-sensible'
+
 
 " colorscheme
 Plug 'flazz/vim-colorschemes'
 
+
+" Icons
+Plug 'ryanoasis/vim-devicons'
+
+
+" File explorer
+Plug 'scrooloose/nerdtree'
+Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+
+" Show hidden files/directories
+let g:NERDTreeShowHidden = 1
+
+" Remove bookmarks and help text from NERDTree
+let g:NERDTreeMinimalUI = 1
+
+" Custom icons for expandable/expanded directories
+let g:NERDTreeDirArrowExpandable = ''
+let g:NERDTreeDirArrowCollapsible = ''
+
+" Hide certain files and directories from NERDTree
+let g:NERDTreeIgnore = ['\.git$[[dir]]']
+
+
+" Customized vim status line
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+let g:airline_theme='badwolf'
+
+
+" === Languages === "
 " lint
 Plug 'dense-analysis/ale'
 let g:ale_fix_on_save = 1
@@ -16,156 +48,70 @@ let g:ale_lint_on_text_changed = 'always'
 let g:ale_lint_delay = 1000
 let g:ale_sign_error = '\ '
 let g:ale_sign_warning = '\ '
-
-" fixer configurations
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \}
 
-" Intellisense Engine
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 
-" Denite - Fuzzy finding, buffer management
-if has('nvim')
-  Plug 'Shougo/denite.nvim', { 'do': ':UpdateRemotePlugins' }
-else
-  Plug 'Shougo/denite.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
+" Intellisense Engine
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+
+" fzf
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+
+
+" elm
+Plug 'elmcast/elm-vim'
+let g:elm_setup_keybindings = 0
+
+
+" DOcumentation GEneraton
+Plug 'kkoomen/vim-doge'
+
 
 " Trailing whitespace highlighting & automatic fixing
 Plug 'ntpeters/vim-better-whitespace'
 
-" auto-close plugin
+
+" auto-close plugins
 Plug 'rstacruz/vim-closer'
+Plug 'tpope/vim-endwise'
+
 
 " Improved motion in Vim
 Plug 'easymotion/vim-easymotion'
+Plug 'tpope/vim-surround'
+
 
 " Snippet support
 Plug 'Shougo/neosnippet'
 Plug 'Shougo/neosnippet-snippets'
 
+
 " Print function signatures in echo area
 Plug 'Shougo/echodoc.vim'
 
-" === Git Plugins === "
+
 " Enable git changes to be shown in sign column
 Plug 'mhinz/vim-signify'
 Plug 'tpope/vim-fugitive'
 
-" === Javascript Plugins === "
-" Typescript syntax highlighting
-Plug 'HerringtonDarkholme/yats.vim'
-
-" ReactJS JSX syntax highlighting
-Plug 'mxw/vim-jsx'
-
-" Generate JSDoc commands based on function signature
-Plug 'heavenshell/vim-jsdoc'
-
-" === Syntax Highlighting === "
-
-" Syntax highlighting for nginx
-Plug 'chr4/nginx.vim'
-
-" Syntax highlighting for javascript libraries
-Plug 'othree/javascript-libraries-syntax.vim'
-
-" Improved syntax highlighting and indentation
-Plug 'othree/yajs.vim'
-
-" === UI === "
-" File explorer
-Plug 'scrooloose/nerdtree'
-
-" Customized vim status line
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-let g:airline_theme='badwolf'
-
-" Icons
-Plug 'ryanoasis/vim-devicons'
-Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
 " Initialize plugin system
 call plug#end()
 
 
-colorscheme badwolf
 
 " ============================================================================ "
 " ===                           PLUGIN SETUP                               === "
 " ============================================================================ "
 
+colorscheme badwolf
+
+
 " Wrap in try/catch to avoid errors on initial install before plugin is available
 try
-" === Denite setup ==="
-" Use ripgrep for searching current directory for files
-" By default, ripgrep will respect rules in .gitignore
-"   --files: Print each file that would be searched (but don't search)
-"   --glob:  Include or exclues files for searching that match the given glob
-"            (aka ignore .git files)
-"
-call denite#custom#var('file/rec', 'command', ['rg', '--files', '--glob', '!.git'])
-
-" Use ripgrep in place of "grep"
-call denite#custom#var('grep', 'command', ['rg'])
-
-" Custom options for ripgrep
-"   --vimgrep:  Show results with every match on it's own line
-"   --hidden:   Search hidden directories and files
-"   --heading:  Show the file name above clusters of matches from each file
-"   --S:        Search case insensitively if the pattern is all lowercase
-call denite#custom#var('grep', 'default_opts', ['--hidden', '--vimgrep', '--heading', '-S'])
-
-" Recommended defaults for ripgrep via Denite docs
-call denite#custom#var('grep', 'recursive_opts', [])
-call denite#custom#var('grep', 'pattern_opt', ['--regexp'])
-call denite#custom#var('grep', 'separator', ['--'])
-call denite#custom#var('grep', 'final_opts', [])
-
-" Remove date from buffer list
-call denite#custom#var('buffer', 'date_format', '')
-
-" Custom options for Denite
-"   auto_resize             - Auto resize the Denite window height automatically.
-"   prompt                  - Customize denite prompt
-"   direction               - Specify Denite window direction as directly below current pane
-"   winminheight            - Specify min height for Denite window
-"   highlight_mode_insert   - Specify h1-CursorLine in insert mode
-"   prompt_highlight        - Specify color of prompt
-"   highlight_matched_char  - Matched characters highlight
-"   highlight_matched_range - matched range highlight
-let s:denite_options = {'default' : {
-\ 'split': 'floating',
-\ 'start_filter': 1,
-\ 'auto_resize': 1,
-\ 'source_names': 'short',
-\ 'prompt': 'λ ',
-\ 'highlight_matched_char': 'QuickFixLine',
-\ 'highlight_matched_range': 'Visual',
-\ 'highlight_window_background': 'Visual',
-\ 'highlight_filter_background': 'DiffAdd',
-\ 'winrow': 1,
-\ 'vertical_preview': 1
-\ }}
-
-" Loop through denite options and enable them
-function! s:profile(opts) abort
-  for l:fname in keys(a:opts)
-    for l:dopt in keys(a:opts[l:fname])
-      call denite#custom#option(l:fname, l:dopt, a:opts[l:fname][l:dopt])
-    endfor
-  endfor
-endfunction
-
-call s:profile(s:denite_options)
-catch
-  echo 'Denite not installed. It should work after running :PlugInstall'
-endtry
-
 " === Coc.nvim === "
 " use <tab> for trigger completion and navigate to next complete item
 function! s:check_back_space() abort
@@ -196,22 +142,6 @@ let g:neosnippet#snippets_directory='~/.config/nvim/snippets'
 " Hide conceal markers
 let g:neosnippet#enable_conceal_markers = 0
 
-" === NERDTree === "
-" Show hidden files/directories
-let g:NERDTreeShowHidden = 1
-
-" Remove bookmarks and help text from NERDTree
-let g:NERDTreeMinimalUI = 1
-
-" Custom icons for expandable/expanded directories
-let g:NERDTreeDirArrowExpandable = ''
-let g:NERDTreeDirArrowCollapsible = ''
-
-" Hide certain files and directories from NERDTree
-let g:NERDTreeIgnore = ['\.git$[[dir]]']
-
-" Wrap in try/catch to avoid errors on initial install before plugin is available
-try
 
 " === Vim airline ==== "
 " Enable extensions

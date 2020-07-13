@@ -13,10 +13,10 @@ echo "Installing neovim support";
 pip3 install neovim
 pip3 install pynvim
 node --version
-yarn global add neovim
+npm install -g neovim elm-format
 sudo gem install neovim
+
 
 echo "Running PlugInstall";
 nvim --headless +PlugInstall +PlugUpgrade +PlugUpdate +qall
 nvim --version
-
