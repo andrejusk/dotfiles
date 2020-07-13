@@ -42,17 +42,16 @@ binaries: List[str] = [
     *shells,
 
     # tools
-    "git",
-    "keybase", "firebase", "aws", "terraform",
+    "git", "nvim",
+    "firebase", "aws", "terraform",
     "docker", "docker-compose",
     "screenfetch",
 
     # language: python
     "pyenv", "python3", "pip3", "poetry",
 
-    # langauge: node
-    "nvm", "node", "npm", "yarn",
-    
+    # langauge: js
+    "nvm", "node", "npm", "yarn", "elm",
 ]
 
 

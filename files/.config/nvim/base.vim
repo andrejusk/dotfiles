@@ -4,6 +4,7 @@ filetype on
 filetype plugin on
 syntax on
 
+
 " ============================================================================ "
 " ===                           EDITING OPTIONS                            === "
 " ============================================================================ "
@@ -46,9 +47,6 @@ set cmdheight=2
 " Enable true color support
 " set termguicolors
 
-" Enable pseudo-transparency
-set pumblend
-
 " Change vertical split character to be a space (essentially hide it)
 set fillchars+=vert:.
 
@@ -60,11 +58,6 @@ set noshowmode
 
 " Set floating window to be slightly transparent
 set winbl=10
-
-" Editor theme
-set background=dark
-
-" Vim airline theme
 
 " ============================================================================ "
 " ===                                 MISC.                                === "
@@ -98,5 +91,3 @@ endif
 set backupdir=$XDG_DATA_HOME/nvim/backup " Don't put backups in current dir
 set backup
 set noswapfile
-
-

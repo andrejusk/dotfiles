@@ -7,13 +7,20 @@ call plug#begin('~/.config/nvim/plugged')
 Plug 'tpope/vim-sensible'
 
 " colorscheme
-Plug 'gilgigilgil/anderson.vim'
-silent! colorscheme anderson
-
+Plug 'flazz/vim-colorschemes'
 
 " lint
 Plug 'dense-analysis/ale'
 let g:ale_fix_on_save = 1
+let g:ale_lint_on_text_changed = 'always'
+let g:ale_lint_delay = 1000
+let g:ale_sign_error = '\ '
+let g:ale_sign_warning = '\ '
+
+" fixer configurations
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\}
 
 " Intellisense Engine
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
@@ -76,7 +83,7 @@ Plug 'scrooloose/nerdtree'
 " Customized vim status line
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-let g:airline_theme='onedark'
+let g:airline_theme='badwolf'
 
 " Icons
 Plug 'ryanoasis/vim-devicons'
@@ -86,6 +93,7 @@ Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 call plug#end()
 
 
+colorscheme badwolf
 
 " ============================================================================ "
 " ===                           PLUGIN SETUP                               === "
@@ -200,7 +208,7 @@ let g:NERDTreeDirArrowExpandable = ''
 let g:NERDTreeDirArrowCollapsible = ''
 
 " Hide certain files and directories from NERDTree
-let g:NERDTreeIgnore = ['^\.DS_Store$', '^tags$', '\.git$[[dir]]', '\.idea$[[dir]]', '\.sass-cache$']
+let g:NERDTreeIgnore = ['\.git$[[dir]]']
 
 " Wrap in try/catch to avoid errors on initial install before plugin is available
 try
@@ -266,53 +274,6 @@ let g:used_javascript_libs = 'underscore,requirejs,chai,jquery'
 let g:signify_sign_delete = '-'
 
 
-" ============================================================================ "
-" ===                      CUSTOM COLORSCHEME CHANGES                      === "
-" ============================================================================ "
-"
-" Add custom highlights in method that is executed every time a colorscheme is sourced
-" See https://gist.github.com/romainl/379904f91fa40533175dfaec4c833f2f for details
-function! TrailingSpaceHighlights() abort
-  " Hightlight trailing whitespace
-  highlight Trail ctermbg=red guibg=red
-  call matchadd('Trail', '\s\+$', 100)
-endfunction
-
-function! s:custom_jarvis_colors()
-  " coc.nvim color changes
-  hi link CocErrorSign WarningMsg
-  hi link CocWarningSign Number
-  hi link CocInfoSign Type
-
-  " Make background transparent for many things
-  hi Normal ctermbg=NONE guibg=NONE
-  hi NonText ctermbg=NONE guibg=NONE
-  hi LineNr ctermfg=NONE guibg=NONE
-  hi SignColumn ctermfg=NONE guibg=NONE
-  hi StatusLine guifg=#16252b guibg=#6699CC
-  hi StatusLineNC guifg=#16252b guibg=#16252b
-
-  " Try to hide vertical spit and end of buffer symbol
-  hi VertSplit gui=NONE guifg=#17252c guibg=#17252c
-  hi EndOfBuffer ctermbg=NONE ctermfg=NONE guibg=#17252c guifg=#17252c
-
-  " Customize NERDTree directory
-  hi NERDTreeCWD guifg=#99c794
-
-  " Make background color transparent for git changes
-  hi SignifySignAdd guibg=NONE
-  hi SignifySignDelete guibg=NONE
-  hi SignifySignChange guibg=NONE
-
-  " Highlight git change signs
-  hi SignifySignAdd guifg=#99c794
-  hi SignifySignDelete guifg=#ec5f67
-  hi SignifySignChange guifg=#c594c5
-endfunction
-
-autocmd! ColorScheme * call TrailingSpaceHighlights()
-autocmd! ColorScheme codedark call s:custom_jarvis_colors()
-
 " Call method on window enter
 augroup WindowManagement
   autocmd!
@@ -334,4 +295,3 @@ endif
 
 " Disable deprecated python2 provider
 let g:loaded_python_provider = 0
-

@@ -23,9 +23,7 @@ Tools:
 * screenfetch
 
 Languages:
-* elm
 * java
-* node (+ yarn, nvm)
+* js (nvm, node yarn, nvm)
 * python (+ poetry, pyenv)
 * ruby
-

@@ -1,3 +1,19 @@
+" No arrow keys
+noremap <Up> <NOP>
+noremap <Down> <NOP>
+noremap <Left> <NOP>
+noremap <Right> <NOP>
+inoremap <Up>    <NOP>
+inoremap <Down>  <NOP>
+inoremap <Left>  <NOP>
+inoremap <Right> <NOP>
+
+" Quick window switching
+nmap <C-h> <C-w>h
+nmap <C-j> <C-w>j
+nmap <C-k> <C-w>k
+nmap <C-l> <C-w>l
+
 
 " ============================================================================ "
 " ===                             KEY MAPPINGS                             === "
@@ -76,17 +92,6 @@ endfunction
 "  <leader>f - Opens current file location in NERDTree
 nmap <leader>n :NERDTreeToggle<CR>
 nmap <leader>f :NERDTreeFind<CR>
-
-"   <Space> - PageDown
-"   -       - PageUp
-noremap <Space> <PageDown>
-noremap - <PageUp>
-
-" Quick window switching
-nmap <C-h> <C-w>h
-nmap <C-j> <C-w>j
-nmap <C-k> <C-w>k
-nmap <C-l> <C-w>l
 
 " === coc.nvim === "
 "   <leader>dd    - Jump to definition of current symbol
