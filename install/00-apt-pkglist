@@ -1,4 +1,5 @@
 curl
+git
 make
 neovim
 net-tools

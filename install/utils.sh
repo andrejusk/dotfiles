@@ -18,6 +18,7 @@ upgrade() {
         -o Dpkg::Options::="--force-confold" \
         -y \
         dist-upgrade
+    sudo apt-get -y autoremove
 }
 
 # @arg $1 packages to install

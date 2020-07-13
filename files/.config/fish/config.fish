@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------- #
 #   Cross-shell (only import if environment has been setup)
 # ---------------------------------------------------------------------------- #
-if test -e ~/.profile
+if begin; test -e ~/.profile; and type -q bass; end
 	bass source ~/.profile
 end
 
