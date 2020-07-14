@@ -3,67 +3,35 @@
 " ============================================================================ "
 call plug#begin('~/.config/nvim/plugged')
 
-
 " Sensible (?) defaults
 Plug 'tpope/vim-sensible'
-
 
 " colorscheme
 Plug 'flazz/vim-colorschemes'
 
-
 " Icons
 Plug 'ryanoasis/vim-devicons'
-
 
 " File explorer
 Plug 'scrooloose/nerdtree'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
-" Show hidden files/directories
-let g:NERDTreeShowHidden = 1
-
-" Remove bookmarks and help text from NERDTree
-let g:NERDTreeMinimalUI = 1
-
-" Custom icons for expandable/expanded directories
-let g:NERDTreeDirArrowExpandable = ''
-let g:NERDTreeDirArrowCollapsible = ''
-
-" Hide certain files and directories from NERDTree
-let g:NERDTreeIgnore = ['\.git$[[dir]]']
-
-
 " Customized vim status line
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-let g:airline_theme='badwolf'
-
 
 " === Languages === "
 " lint
 Plug 'dense-analysis/ale'
-let g:ale_fix_on_save = 1
-let g:ale_lint_on_text_changed = 'always'
-let g:ale_lint_delay = 1000
-let g:ale_sign_error = '\ '
-let g:ale_sign_warning = '\ '
-let g:ale_fixers = {
-\   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\}
-
 
 " Intellisense Engine
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-
 " fzf
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 
 " elm
 Plug 'elmcast/elm-vim'
-let g:elm_setup_keybindings = 0
 
 
 " DOcumentation GEneraton
@@ -108,6 +76,33 @@ call plug#end()
 " ============================================================================ "
 
 colorscheme badwolf
+
+" Show hidden files/directories
+let g:NERDTreeShowHidden = 1
+
+" Remove bookmarks and help text from NERDTree
+let g:NERDTreeMinimalUI = 1
+
+" Custom icons for expandable/expanded directories
+let g:NERDTreeDirArrowExpandable = ''
+let g:NERDTreeDirArrowCollapsible = ''
+
+" Hide certain files and directories from NERDTree
+let g:NERDTreeIgnore = ['\.git$[[dir]]']
+
+
+let g:elm_setup_keybindings = 0
+
+let g:ale_fix_on_save = 1
+let g:ale_lint_on_text_changed = 'always'
+let g:ale_lint_delay = 1000
+let g:ale_sign_error = '\ '
+let g:ale_sign_warning = '\ '
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\}
+
+let g:airline_theme='badwolf'
 
 
 " Wrap in try/catch to avoid errors on initial install before plugin is available
