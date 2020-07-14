@@ -6,7 +6,7 @@ DOCKER_FOLDER="$HOME/.docker"
 if not_installed "docker"; then
 
     printf "Installing docker...\n"
-    
+
     # Create folder
     mkdir -p "$DOCKER_FOLDER"
 

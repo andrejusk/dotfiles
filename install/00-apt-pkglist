@@ -1,5 +1,7 @@
+apt-transport-https
 curl
 git
+gnupg2
 make
 neovim
 net-tools
@@ -9,4 +11,3 @@ ripgrep
 ruby-full
 software-properties-common
 tmux
-

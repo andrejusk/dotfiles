@@ -112,4 +112,3 @@ install_dir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 dotfiles_dir="$(dirname "$install_dir")"
 source "$dotfiles_dir/files/.bash_profile"
 refresh
-
