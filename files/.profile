@@ -1,13 +1,9 @@
 if [ -z "$PROFILE_LOCK" ]; then
     export PROFILE_LOCK=1
 
-    # set PATH so it includes user's private bin if it exists
-    if [ -d "$HOME/bin" ]; then
-        export PATH="$HOME/bin:$PATH"
-    fi
-    if [ -d "$HOME/.local/bin" ]; then
-        export PATH="$HOME/.local/bin:$PATH"
-    fi
+    # set PATH so it includes user's private bin
+    export PATH="$HOME/bin:$PATH"
+    export PATH="$HOME/.local/bin:$PATH"
 
     # config
     if [ -z "$XDG_DATA_HOME" ]; then
