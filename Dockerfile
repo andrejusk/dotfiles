@@ -13,14 +13,15 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
     >>/etc/sudoers
 
 # Filesystem steps
+RUN rm /home/$USER/{.profile,.bashrc}
 ENV WORKSPACE="/home/$USER/workspace"
-ENV LOG_TARGET="STDOUT"
 ADD --chown=test-user . "$WORKSPACE/dotfiles"
 WORKDIR "$WORKSPACE/dotfiles"
 
 # Install steps
 USER test-user
 ARG TARGET="all"
+ENV LOG_TARGET="STDOUT"
 RUN make install TARGET=$TARGET
 
 # Test entrypoint
