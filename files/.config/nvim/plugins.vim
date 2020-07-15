@@ -33,6 +33,8 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 " elm
 Plug 'elmcast/elm-vim'
 
+" Python
+Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
 
 " DOcumentation GEneraton
 Plug 'kkoomen/vim-doge'
@@ -101,6 +103,9 @@ let g:ale_sign_warning = '\ '
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \}
+let g:ale_linters = {
+\   'python': ['flake8']
+\}
 
 let g:airline_theme='badwolf'
 
@@ -125,6 +130,14 @@ autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
 " Allow use of :Prettier
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 
+call coc#config('python', {
+\   'jediEnabled': v:false,
+\   'venvPath': '~/.cache/pypoetry/virtualenvs'
+\ })
+
+" Disable deprecated python2 provider
+let g:loaded_python_provider = 0
+
 " === NeoSnippet === "
 " Map <C-k> as shortcut to activate snippet if available
 imap <C-k> <Plug>(neosnippet_expand_or_jump)
@@ -136,7 +149,6 @@ let g:neosnippet#snippets_directory='~/.config/nvim/snippets'
 
 " Hide conceal markers
 let g:neosnippet#enable_conceal_markers = 0
-
 
 " === Vim airline ==== "
 " Enable extensions
@@ -217,6 +229,3 @@ endfunction
 if exists('g:loaded_webdevicons')
   call webdevicons#refresh()
 endif
-
-" Disable deprecated python2 provider
-let g:loaded_python_provider = 0

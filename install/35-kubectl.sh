@@ -14,5 +14,3 @@ if not_installed "kubectl"; then
     install kubectl
     refresh
 fi
-
-kubectl version
