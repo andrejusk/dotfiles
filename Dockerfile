@@ -13,7 +13,7 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
     >>/etc/sudoers
 
 # Filesystem steps
-RUN rm /home/$USER/{.profile,.bashrc}
+RUN rm /home/$USER/.profile /home/$USER/.bashrc
 ENV WORKSPACE="/home/$USER/workspace"
 ADD --chown=test-user . "$WORKSPACE/dotfiles"
 WORKDIR "$WORKSPACE/dotfiles"
