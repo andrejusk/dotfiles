@@ -3,20 +3,22 @@
 " ============================================================================ "
 call plug#begin('~/.config/nvim/plugged')
 
+" === Editor === "
+
 " Sensible (?) defaults
 Plug 'tpope/vim-sensible'
 
-" colorscheme
+" colorschemes
 Plug 'flazz/vim-colorschemes'
 
-" Icons
+" dev icons
 Plug 'ryanoasis/vim-devicons'
 
-" File explorer
+" file explorer sidebar
 Plug 'scrooloose/nerdtree'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
-" Customized vim status line
+" status line
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
@@ -25,10 +27,11 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'dense-analysis/ale'
 
 " Intellisense Engine
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 
 " fzf
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 
 " elm
 Plug 'elmcast/elm-vim'
@@ -92,7 +95,6 @@ let g:NERDTreeDirArrowCollapsible = ''
 " Hide certain files and directories from NERDTree
 let g:NERDTreeIgnore = ['\.git$[[dir]]']
 
-
 let g:elm_setup_keybindings = 0
 
 let g:ale_fix_on_save = 1
@@ -147,7 +149,6 @@ xmap <C-k> <Plug>(neosnippet_expand_target)
 " Load custom snippets from snippets folder
 let g:neosnippet#snippets_directory='~/.config/nvim/snippets'
 
-" Hide conceal markers
 let g:neosnippet#enable_conceal_markers = 0
 
 " === Vim airline ==== "
@@ -209,6 +210,17 @@ let g:used_javascript_libs = 'underscore,requirejs,chai,jquery'
 
 " === Signify === "
 let g:signify_sign_delete = '-'
+
+" Fzf
+let g:fzf_preview_window = 'right:60%'
+let g:fzf_buffers_jump = 1
+let g:fzf_commits_log_options = '--graph --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr"'
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
+
+let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%' --layout reverse --margin=1,4 --preview 'bat --color=always --style=header,grid --line-range :300 {}'"
+let $FZF_DEFAULT_COMMAND = 'rg --files --ignore-case --hidden -g "!{.git,node_modules,vendor}/*"'
+command! -bang -nargs=? -complete=dir Files
+     \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
 
 " Call method on window enter

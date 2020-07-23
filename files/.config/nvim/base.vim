@@ -46,7 +46,7 @@ set cmdheight=2
 " ============================================================================ "
 
 " Enable true color support
-" set termguicolors
+set termguicolors
 
 " Change vertical split character to be a space (essentially hide it)
 set fillchars+=vert:.

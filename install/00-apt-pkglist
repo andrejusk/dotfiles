@@ -1,7 +1,9 @@
 apt-transport-https
+bat
 curl
 git
 gnupg2
+jq
 make
 neovim
 net-tools

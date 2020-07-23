@@ -15,14 +15,19 @@ nmap <C-k> <C-w>k
 nmap <C-l> <C-w>l
 
 "fzf
-nnoremap <silent> <leader>p :FZF<cr>
-nnoremap <silent> <leader>P :FZF ~<cr>
+nnoremap <silent> <leader>p :Files<cr>
+nnoremap <silent> <leader>P :Files ~<cr>
+nnoremap <silent> <leader>g :BCommits<cr>
+nnoremap <silent> <leader>G :Commits<cr>
+nnoremap <silent> <leader>f :Rg<cr>
+nnoremap <silent> <leader>; :Buffers<cr>
+
 
 " === Nerdtree shorcuts === "
-"  <leader>n - Toggle NERDTree on/off
-"  <leader>f - Opens current file location in NERDTree
-nmap <leader>n :NERDTreeToggle<CR>
-nmap <leader>f :NERDTreeFind<CR>
+"  <leader>e - Toggle NERDTree on/off
+"  <leader>E - Opens current file location in NERDTree
+nmap <leader>e :NERDTreeToggle<CR>
+nmap <leader>E :NERDTreeFind<CR>
 
 " === coc.nvim === "
 "   <leader>dd    - Jump to definition of current symbol
