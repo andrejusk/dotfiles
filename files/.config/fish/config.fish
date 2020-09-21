@@ -9,5 +9,3 @@ end
 #   Fish specific
 # ---------------------------------------------------------------------------- #
 set fish_greeting
-
-set -gx FZF_DEFAULT_COMMAND  'rg --files --no-ignore-vcs --hidden'
