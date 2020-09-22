@@ -5,21 +5,21 @@ if [ -z "$PROFILE_LOCK" ]; then
     export PATH="$HOME/bin:$PATH"
     export PATH="$HOME/.local/bin:$PATH"
 
-    # config
+    # xdg data & config
     if [ -z "$XDG_DATA_HOME" ]; then
         export XDG_DATA_HOME="$HOME/.local/share"
-        mkdir -p "$XDG_DATA_HOME"
     fi
+    mkdir -p "$XDG_DATA_HOME"
     if [ -z "$XDG_CONFIG_HOME" ]; then
         export XDG_CONFIG_HOME="$HOME/.config"
-        mkdir -p "$XDG_CONFIG_HOME"
     fi
+    mkdir -p "$XDG_CONFIG_HOME"
 
     # workspace
     if [ -z "$WORKSPACE" ]; then
         export WORKSPACE="$HOME/workspace"
-        mkdir -p "$WORKSPACE"
     fi
+    mkdir -p "$WORKSPACE"
 
     # pyenv
     export PYENV_ROOT="$HOME/.pyenv"
@@ -34,11 +34,15 @@ if [ -z "$PROFILE_LOCK" ]; then
     export PATH="$POETRY_ROOT/bin:$PATH"
 
     # nvm
-    export NVM_DIR="$XDG_CONFIG_HOME/nvm"
+    if [ -z "$NVM_DIR" ]; then
+   	export NVM_DIR="$HOME/.nvm"
+    fi
+    mkdir -p "$NVM_DIR"
     export PATH="$NVM_DIR/bin:$PATH"
 
     # yarn
     export YARN_DIR="$HOME/.yarn"
+    mkdir -p "$YARN_DIR"
     export PATH="$YARN_DIR/bin:$PATH"
 
 fi

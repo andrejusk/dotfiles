@@ -15,4 +15,4 @@ if not_installed "yarn"; then
 fi
 
 echo "yarn is installed"
-yarn --version
+# yarn --version

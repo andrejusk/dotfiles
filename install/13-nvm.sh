@@ -10,10 +10,8 @@ if not_installed "nvm"; then
     run "https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh" \
         "bash"
     source "$NVM_DIR/nvm.sh"
-    nvm install --lts
+    nvm alias default node
     nvm install node
-    nvm install iojs
-    nvm alias default lts/erbium
 
 fi
 
@@ -22,5 +20,5 @@ git --git-dir="$NVM_DIR/.git" fetch -q
 git --git-dir="$NVM_DIR/.git" rebase -q --autostash FETCH_HEAD
 
 nvm --version
+nvm use node
 node --version
-npm --version
