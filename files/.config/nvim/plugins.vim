@@ -22,9 +22,6 @@ Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-" minimap
-Plug 'severin-lemaignan/vim-minimap'
-
 " indent guides
 Plug 'nathanaelkane/vim-indent-guides'
 
@@ -61,7 +58,6 @@ Plug 'junegunn/fzf.vim'
 " === Languages === "
 " Intellisense Engine
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-Plug 'liuchengxu/vista.vim'
 
 " lint
 Plug 'dense-analysis/ale'
@@ -75,8 +71,16 @@ Plug 'sheerun/vim-polyglot'
 " elm
 Plug 'elmcast/elm-vim'
 
+" json
+Plug 'elzr/vim-json'
+
+" html
+Plug 'mattn/emmet-vim'
+
 " js
 Plug 'othree/yajs.vim'
+Plug 'pangloss/vim-javascript'
+Plug 'mxw/vim-jsx'
 
 " Python
 Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
@@ -112,6 +116,8 @@ let g:ale_lint_delay = 1000
 let g:ale_sign_error = '>>'
 let g:ale_sign_warning = '--'
 
+" Do not display non-specified linter warnings
+let g:ale_linters_explicit = 1
 let g:ale_linters = {
 \   'python': ['flake8', 'pylint'],
 \   'typescript': ['prettier', 'tslint'],
@@ -123,6 +129,7 @@ let g:ale_linters = {
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'cpp': ['clang'],
+\   'css': ['prettier'],
 \   'python': ['yapf'],
 \   'typescript': ['prettier', 'tslint'],
 \   'javascript': ['prettier', 'eslint'],
@@ -268,3 +275,10 @@ endif
 let g:indent_guides_enable_on_vim_startup = 1
 let g:indent_guides_start_level = 2
 let g:indent_guides_guide_size = 1
+
+let g:user_emmet_leader_key='<Tab>'
+let g:user_emmet_settings = {
+  \  'javascript.jsx' : {
+    \      'extends' : 'jsx',
+    \  },
+  \}
