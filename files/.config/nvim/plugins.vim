@@ -22,58 +22,68 @@ Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-" === Languages === "
-" lint
-Plug 'dense-analysis/ale'
+" minimap
+Plug 'severin-lemaignan/vim-minimap'
 
-" Intellisense Engine
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-
-" fzf
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-
-" elm
-Plug 'elmcast/elm-vim'
-
-" Python
-Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
+" indent guides
+Plug 'nathanaelkane/vim-indent-guides'
 
 " DOcumentation GEneraton
 Plug 'kkoomen/vim-doge'
-
-
-" Trailing whitespace highlighting & automatic fixing
-Plug 'ntpeters/vim-better-whitespace'
-
 
 " auto-close plugins
 Plug 'rstacruz/vim-closer'
 Plug 'tpope/vim-endwise'
 
-
 " Improved motion in Vim
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-surround'
-
 
 " Snippet support
 Plug 'Shougo/neosnippet'
 Plug 'Shougo/neosnippet-snippets'
 
-
 " Print function signatures in echo area
 Plug 'Shougo/echodoc.vim'
-
 
 " Enable git changes to be shown in sign column
 Plug 'mhinz/vim-signify'
 Plug 'tpope/vim-fugitive'
 
+" Comment out lines
+Plug 'tpope/vim-commentary'
+
+" fzf
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+
+
+" === Languages === "
+" Intellisense Engine
+Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+Plug 'liuchengxu/vista.vim'
+
+" lint
+Plug 'dense-analysis/ale'
+
+" Trailing whitespace highlighting & automatic fixing
+Plug 'ntpeters/vim-better-whitespace'
+
+" Languages
+Plug 'sheerun/vim-polyglot'
+
+" elm
+Plug 'elmcast/elm-vim'
+
+" js
+Plug 'othree/yajs.vim'
+
+" Python
+Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
+Plug 'Vimjas/vim-python-pep8-indent'
 
 " Initialize plugin system
 call plug#end()
-
 
 
 " ============================================================================ "
@@ -97,17 +107,30 @@ let g:NERDTreeIgnore = ['\.git$[[dir]]']
 
 let g:elm_setup_keybindings = 0
 
-let g:ale_fix_on_save = 1
 let g:ale_lint_on_text_changed = 'always'
 let g:ale_lint_delay = 1000
-let g:ale_sign_error = '\ '
-let g:ale_sign_warning = '\ '
+let g:ale_sign_error = '>>'
+let g:ale_sign_warning = '--'
+
+let g:ale_linters = {
+\   'python': ['flake8', 'pylint'],
+\   'typescript': ['prettier', 'tslint'],
+\   'javascript': ['prettier', 'eslint'],
+\   'scss': ['prettier'],
+\   'html': ['prettier'],
+\}
+
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'cpp': ['clang'],
+\   'python': ['yapf'],
+\   'typescript': ['prettier', 'tslint'],
+\   'javascript': ['prettier', 'eslint'],
+\   'scss': ['prettier'],
+\   'html': ['prettier'],
 \}
-let g:ale_linters = {
-\   'python': ['flake8']
-\}
+let g:ale_fix_on_save = 1
+
 
 let g:airline_theme='badwolf'
 
@@ -241,3 +264,7 @@ endfunction
 if exists('g:loaded_webdevicons')
   call webdevicons#refresh()
 endif
+
+let g:indent_guides_enable_on_vim_startup = 1
+let g:indent_guides_start_level = 2
+let g:indent_guides_guide_size = 1

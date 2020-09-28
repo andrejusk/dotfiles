@@ -14,7 +14,6 @@ export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring && pip3 install --us
 npm install -g neovim elm-format
 sudo gem install neovim
 
-
 echo "Running PlugInstall";
 nvim --headless +PlugInstall +PlugUpgrade +PlugUpdate +qall
 nvim --version

@@ -8,14 +8,15 @@ from subprocess import run, CalledProcessError
 import pytest
 
 
-# ---------------------------------------------------------------------------- #
-#	Helper functions
-# ---------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Helper functions
+# --------------------------------------------------------------------------- #
 def in_path(binary: str) -> bool:
     """
     Helper function to check whether `binary` is in PATH.
     """
     return find_executable(binary) is not None
+
 
 def in_shell_path(shell: str, binary: str) -> bool:
     """
@@ -29,11 +30,13 @@ def in_shell_path(shell: str, binary: str) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------- #
-#	Test fixtures
-# ---------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Test fixtures
+# --------------------------------------------------------------------------- #
 shells: List[str] = [
-    'sh', 'bash', 'fish',
+    'sh',
+    'bash',
+    'fish',
 ]
 
 binaries: List[str] = [
@@ -42,16 +45,27 @@ binaries: List[str] = [
     *shells,
 
     # tools
-    "git", "nvim",
-    "firebase", "aws", "terraform",
-    "docker", "docker-compose",
+    "git",
+    "nvim",
+    "firebase",
+    "aws",
+    "terraform",
+    "docker",
+    "docker-compose",
     "screenfetch",
 
     # language: python
-    "pyenv", "python3", "pip3", "poetry",
+    "pyenv",
+    "python3",
+    "pip3",
+    "poetry",
 
     # langauge: js
-    "nvm", "node", "npm", "yarn", "elm",
+    "nvm",
+    "node",
+    "npm",
+    "yarn",
+    "elm",
 ]
 
 
@@ -62,6 +76,7 @@ binaries: List[str] = [
 def test_shells(shell: str):
     """ Assert all shells we expect are in PATH. """
     assert in_path(shell)
+
 
 @pytest.mark.parametrize("binary", binaries)
 @pytest.mark.parametrize("shell", shells)

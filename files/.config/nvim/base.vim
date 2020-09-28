@@ -21,9 +21,12 @@ set hidden
 
 set smartindent
 
-set expandtab
-set tabstop=4
-set shiftwidth=4
+"   et  = expandtab (spaces instead of tabs)
+"   ts  = tabstop (the number of spaces that a tab equates to)
+"   sw  = shiftwidth (the number of spaces to use when indenting
+"         -- or de-indenting -- a line)
+"   sts = softtabstop (the number of spaces to use when expanding tabs)
+set et sts=4 sw=4 ts=4
 
 set foldenable
 set foldmethod=indent
