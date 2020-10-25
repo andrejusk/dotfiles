@@ -1,16 +1,16 @@
-set fileencoding=utf-8
+" ============================================================================ "
+" ===                           EDITING OPTIONS                            === "
+" ============================================================================ "
 
+" default encoding
+set encoding=utf-8
+set fileencoding=utf-8
 set fileformat=unix
 filetype on
 filetype plugin on
 syntax on
 
-
-" ============================================================================ "
-" ===                           EDITING OPTIONS                            === "
-" ============================================================================ "
-
-" Remap leader key to <SPACE>
+" Leader key <SPACE>
 let g:mapleader=' '
 
 " Yank and paste with the system clipboard
@@ -18,8 +18,6 @@ set clipboard=
 
 " Hides buffers instead of closing them
 set hidden
-
-set smartindent
 
 "   et  = expandtab (spaces instead of tabs)
 "   ts  = tabstop (the number of spaces that a tab equates to)
@@ -32,10 +30,9 @@ set foldenable
 set foldmethod=indent
 set foldlevel=99
 
-set cursorline
-set cursorcolumn
+set conceallevel=1
 
-set nonumber
+set number
 set relativenumber
 
 " do not wrap long lines by default
@@ -44,6 +41,8 @@ set nowrap
 " two lines for command line
 set cmdheight=2
 
+set updatetime=300
+
 " ============================================================================ "
 " ===                                UI                                    === "
 " ============================================================================ "
@@ -51,11 +50,9 @@ set cmdheight=2
 " Enable true color support
 set termguicolors
 
-" Change vertical split character to be a space (essentially hide it)
-set fillchars+=vert:.
-
-" Set preview window to appear at bottom
+" Set preview window to appear at bottom and right
 set splitbelow
+set splitright
 
 " Don't dispay mode in command line (airilne already shows it)
 set noshowmode
@@ -77,12 +74,6 @@ set ignorecase
 " if the search string has an upper case letter in it, the search will be case sensitive
 set smartcase
 
-" Automatically re-read file if a change was detected outside of vim
-set autoread
-
-" Enable line numbers
-set number
-
 " Enable spellcheck for markdown files
 autocmd BufRead,BufNewFile *.md setlocal spell
 
@@ -95,3 +86,7 @@ endif
 set backupdir=$XDG_DATA_HOME/nvim/backup " Don't put backups in current dir
 set backup
 set noswapfile
+
+" Some servers have issues with backup files, see #649.
+" set nobackup
+" set nowritebackup

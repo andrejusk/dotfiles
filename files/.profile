@@ -46,3 +46,5 @@ if [ -z "$PROFILE_LOCK" ]; then
     export PATH="$YARN_DIR/bin:$PATH"
 
 fi
+
+alias vim='nvim'

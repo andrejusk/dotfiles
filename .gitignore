@@ -1,15 +1,29 @@
-# install
-tmp
-*.deb
-logs/*
+# custom functions
+!files/.config/fish/functions/nvm.fish
 
+# install artefacts
+tmp
+logs/*
+**/*.deb
+
+# setup files
 **/plugged
 **/autoload
 **/functions
 **/completions
 **/conf.d
 **/fish_variables
+**/gcloud
+**/coc
+**/configstore
+**/wslu
+**/TabNine
+**/firebase
 
 # pytest
 **/__pycache__
 **/.pytest_cache
+
+# ssh env
+**/id_rsa*
+**/known_hosts*
