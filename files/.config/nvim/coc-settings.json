@@ -1,9 +1,15 @@
 {
+    "suggest.echodocSupport": true,
+    "python.jediEnabled": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
     "languageserver": {
         "terraform": {
-            "command": "terraform-lsp",
+            "command": "terraform-ls",
+            "args": ["serve"],
             "filetypes": ["tf", "terraform"],
-            "initializationOptions": {}
+            "initializationOptions": {},
+            "settings": {}
         }
     }
 }
