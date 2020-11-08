@@ -9,32 +9,10 @@ Plug 'chriskempson/base16-vim'
 " dev icons
 Plug 'ryanoasis/vim-devicons'
 " {{{
-    let g:webdevicons_enable_nerdtree = 1
-    let g:webdevicons_conceal_nerdtree_brackets = 1
-
     let g:webdevicons_enable_airline_tabline = 1
     let g:webdevicons_enable_airline_statusline = 1
 
     let g:webdevicons_enable_startify = 1
-" }}}
-
-" explorer sidebar
-Plug 'scrooloose/nerdtree'
-Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
-" {{{
-    " Show hidden files/directories
-    let g:NERDTreeShowHidden = 1
-
-    " Remove bookmarks and help text from NERDTree
-    let g:NERDTreeMinimalUI = 1
-    let g:NERDTreeMinimalMenu = 1
-
-    " Remove icons for expandable/expanded directories
-    let g:NERDTreeDirArrowExpandable = ''
-    let g:NERDTreeDirArrowCollapsible = ''
-
-    " Hide certain files and directories from NERDTree
-    let g:NERDTreeIgnore = ['\.git$[[dir]]']
 " }}}
 
 " status line
@@ -46,37 +24,34 @@ Plug 'vim-airline/vim-airline'
     " Do not draw separators for empty sections (only for the active window) >
     let g:airline_skip_empty_sections = 1
 
-    " Smartly uniquify buffers names with similar filename, suppressing common parts of paths.
-    let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
-
     " Custom setup that removes filetype/whitespace from default vim airline bar
-    " let g:airline#extensions#default#layout = [['a', 'b', 'c'], ['x', 'z', 'warning', 'error']]
+    let g:airline#extensions#default#layout = [['a', 'b', 'c'], ['x', 'z', 'warning', 'error']]
 
     " Customize vim airline per filetype
-    " 'nerdtree'  - Hide nerdtree status line
     " 'list'      - Only show file type plus current line number out of total
     let g:airline_filetype_overrides = {
-      \ 'coc-explorer':  [ 'CoC Explorer', '' ],
+      \ 'coc-explorer':  [ '  Explore', '' ],
       \ 'fugitive': ['fugitive', '%{airline#util#wrap(airline#extensions#branch#get_head(),80)}'],
       \ 'help':  [ 'Help', '%f' ],
       \ 'startify': [ 'startify', '' ],
       \ 'vim-plug': [ 'Plugins', '' ],
-      \ 'nerdtree': [ get(g:, 'NERDTreeStatusline', ''), '' ],
       \ 'list': [ '%y', '%l/%L'],
       \ }
 
     " Enable powerline fonts
     let g:airline_powerline_fonts = 1
+    let g:airline_left_sep = ''
+    let g:airline_right_sep = ''
+    let g:airline_right_alt_sep = ''
 
     " Enable caching of syntax highlighting groups
     let g:airline_highlighting_cache = 1
-" }}}
-
-" Print function signatures in echo area
-Plug 'Shougo/echodoc.vim'
-" {{{
-    " Enable echodoc on startup
-    let g:echodoc#enable_at_startup = 1
+    
+    " Enable tabline
+    let g:airline#extensions#tabline#enabled = 1
+    let g:airline#extensions#tabline#left_sep = ' '
+    let g:airline#extensions#tabline#left_alt_sep = '|'
+    let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 " }}}
 
 " start screen
@@ -90,20 +65,46 @@ Plug 'junegunn/limelight.vim'
 Plug 'kkoomen/vim-doge'
 
 " auto-close plugins
-Plug 'rstacruz/vim-closer'
 Plug 'tpope/vim-endwise'
 
-" better motion
-Plug 'easymotion/vim-easymotion'
-Plug 'tpope/vim-surround'
-Plug 'svermeulen/vim-subversive'
-Plug 'godlygeek/tabular'
+" easier commentary
 Plug 'tpope/vim-commentary'
+
+" easier alignment
+Plug 'godlygeek/tabular'
+
+" extra visual feedback
+Plug 'junegunn/rainbow_parentheses.vim'
+" {{{
+    let g:rainbow_active = 1
+    let g:rainbow#pairs = [['(', ')'], ['[', ']'], ['{', '}']]
+    let g:rainbow_conf = {'guis': ['bold']}
+" }}}
+Plug 'unblevable/quick-scope'
+
+" better motion
+Plug 'tpope/vim-surround'
+Plug 'justinmk/vim-sneak'
+" {{{
+    let g:sneak#label = 1
+    let g:sneak#prompt = ' '
+
+    " case insensitive
+    let g:sneak#use_ic_scs = 1
+
+    " move to next search if cursor hasn't moved
+    let g:sneak#s_next = 1
+" }}}
 
 " git tools
 Plug 'mhinz/vim-signify'
 " {{{
+    let g:signify_sign_add = '+'
     let g:signify_sign_delete = '-'
+    let g:signify_sign_change = '~'
+
+    let g:signify_sign_show_count = 0
+    let g:signify_sign_show_text = 1
 " }}}
 Plug 'tpope/vim-fugitive'
 
@@ -111,44 +112,41 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 " {{{
-    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
+    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
     let g:fzf_preview_window = ['right:66%', 'ctrl-/']
-
     let g:fzf_buffers_jump = 1
-    let g:fzf_commits_log_options = '--graph --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr"'
-
-    let $FZF_DEFAULT_OPTS="--ansi --layout reverse --margin=1,4 --preview 'batcat --color=always --style=header,grid --line-range :300 {}'"
-    let $FZF_DEFAULT_COMMAND = 'rg --files --ignore-case --hidden -g "!{.git,node_modules,vendor}/*"'
-    command! -bang -nargs=? -complete=dir Files
-            \ call fzf#vim#files(<q-args>, { 'options': $FZF_DEFAULT_OPTS}, <bang>0)
 " }}}
+Plug 'antoinemadec/coc-fzf'
+Plug 'airblade/vim-rooter'
 
 " coc
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 " {{{
-    " Keep in sync with below
     let g:coc_global_extensions = [
-    \   'coc-css',
-    \   'coc-eslint',
-    \   'coc-git',
-    \   'coc-html',
-    \   'coc-json',
-    \   'coc-prettier',
-    \   'coc-python',
-    \   'coc-tabnine',
-    \   'coc-tsserver',
-    \   'coc-yaml',
-    \]
+        \ 'coc-actions',
+        \ 'coc-css',
+        \ 'coc-emmet',
+        \ 'coc-emoji',
+        \ 'coc-eslint',
+        \ 'coc-explorer',
+        \ 'coc-fzf-preview',
+        \ 'coc-git',
+        \ 'coc-highlight',
+        \ 'coc-html',
+        \ 'coc-json',
+        \ 'coc-lists',
+        \ 'coc-marketplace',
+        \ 'coc-prettier',
+        \ 'coc-python',
+        \ 'coc-sh',
+        \ 'coc-snippets',
+        \ 'coc-svg',
+        \ 'coc-tabnine',
+        \ 'coc-tsserver',
+        \ 'coc-vimlsp',
+        \ 'coc-xml',
+        \ 'coc-yaml',
+        \ ]
 " }}}
-Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-eslint', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-git', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-html', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-prettier', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-python', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-tabnine', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
 
 call plug#end()

@@ -26,7 +26,7 @@ if not_installed "fishlogin"; then
     mkdir -p ~/bin
     target="$HOME/bin/fishlogin"
     tee -a $target << END
-#!/bin/bash -l
+#!/bin/bash
 exec -l fish "\$@"
 END
     sudo chmod +x $target

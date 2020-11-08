@@ -1,4 +1,4 @@
-" No arrow keys
+" Disable arrow keys
 noremap  <Up>    <NOP>
 noremap  <Down>  <NOP>
 noremap  <Left>  <NOP>
@@ -9,12 +9,45 @@ inoremap <Left>  <NOP>
 inoremap <Right> <NOP>
 
 
+" Disable manual and ex mode
+nnoremap <F1> <nop>
+nnoremap Q <nop>
+
+
+" Quick escape
+inoremap jk <Esc>
+inoremap kj <Esc>
+
+
+" Quick save
+nnoremap <C-s> :w<CR>
+
+
+" Better tabbing
+vnoremap < <gv
+vnoremap > >gv
+
+
 " Quick window switching
 "   Ctrl-[hjkl]
 nnoremap <silent> <C-h> <C-w>h
 nnoremap <silent> <C-j> <C-w>j
 nnoremap <silent> <C-k> <C-w>k
 nnoremap <silent> <C-l> <C-w>l
+
+
+" Quick window resizing
+"   Alt-[hjkl]
+nnoremap <silent> <M-j> :resize -2<CR>
+nnoremap <silent> <M-k> :resize +2<CR>
+nnoremap <silent> <M-h> :vertical resize -2<CR>
+nnoremap <silent> <M-l> :vertical resize +2<CR>
+
+
+" Quicker omni complete nav
+"   Ctrl-[jk]
+inoremap <expr> <c-j> ("\<C-n>")
+inoremap <expr> <c-k> ("\<C-p>")
 
 
 " Distraction free typing
@@ -39,11 +72,11 @@ nnoremap <silent> <leader>f :Rg<cr>
 nnoremap <silent> <leader>; :Buffers<cr>
 
 
-" NERDTree
-"   <l>e - Toggle NERDTree on/off
-"   <l>E - Open current file location in NERDTree
-nnoremap <silent> <leader>e :NERDTreeToggle<cr>
-nnoremap <silent> <leader>E :NERDTreeFind<cr>
+" coc.nvim explorer
+"   <l>e - Toggle explorer on/off
+"   <l>E - Open current file location
+nmap <silent> <leader>e :CocCommand explorer<cr>
+nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 
 
 " coc.nvim
@@ -54,15 +87,13 @@ nnoremap <silent> <leader>E :NERDTreeFind<cr>
 "   <l>j - Jump to implementation of current symbol
 "   <l>s - Fuzzy search current project symbols
 "   <l>n - Symbol renaming
-"   <l>y - Format selected code
-nnoremap <silent> <C-n> <Plug>(coc-diagnostic-prev)
-nnoremap <silent> <C-p> <Plug>(coc-diagnostic-next)
-nnoremap <silent> <leader>d <Plug>(coc-definition)
-nnoremap <silent> <leader>r <Plug>(coc-references)
-nnoremap <silent> <leader>j <Plug>(coc-implementation)
-nnoremap <silent> <leader>s :<C-u>CocList -I -N --top symbols<cr>
-nnoremap <silent> <leader>n <Plug>(coc-rename)
-nnoremap <silent> <leader>y <Plug>(coc-format-selected)
+nmap <silent> <C-n> <Plug>(coc-diagnostic-prev)
+nmap <silent> <C-p> <Plug>(coc-diagnostic-next)
+nmap <silent> <leader>d <Plug>(coc-definition)
+nmap <silent> <leader>r <Plug>(coc-references)
+nmap <silent> <leader>j <Plug>(coc-implementation)
+nmap <silent> <leader>s :<C-u>CocList -I -N --top symbols<cr>
+nmap <silent> <leader>n <Plug>(coc-rename)
 
 
 " Search shorcuts
@@ -70,14 +101,6 @@ nnoremap <silent> <leader>y <Plug>(coc-format-selected)
 "   <l>/ - Clear highlighted search terms while preserving history
 nnoremap <leader>h :%s///<left><left>
 nnoremap <silent> <leader>/ :nohlsearch<cr>
-
-
-" Easy-motion shortcut
-"   <l>w       - move to word bi-directionally
-"   <l>W{char} - move to {char}
-nnoremap <silent> <leader>w <Plug>(easymotion-bd-w)
-nnoremap <silent> <leader>W <Plug>(easymotion-bd-f)
-
 
 
 " use <tab> for trigger completion and navigate to next complete item
