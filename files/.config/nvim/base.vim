@@ -1,23 +1,31 @@
 " ============================================================================ "
 " ===                           EDITING OPTIONS                            === "
 " ============================================================================ "
+"
+" Leader key <SPACE>
+let g:mapleader=' '
+
+" Use posix-compliant shell
+set shell=sh
+
+" Enable syntax highlighting
+syntax enable
+filetype on
+filetype plugin on
+
+" Hides buffers instead of closing them
+set hidden
+
+" do not wrap long lines by default
+set nowrap
 
 " default encoding
 set encoding=utf-8
 set fileencoding=utf-8
 set fileformat=unix
-filetype on
-filetype plugin on
-syntax on
-
-" Leader key <SPACE>
-let g:mapleader=' '
 
 " Yank and paste with the system clipboard
-set clipboard=
-
-" Hides buffers instead of closing them
-set hidden
+set clipboard=unnamedplus
 
 "   et  = expandtab (spaces instead of tabs)
 "   ts  = tabstop (the number of spaces that a tab equates to)
@@ -25,25 +33,36 @@ set hidden
 "         -- or de-indenting -- a line)
 "   sts = softtabstop (the number of spaces to use when expanding tabs)
 set et sts=4 sw=4 ts=4
+set showtabline=4
 
 set foldenable
 set foldmethod=indent
 set foldlevel=99
 
-set conceallevel=1
+set conceallevel=0
 
-set number
-set relativenumber
-
-" do not wrap long lines by default
-set nowrap
-
-" two lines for command line
-set cmdheight=2
+set scrolloff=10
 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
-set updatetime=300
+set updatetime=100
+set timeoutlen=300
+
+" Don't pass messages to |ins-completion-menu|.
+set shortmess=atT
+
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved.
+if has("patch-8.1.1564")
+  " Recently vim can merge signcolumn and number column into one
+  set signcolumn=number
+else
+  set signcolumn=yes
+endif
+
+" coc.nvim recommendations
+set nobackup
+set nowritebackup
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
@@ -61,8 +80,14 @@ endif
 " ===                                UI                                    === "
 " ============================================================================ "
 
+" Support italics
+hi Comment cterm=italic
+
 " Enable true color support
-set termguicolors
+if (has("termguicolors"))
+    set termguicolors
+    hi LineNr ctermbg=NONE guibg=NONE
+endif
 
 " Set preview window to appear at bottom and right
 set splitbelow
@@ -74,33 +99,25 @@ set noshowmode
 " Set floating window to be slightly transparent
 set winbl=10
 
-" ============================================================================ "
-" ===                                 MISC.                                === "
-" ============================================================================ "
+" Enable ruler
+set ruler
+set number
+set relativenumber
 
-" Automaticaly close nvim if NERDTree is only thing left open
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+" Pop-up menu
+set pumheight=10
 
-" === Search === "
-" ignore case when searching
-set ignorecase
+" two lines for command line
+set cmdheight=2
+
+" no visual bell
+set visualbell t_vb=
 
 " if the search string has an upper case letter in it, the search will be case sensitive
 set smartcase
 
-" Enable spellcheck for markdown files
-autocmd BufRead,BufNewFile *.md setlocal spell
+" Redraw on resize
+autocmd VimResized * redraw!
 
-" Set backups
-if has('persistent_undo')
-  set undofile
-  set undolevels=3000
-  set undoreload=10000
-endif
-set backupdir=$XDG_DATA_HOME/nvim/backup " Don't put backups in current dir
-set backup
-set noswapfile
-
-" Some servers have issues with backup files, see #649.
-" set nobackup
-" set nowritebackup
+" Redraw on writing buffer
+autocmd BufWritePost * redraw!

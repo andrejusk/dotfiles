@@ -1,5 +1,8 @@
 fishpkg/fish-prompt-mono
-acomagu/fish-async-prompt
-matchai/fish-mock
-edc/bass
 tomyun/base16-fish
+gazorby/fish-abbreviation-tips
+oh-my-fish/plugin-license
+matchai/fish-mock
+jorgebucaran/fish-bax
+jethrokuan/z
+joseluisq/gitnow

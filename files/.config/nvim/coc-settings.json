@@ -1,15 +1,113 @@
 {
-    "suggest.echodocSupport": true,
-    "python.jediEnabled": false,
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "languageserver": {
-        "terraform": {
-            "command": "terraform-ls",
-            "args": ["serve"],
-            "filetypes": ["tf", "terraform"],
-            "initializationOptions": {},
-            "settings": {}
-        }
+  "coc.preferences.formatOnSaveFiletypes": [
+    "css",
+    "dockerfile",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "make",
+    "markdown",
+    "perl",
+    "python",
+    "sh",
+    "svg",
+    "toml",
+    "typescript",
+    "typescriptreact",
+    "vim",
+    "xml",
+    "yaml"
+  ],
+  "coc.preferences.extensionUpdateCheck": "daily",
+
+  "list.source.files.args": ["--hidden", "--files"],
+
+  "suggest.echodocSupport": true,
+
+  "python.pythonPath": "python3",
+  "python.jediEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": false,
+
+  "languageserver": {
+    "terraform": {
+      "command": "terraform-ls",
+      "args": ["serve"],
+      "filetypes": ["tf", "terraform"],
+      "initializationOptions": {},
+      "settings": {}
     }
+  },
+
+  "explorer.width": 30,
+  "explorer.file.root.template": "[icon] [git] [hidden & 1][root]",
+  "explorer.icon.enableNerdfont": true,
+  "explorer.previewAction.onHover": false,
+  "explorer.icon.enableVimDevicons": false,
+  "explorer.file.showHiddenFiles": true,
+  "explorer.file.autoReveal": true,
+  "explorer.keyMappings.global": {
+    "i": false,
+
+    "gk": "expandablePrev",
+    "gj": "expandableNext",
+
+    "*": "toggleSelection",
+    "<tab>": "actionMenu",
+
+    "h": "collapse",
+    "l": ["expandable?", "expand", "open"],
+    "J": ["toggleSelection", "nodeNext"],
+    "K": ["toggleSelection", "nodePrev"],
+    "gl": "expandRecursive",
+    "gh": "collapseRecursive",
+
+    "o": ["expanded?", "collapse", "expand"],
+    "<cr>": ["expandable?", "cd", "open"],
+    "e": "open",
+    "s": "open:split",
+    "v": "open:vsplit",
+    "t": "open:tab",
+    "<bs>": "gotoParent",
+    "gp": "preview:labeling",
+
+    "y": "copyFilepath",
+    "Y": "copyFilename",
+    "c": "copyFile",
+    "x": "cutFile",
+    "p": "pasteFile",
+    "d": "delete",
+    "D": "deleteForever",
+
+    "a": "addFile",
+    "A": "addDirectory",
+    "r": "rename",
+
+    ".": "toggleHidden",
+    "R": "refresh",
+
+    "?": "help",
+    "q": "quit",
+    "<esc>": "esc",
+    "X": "systemExecute",
+    "gd": "listDrive",
+
+    "f": "search",
+    "F": "searchRecursive",
+
+    "gf": "gotoSource:file",
+    "gb": "gotoSource:buffer",
+
+    "[[": "sourcePrev",
+    "]]": "sourceNext",
+
+    "[d": "diagnosticPrev",
+    "]d": "diagnosticNext",
+
+    "[c": "gitPrev",
+    "]c": "gitNext",
+    "<<": "gitStage",
+    ">>": "gitUnstage"
+  }
 }

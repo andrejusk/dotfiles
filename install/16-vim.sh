@@ -15,5 +15,5 @@ npm install -g neovim elm-format
 sudo gem install neovim
 
 echo "Running PlugInstall";
-nvim --headless +PlugInstall +PlugUpgrade +PlugUpdate +qall
+nvim --headless +PlugClean! +PlugInstall +PlugUpgrade +PlugUpdate +qall
 nvim --version
