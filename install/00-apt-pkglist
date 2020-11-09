@@ -1,5 +1,5 @@
 apt-transport-https
-batcat
+bat
 curl
 fd-find
 git
@@ -14,3 +14,4 @@ ripgrep
 ruby-full
 software-properties-common
 tmux
+universal-ctags

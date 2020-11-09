@@ -11,7 +11,8 @@ fi
 
 echo "Installing neovim support";
 pip3 install --user neovim pynvim 'python-language-server[all]'
-yarn global add neovim
+nvm use default
+npm install -g neovim
 sudo gem install neovim
 
 echo "Running PlugInstall";
