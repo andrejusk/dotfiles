@@ -4,7 +4,7 @@
 #
 from distutils.spawn import find_executable
 from typing import List
-from subprocess import run, CalledProcessError
+from subprocess import run
 import pytest
 
 
@@ -26,7 +26,7 @@ def in_shell_path(shell: str, binary: str) -> bool:
     try:
         result = run(command, shell=True)
         return (result.returncode == 0)
-    except:
+    except Exception:
         return False
 
 
@@ -49,7 +49,9 @@ binaries: List[str] = [
     "nvim",
     "firebase",
     "aws",
+    "gcloud",
     "terraform",
+    "kubectl",
     "docker",
     "docker-compose",
     "screenfetch",
@@ -65,13 +67,19 @@ binaries: List[str] = [
     "node",
     "npm",
     "yarn",
-    "elm",
+    # "elm",
+
+    # language: java
+    "java",
+
+    # langauge: ruby
+    "ruby"
 ]
 
 
-# ---------------------------------------------------------------------------- #
-#	Tests
-# ---------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Tests
+# --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("shell", shells)
 def test_shells(shell: str):
     """ Assert all shells we expect are in PATH. """

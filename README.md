@@ -2,8 +2,8 @@
 
 Collection of experimental dotfiles and supporting install scripts.
 Tested on and compatible with:
-  * Ubuntu 18.04
-  * Ubuntu 20.04
+
+- Ubuntu 20.04
 
 ## Install
 
@@ -13,17 +13,19 @@ Tested on and compatible with:
 
 Shell: 🐟 fish (+ fisher)
 
-Editor: nvim (+ vim-plug)
+Editor: neovim (+ vim-plug)
 
 Tools:
-* aws
-* docker (+ docker-compose)
-* firebase
-* terraform
-* screenfetch
+
+- aws, gcloud, firebase
+- docker (+ docker-compose)
+- kubectl
+- terraform
+- screenfetch
 
 Languages:
-* java
-* js (nvm, node yarn, nvm)
-* python (+ poetry, pyenv)
-* ruby
+
+- java
+- js (nvm, node, yarn)
+- python (pyenv, poetry)
+- ruby

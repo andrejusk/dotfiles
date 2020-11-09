@@ -61,10 +61,11 @@ export VISUAL="nvim"
 
 # fzf
 export FZF_DEFAULT_OPTS="--reverse --margin=1,5%"
-export FZF_DEFAULT_COMMAND='rg --files --smart-case --hidden --follow --no-ignore-vcs'
+export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_COMPLETION_TRIGGER='**'
 
-# do not use fishlogin
+# do not use fishlogin for subshells
 export SHELL=/bin/sh
 
  #    _       _                    _      ____     
@@ -80,3 +81,5 @@ alias vi='vim'
 
 alias bat='batcat'
 alias cat='bat'
+
+alias j="z"

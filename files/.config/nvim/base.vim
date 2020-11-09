@@ -49,7 +49,7 @@ set updatetime=100
 set timeoutlen=300
 
 " Don't pass messages to |ins-completion-menu|.
-set shortmess+=c
+set shortmess=atT
 
 " Always show the signcolumn, otherwise it would shift the text each time
 " diagnostics appear/become resolved.

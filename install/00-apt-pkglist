@@ -1,6 +1,7 @@
 apt-transport-https
 bat
 curl
+fdfind
 git
 gnupg2
 jq

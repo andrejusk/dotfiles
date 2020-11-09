@@ -17,7 +17,11 @@ Plug 'ryanoasis/vim-devicons'
 
 " status line
 Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 " {{{
+    " Theme
+    let g:airline_theme = 'base16_seti'
+
     " Enable extensions
     let g:airline_extensions = ['branch', 'coc', 'hunks']
 
@@ -124,24 +128,32 @@ Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 " {{{
     let g:coc_global_extensions = [
         \ 'coc-actions',
+        \ 'coc-clangd',
         \ 'coc-css',
+        \ 'coc-docker',
         \ 'coc-emmet',
         \ 'coc-emoji',
         \ 'coc-eslint',
         \ 'coc-explorer',
+        \ 'coc-fish',
         \ 'coc-fzf-preview',
         \ 'coc-git',
+        \ 'coc-go',
+        \ 'coc-groovy',
         \ 'coc-highlight',
         \ 'coc-html',
         \ 'coc-json',
         \ 'coc-lists',
         \ 'coc-marketplace',
+        \ 'coc-perl',
         \ 'coc-prettier',
         \ 'coc-python',
+        \ 'coc-rust-analyzer',
         \ 'coc-sh',
         \ 'coc-snippets',
         \ 'coc-svg',
         \ 'coc-tabnine',
+        \ 'coc-toml',
         \ 'coc-tsserver',
         \ 'coc-vimlsp',
         \ 'coc-xml',

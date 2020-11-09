@@ -1,99 +1,113 @@
 {
-    "coc.preferences.formatOnSaveFiletypes": [""],
-    "coc.preferences.extensionUpdateCheck": "daily",
+  "coc.preferences.formatOnSaveFiletypes": [
+    "css",
+    "dockerfile",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "make",
+    "markdown",
+    "perl",
+    "python",
+    "sh",
+    "svg",
+    "toml",
+    "typescript",
+    "typescriptreact",
+    "vim",
+    "xml",
+    "yaml"
+  ],
+  "coc.preferences.extensionUpdateCheck": "daily",
 
-    "list.source.files.args": ["--hidden" , "--files"],
+  "list.source.files.args": ["--hidden", "--files"],
 
-    "suggest.echodocSupport": true,
+  "suggest.echodocSupport": true,
 
-    "python.pythonPath": "python3",
-    "python.jediEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.pylintEnabled": false,
+  "python.pythonPath": "python3",
+  "python.jediEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": false,
 
-    "languageserver": {
-        "terraform": {
-            "command": "terraform-ls",
-            "args": ["serve"],
-            "filetypes": ["tf", "terraform"],
-            "initializationOptions": {},
-            "settings": {}
-        }
-    },
+  "languageserver": {
+    "terraform": {
+      "command": "terraform-ls",
+      "args": ["serve"],
+      "filetypes": ["tf", "terraform"],
+      "initializationOptions": {},
+      "settings": {}
+    }
+  },
 
-	"explorer.width": 30,
-	"explorer.file.root.template": "[icon] [git] [hidden & 1][root]",
-	"explorer.icon.enableNerdfont": true,
-	"explorer.previewAction.onHover": false,
-	"explorer.icon.enableVimDevicons": false,
-	"explorer.file.showHiddenFiles": true,
-	"explorer.file.autoReveal": true,
-	"explorer.keyMappings.global": {
-		"i": false,
+  "explorer.width": 30,
+  "explorer.file.root.template": "[icon] [git] [hidden & 1][root]",
+  "explorer.icon.enableNerdfont": true,
+  "explorer.previewAction.onHover": false,
+  "explorer.icon.enableVimDevicons": false,
+  "explorer.file.showHiddenFiles": true,
+  "explorer.file.autoReveal": true,
+  "explorer.keyMappings.global": {
+    "i": false,
 
-		"gk": "expandablePrev",
-		"gj": "expandableNext",
+    "gk": "expandablePrev",
+    "gj": "expandableNext",
 
-		"*": "toggleSelection",
-		"<tab>": "actionMenu",
+    "*": "toggleSelection",
+    "<tab>": "actionMenu",
 
-		"h": "collapse",
-		"l": ["expandable?", "expand", "open"],
-		"J": ["toggleSelection", "nodeNext"],
-		"K": ["toggleSelection", "nodePrev"],
-		"gl": "expandRecursive",
-		"gh": "collapseRecursive",
-		"<2-LeftMouse>": [
-		  "expandable?",
-		  ["expanded?", "collapse", "expand"],
-		  "open"
-		],
-		"o": ["expanded?", "collapse", "expand"],
-		"<cr>": ["expandable?", "cd", "open"],
-		"e": "open",
-		"s": "open:split",
-		"S": "open:split:plain",
-		"E": "open:vsplit",
-		"t": "open:tab",
-		"<bs>": "gotoParent",
-		"gp": "preview:labeling",
+    "h": "collapse",
+    "l": ["expandable?", "expand", "open"],
+    "J": ["toggleSelection", "nodeNext"],
+    "K": ["toggleSelection", "nodePrev"],
+    "gl": "expandRecursive",
+    "gh": "collapseRecursive",
 
-		"y": "copyFilepath",
-		"Y": "copyFilename",
-		"c": "copyFile",
-		"x": "cutFile",
-		"p": "pasteFile",
-		"d": "delete",
-		"D": "deleteForever",
+    "o": ["expanded?", "collapse", "expand"],
+    "<cr>": ["expandable?", "cd", "open"],
+    "e": "open",
+    "s": "open:split",
+    "v": "open:vsplit",
+    "t": "open:tab",
+    "<bs>": "gotoParent",
+    "gp": "preview:labeling",
 
-		"a": "addFile",
-		"A": "addDirectory",
-		"r": "rename",
+    "y": "copyFilepath",
+    "Y": "copyFilename",
+    "c": "copyFile",
+    "x": "cutFile",
+    "p": "pasteFile",
+    "d": "delete",
+    "D": "deleteForever",
 
-		".": "toggleHidden",
-		"R": "refresh",
+    "a": "addFile",
+    "A": "addDirectory",
+    "r": "rename",
 
-		"?": "help",
-		"q": "quit",
-		"<esc>": "esc",
-		"X": "systemExecute",
-		"gd": "listDrive",
+    ".": "toggleHidden",
+    "R": "refresh",
 
-		"f": "search",
-		"F": "searchRecursive",
+    "?": "help",
+    "q": "quit",
+    "<esc>": "esc",
+    "X": "systemExecute",
+    "gd": "listDrive",
 
-		"gf": "gotoSource:file",
-		"gb": "gotoSource:buffer",
+    "f": "search",
+    "F": "searchRecursive",
 
-		"[[": "sourcePrev",
-		"]]": "sourceNext",
+    "gf": "gotoSource:file",
+    "gb": "gotoSource:buffer",
 
-		"[d": "diagnosticPrev",
-		"]d": "diagnosticNext",
+    "[[": "sourcePrev",
+    "]]": "sourceNext",
 
-		"[c": "gitPrev",
-		"]c": "gitNext",
-		"<<": "gitStage",
-		">>": "gitUnstage"
-	}
+    "[d": "diagnosticPrev",
+    "]d": "diagnosticNext",
+
+    "[c": "gitPrev",
+    "]c": "gitNext",
+    "<<": "gitStage",
+    ">>": "gitUnstage"
+  }
 }

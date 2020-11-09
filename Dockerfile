@@ -1,4 +1,4 @@
-from ubuntu:bionic as install
+FROM ubuntu:bionic as install
 
 # Install sudo and make, git since built-in is skipped
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
