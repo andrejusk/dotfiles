@@ -10,10 +10,10 @@ if [ ! -f $plug_target ]; then
 fi
 
 echo "Installing neovim support";
-export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring && pip3 install --user neovim pynvim 'python-language-server[all]'
-npm install -g neovim elm-format
+pip3 install --user neovim pynvim 'python-language-server[all]'
+yarn global add neovim
 sudo gem install neovim
 
 echo "Running PlugInstall";
-nvim --headless +PlugClean! +PlugInstall +PlugUpgrade +PlugUpdate +qall
+nvim --headless +UpdateRemotePlugins +PlugClean! +PlugInstall +PlugUpgrade +PlugUpdate +qall
 nvim --version

@@ -17,8 +17,8 @@ if not_installed "nvm"; then
 fi
 
 printf "nvm is installed, upgrading...\n"
-git --git-dir="$NVM_DIR/.git" fetch -q
-git --git-dir="$NVM_DIR/.git" rebase -q --autostash FETCH_HEAD
+run "https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh" \
+    "bash"
 
 nvm --version
 nvm use node
