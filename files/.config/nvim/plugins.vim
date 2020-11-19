@@ -23,10 +23,10 @@ Plug 'vim-airline/vim-airline-themes'
     let g:airline_theme = 'base16_seti'
 
     " Enable extensions
-    let g:airline_extensions = ['branch', 'coc', 'hunks']
+    let g:airline_extensions = ['branch', 'coc', 'hunks', 'tabline', 'whitespace', 'fzf']
 
     " Do not draw separators for empty sections (only for the active window) >
-    let g:airline_skip_empty_sections = 1
+    let g:airline_skip_empty_sections = 0
 
     " Custom setup that removes filetype/whitespace from default vim airline bar
     let g:airline#extensions#default#layout = [['a', 'b', 'c'], ['x', 'z', 'warning', 'error']]
@@ -116,8 +116,8 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 " {{{
-    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
-    let g:fzf_preview_window = ['right:66%', 'ctrl-/']
+    let g:fzf_layout = { 'down': '~40%' }
+    let g:fzf_preview_window = ['right:50%', 'ctrl-/']
     let g:fzf_buffers_jump = 1
 " }}}
 Plug 'antoinemadec/coc-fzf'
@@ -160,5 +160,14 @@ Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
         \ 'coc-yaml',
         \ ]
 " }}}
+
+" debugger
+Plug 'puremourning/vimspector'
+" {{{
+    let g:vimspector_enable_mappings = 'HUMAN'
+" }}}
+
+" Terminal
+Plug 'kassio/neoterm'
 
 call plug#end()

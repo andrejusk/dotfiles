@@ -80,6 +80,7 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 
 
 " coc.nvim
+"   <l>c - Open command list
 "   Ctrl-n - Go to previous diagnostic
 "   Ctrl-p - Go to next diagnostic
 "   <l>d - Jump to definition of current symbol
@@ -97,6 +98,11 @@ nmap <silent> <leader>r <Plug>(coc-references)
 nmap <silent> <leader>j <Plug>(coc-implementation)
 nmap <silent> <leader>s :<C-u>CocList -I -N --top symbols<cr>
 nmap <silent> <leader>n <Plug>(coc-rename)
+nmap <silent> <leader>c :CocCommand<cr>
+
+" vimspector
+"   <l>D - Start debugger
+nmap <silent> <leader>D :call vimspector#Launch()<cr>
 
 
 " Search shorcuts

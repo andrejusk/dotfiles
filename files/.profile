@@ -60,7 +60,7 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 
 # fzf
-export FZF_DEFAULT_OPTS="--reverse --margin=1,5%"
+export FZF_DEFAULT_OPTS="--reverse"
 export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_COMPLETION_TRIGGER='**'
