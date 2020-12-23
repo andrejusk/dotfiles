@@ -2,6 +2,7 @@
   "coc.preferences.formatOnSaveFiletypes": [
     "css",
     "dockerfile",
+    "elm",
     "html",
     "javascript",
     "javascriptreact",
@@ -38,6 +39,17 @@
       "filetypes": ["tf", "terraform"],
       "initializationOptions": {},
       "settings": {}
+    },
+    "elmLS": {
+      "command": "elm-language-server",
+      "filetypes": ["elm"],
+      "rootPatterns": ["elm.json"],
+      "initializationOptions": {
+        "elmPath": "elm",
+        "elmFormatPath": "elm-format",
+        "elmTestPath": "elm-test",
+        "elmAnalyseTrigger": "change"
+      }
     }
   },
 

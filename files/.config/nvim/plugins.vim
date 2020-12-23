@@ -50,7 +50,7 @@ Plug 'vim-airline/vim-airline-themes'
 
     " Enable caching of syntax highlighting groups
     let g:airline_highlighting_cache = 1
-    
+
     " Enable tabline
     let g:airline#extensions#tabline#enabled = 1
     let g:airline#extensions#tabline#left_sep = ' '
@@ -86,6 +86,9 @@ Plug 'junegunn/rainbow_parentheses.vim'
 " }}}
 Plug 'unblevable/quick-scope'
 Plug 'ntpeters/vim-better-whitespace'
+
+" heuristic whitepsace
+Plug 'tpope/vim-sleuth'
 
 " better motion
 Plug 'tpope/vim-surround'
@@ -161,6 +164,10 @@ Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
         \ 'coc-yaml',
         \ ]
 " }}}
+
+" elm
+Plug 'andys8/vim-elm-syntax'
+
 
 " debugger
 Plug 'puremourning/vimspector'
