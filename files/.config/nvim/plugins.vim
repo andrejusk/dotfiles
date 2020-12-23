@@ -85,6 +85,7 @@ Plug 'junegunn/rainbow_parentheses.vim'
     let g:rainbow_conf = {'guis': ['bold']}
 " }}}
 Plug 'unblevable/quick-scope'
+Plug 'ntpeters/vim-better-whitespace'
 
 " better motion
 Plug 'tpope/vim-surround'

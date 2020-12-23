@@ -24,6 +24,8 @@ nnoremap <C-s> :w<CR>
 
 
 " Better tabbing
+"   When indenting, reselect previous selection
+"   if in visual mode
 vnoremap < <gv
 vnoremap > >gv
 
@@ -57,6 +59,11 @@ autocmd! User GoyoEnter Limelight
 autocmd! User GoyoLeave Limelight!
 
 
+" Strip whitespace
+"   <l>y - Remove all trailing whitespace
+nnoremap <silent> <leader>y :StripWhitespace<cr>
+
+
 " fzf
 "   <l>p - Search files in current workdir
 "   <l>P - Search files in $HOME
@@ -80,9 +87,9 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 
 
 " coc.nvim
-"   <l>c - Open command list
 "   Ctrl-n - Go to previous diagnostic
 "   Ctrl-p - Go to next diagnostic
+"   <l>c - Open command list
 "   <l>d - Jump to definition of current symbol
 "   <l>r - Jump to references of current symbol
 "   <l>j - Jump to implementation of current symbol
@@ -91,19 +98,12 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 "   <l>k - Symbol renaming
 nmap <silent> <C-n> <Plug>(coc-diagnostic-prev)
 nmap <silent> <C-p> <Plug>(coc-diagnostic-next)
-" broken d
 nmap <silent> <leader>d <Plug>(coc-definition)
 nmap <silent> <leader>r <Plug>(coc-references)
-" broken j
 nmap <silent> <leader>j <Plug>(coc-implementation)
 nmap <silent> <leader>s :<C-u>CocList -I -N --top symbols<cr>
 nmap <silent> <leader>n <Plug>(coc-rename)
 nmap <silent> <leader>c :CocCommand<cr>
-
-" vimspector
-"   <l>D - Start debugger
-nmap <silent> <leader>D :call vimspector#Launch()<cr>
-
 
 " Search shorcuts
 "   <l>h - Find and replace
