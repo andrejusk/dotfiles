@@ -66,7 +66,7 @@ Plug 'junegunn/goyo.vim'
 Plug 'junegunn/limelight.vim'
 
 " DOcumentation GEneraton
-Plug 'kkoomen/vim-doge'
+Plug 'kkoomen/vim-doge', { 'do': { -> doge#install({ 'headless': 1 }) } }
 
 " auto-close plugins
 Plug 'tpope/vim-endwise'

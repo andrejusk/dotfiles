@@ -87,8 +87,8 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 
 
 " coc.nvim
-"   Ctrl-n - Go to previous diagnostic
-"   Ctrl-p - Go to next diagnostic
+"   Ctrl-n - Go to next diagnostic
+"   Ctrl-p - Go to previous diagnostic
 "   <l>c - Open command list
 "   <l>d - Jump to definition of current symbol
 "   <l>r - Jump to references of current symbol
@@ -96,8 +96,8 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 "   <l>s - Fuzzy search current project symbols
 "   <l>n - Symbol renaming
 "   <l>k - Symbol renaming
-nmap <silent> <C-n> <Plug>(coc-diagnostic-prev)
-nmap <silent> <C-p> <Plug>(coc-diagnostic-next)
+nmap <silent> <C-n> <Plug>(coc-diagnostic-next)
+nmap <silent> <C-p> <Plug>(coc-diagnostic-prev)
 nmap <silent> <leader>d <Plug>(coc-definition)
 nmap <silent> <leader>r <Plug>(coc-references)
 nmap <silent> <leader>j <Plug>(coc-implementation)
@@ -112,26 +112,23 @@ nnoremap <leader>h :%s///<left><left>
 nnoremap <silent> <leader>/ :nohlsearch<cr>
 
 
-" use <tab> for trigger completion and navigate to next complete item
+"   <c-@> - trigger completion
+"   <tab> - trigger completion and navigate to next complete item
+inoremap <silent><expr> <c-@> coc#refresh()
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
+
+
 function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~ '\s'
 endfunction
 
-" Use <c-space> to trigger completion.
-if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
-else
-  inoremap <silent><expr> <c-@> coc#refresh()
-endif
-
-" Use K to show documentation in preview window.
+"   K - show documentation in preview window
 nnoremap <silent> K :call <SID>show_documentation()<cr>
 
 function! s:show_documentation()
