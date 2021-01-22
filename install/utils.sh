@@ -39,10 +39,9 @@ add_ppa() {
 }
 
 # @arg $1 url to add
+# @arg $2 keyring to add to
 add_key() {
-    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=true \
-        curl -fsSL $1 \
-        | sudo apt-key add -
+    curl -fsSL $1 | sudo apt-key --keyring "/etc/apt/trusted.gpg.d/$2.gpg" add
 }
 
 # @arg $1 URL to run
