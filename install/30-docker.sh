@@ -15,9 +15,10 @@ if not_installed "docker"; then
         software-properties-common
 
     # Add repository
-    add_key "https://download.docker.com/linux/ubuntu/gpg"
+    distro=$(lsb_release -si | tr '[:upper:]' '[:lower:]') # cast to lowercase
+    add_key "https://download.docker.com/linux/$distro/gpg" "docker-apt-key"
     sudo add-apt-repository -y \
-        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+        "deb [arch=amd64] https://download.docker.com/linux/$distro \
         $(lsb_release -cs) \
         stable"
     update

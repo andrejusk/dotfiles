@@ -17,6 +17,6 @@ if ! [ -f "$fisher_location" ]; then
     curl https://git.io/fisher --create-dirs -sLo "$fisher_location"
 fi
 echo "fisher is installed, updating..."
-`fish -c "fisher"`;
+fish -c "fisher update";
 
 fish -c "fisher --version"

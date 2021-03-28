@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source "$(dirname $0)/utils.sh"
 
-tf_version="0.13.5"
+tf_version="0.14.6"
 if not_installed "terraform"; then
     echo "Installing terraform..."
     tf_archive="terraform_${tf_version}_linux_amd64.zip"
@@ -16,7 +16,7 @@ fi
 echo "terraform is installed"
 terraform --version
 
-tf_lsp_version="0.8.0"
+tf_lsp_version="0.13.0"
 if not_installed "terraform-ls"; then
     echo "Installing terraform-ls..."
     tf_lsp_archive="terraform-ls_${tf_lsp_version}_linux_amd64.zip"
