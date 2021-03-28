@@ -45,7 +45,7 @@ export PATH="$POETRY_ROOT/bin:$PATH"
 
 # nvm
 if [ -z "$NVM_DIR" ]; then
-export NVM_DIR="$HOME/.nvm"
+    export NVM_DIR="$HOME/.nvm"
 fi
 mkdir -p "$NVM_DIR"
 export PATH="$NVM_DIR/bin:$PATH"
