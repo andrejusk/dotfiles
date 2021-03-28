@@ -1,10 +1,10 @@
-# U _____ u _   _  __     __   
-# \| ___"|/| \ |"| \ \   /"/u  
-#  |  _|" <|  \| |> \ \ / //   
-#  | |___ U| |\  |u /\ V /_,-. 
-#  |_____| |_| \_| U  \_/-(_/  
-#  <<   >> ||   \\,-.//        
-# (__) (__)(_")  (_/(__)       
+# U _____ u _   _  __     __
+# \| ___"|/| \ |"| \ \   /"/u
+#  |  _|" <|  \| |> \ \ / //
+#  | |___ U| |\  |u /\ V /_,-.
+#  |_____| |_| \_| U  \_/-(_/
+#  <<   >> ||   \\,-.//
+# (__) (__)(_")  (_/(__)
 #
 # set PATH so it includes user's private bin
 export PATH="$HOME/bin:$PATH"
@@ -65,16 +65,16 @@ export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_COMPLETION_TRIGGER='**'
 
-# do not use fishlogin for subshells
-export SHELL=/bin/sh
+# nix
+if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi
 
- #    _       _                    _      ____     
-# U  /"\  u  |"|        ___    U  /"\  u / __"| u  
-#  \/ _ \/ U | | u     |_"_|    \/ _ \/ <\___ \/   
-#  / ___ \  \| |/__     | |     / ___ \  u___) |   
-# /_/   \_\  |_____|  U/| |\u  /_/   \_\ |____/>>  
-#  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__) 
-# (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)      
+#     _       _                    _      ____
+# U  /"\  u  |"|        ___    U  /"\  u / __"| u
+#  \/ _ \/ U | | u     |_"_|    \/ _ \/ <\___ \/
+#  / ___ \  \| |/__     | |     / ___ \  u___) |
+# /_/   \_\  |_____|  U/| |\u  /_/   \_\ |____/>>
+#  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
+# (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
 alias vim='nvim'
 alias vi='vim'

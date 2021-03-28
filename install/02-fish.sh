@@ -20,16 +20,3 @@ echo "fisher is installed, updating..."
 `fish -c "fisher"`;
 
 fish -c "fisher --version"
-
-if not_installed "fishlogin"; then
-    echo "setting up fishlogin..."
-    mkdir -p ~/bin
-    target="$HOME/bin/fishlogin"
-    tee -a $target << END
-#!/bin/bash
-exec -l fish "\$@"
-END
-    sudo chmod +x $target
-    echo $target | sudo tee -a /etc/shells
-    sudo usermod -s $target $USER
-fi

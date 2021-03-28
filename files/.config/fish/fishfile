@@ -1,8 +1,6 @@
-fishpkg/fish-prompt-mono
-tomyun/base16-fish
-gazorby/fish-abbreviation-tips
-oh-my-fish/plugin-license
-matchai/fish-mock
-jorgebucaran/fish-bax
 jethrokuan/z
+jorgebucaran/replay.fish
+jorgebucaran/hydro
 joseluisq/gitnow
+tomyun/base16-fish
+PatrickF1/fzf.fish
