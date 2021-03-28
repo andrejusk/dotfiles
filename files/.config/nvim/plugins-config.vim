@@ -20,3 +20,8 @@ let g:loaded_python_provider = 0
 "     setlocal winhighlight=Normal:MarkdownError
 "   endif
 " endfunction
+"
+" {{{
+    let g:startify_custom_header =
+            \ startify#pad(split(system('fortune | cowsay -f tux'), '\n'))
+" }}}

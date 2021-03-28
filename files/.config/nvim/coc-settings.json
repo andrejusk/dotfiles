@@ -1,26 +1,4 @@
 {
-  "coc.preferences.formatOnSaveFiletypes": [
-    "css",
-    "dockerfile",
-    "elm",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "json",
-    "make",
-    "markdown",
-    "perl",
-    "python",
-    "sh",
-    "svg",
-    "tf",
-    "toml",
-    "typescript",
-    "typescriptreact",
-    "vim",
-    "xml",
-    "yaml"
-  ],
   "coc.preferences.extensionUpdateCheck": "daily",
 
   "list.source.files.args": ["--hidden", "--files"],

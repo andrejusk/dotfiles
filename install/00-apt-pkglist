@@ -1,7 +1,9 @@
 apt-transport-https
 bat
 curl
+cowsay
 fd-find
+fortune-mod
 git
 gnupg2
 jq

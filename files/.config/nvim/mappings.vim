@@ -89,6 +89,7 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 " coc.nvim
 "   Ctrl-n - Go to next diagnostic
 "   Ctrl-p - Go to previous diagnostic
+"   <l>a - Open action list
 "   <l>c - Open command list
 "   <l>d - Jump to definition of current symbol
 "   <l>r - Jump to references of current symbol
@@ -98,6 +99,7 @@ nmap <silent> <leader>E :CocCommand explorer --reveal expand('<sfile>')<cr>
 "   <l>k - Symbol renaming
 nmap <silent> <C-n> <Plug>(coc-diagnostic-next)
 nmap <silent> <C-p> <Plug>(coc-diagnostic-prev)
+nmap <silent> <leader>a <Plug>(coc-codeaction-line)
 nmap <silent> <leader>d <Plug>(coc-definition)
 nmap <silent> <leader>r <Plug>(coc-references)
 nmap <silent> <leader>j <Plug>(coc-implementation)
