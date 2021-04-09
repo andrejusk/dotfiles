@@ -1,28 +1,44 @@
-FROM ubuntu:bionic as install
+#
+# ubuntu-base: Base Ubuntu image with sudo user
+#
+FROM ubuntu:focal AS ubuntu-base
 
-# Install sudo and make, git since built-in is skipped
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -qqy update \
-    && apt-get -qqy install curl git make software-properties-common sudo
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get -qy update
+RUN apt-get -qy install --no-install-recommends \
+    apt-utils software-properties-common sudo
 
 # Create user with sudo priviledge
-ARG USER="test-user"
-RUN useradd --create-home -m "$USER" \
-    && adduser "$USER" sudo
-RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" \
+RUN useradd -r -u 1001 --create-home -m "test-user"
+RUN adduser "test-user" sudo
+RUN echo "test-user ALL=(ALL) NOPASSWD: ALL" \
     >>/etc/sudoers
 
-# Filesystem steps
-RUN rm /home/$USER/.profile /home/$USER/.bashrc
-ENV WORKSPACE="/home/$USER/workspace"
-ADD --chown=test-user . "$WORKSPACE/dotfiles"
-WORKDIR "$WORKSPACE/dotfiles"
 
-# Install steps
+#
+# source: Source steps
+#
+FROM ubuntu-base AS source
+
+ARG DOTFILES_DIR="/home/test-user/.dotfiles"
+ADD --chown="test-user" . "$DOTFILES_DIR"
+WORKDIR "$DOTFILES_DIR"
+
+
+#
+# install: Install steps
+#
+FROM source AS install
+
 USER test-user
-ARG TARGET="all"
-ENV LOG_TARGET="STDOUT"
-RUN make install TARGET=$TARGET
+ENV USER=test-user
+ENV UUID="docker"
+RUN ./scripts/install.sh
 
-# Test entrypoint
-ENTRYPOINT [ "make", "--directory", "tests", "TARGET=$TARGET" ]
+
+#
+# test: Test entrypoint
+#
+FROM install AS test
+ENTRYPOINT [ "tests/run.sh" ]

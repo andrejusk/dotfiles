@@ -1,31 +1,28 @@
-# dotfiles
+# andrejusk/dotfiles
 
 Collection of experimental dotfiles and supporting install scripts.
-Tested on and compatible with:
-
-- Ubuntu 20.04
 
 ## Install
 
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/setup.pl -qO - | perl
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/scripts/setup.sh -qO - | bash
 
 ## Stack
 
-Shell: 🐟 fish (+ fisher)
+### Shell
+🐟 fish (+ fisher)
 
-Editor: neovim (+ vim-plug)
+### Editor
+neovim (+ vim-plug)
 
-Tools:
+### Languages
 
-- aws, gcloud, firebase
-- docker (+ docker-compose)
-- kubectl
-- terraform
-- screenfetch
-
-Languages:
-
-- java
 - js (nvm, node, yarn)
 - python (pyenv, poetry)
-- ruby
+- java
+
+### Tools
+
+- docker (+ docker-compose)
+- terraform
+- gcloud, firebase, awscli
+- screenfetch

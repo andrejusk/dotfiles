@@ -152,18 +152,27 @@ Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
         \ 'coc-perl',
         \ 'coc-prettier',
         \ 'coc-python',
+        \ 'coc-react-refactor',
         \ 'coc-rust-analyzer',
         \ 'coc-sh',
         \ 'coc-snippets',
+        \ 'coc-styled-components',
         \ 'coc-svg',
+        \ 'coc-swagger',
         \ 'coc-tabnine',
         \ 'coc-toml',
+        \ 'coc-tslint',
+        \ 'coc-tslint-plugin',
         \ 'coc-tsserver',
         \ 'coc-vimlsp',
         \ 'coc-xml',
         \ 'coc-yaml',
         \ ]
 " }}}
+
+" ts
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'maxmellon/vim-jsx-pretty'
 
 " elm
 Plug 'andys8/vim-elm-syntax'

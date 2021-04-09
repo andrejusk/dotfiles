@@ -1,0 +1,14 @@
+name: Dotfiles publisher
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-installer:
+    name: Publish install script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish to CDN
+        run: ./scripts/publish.sh
