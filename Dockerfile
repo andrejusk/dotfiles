@@ -41,4 +41,6 @@ RUN ./scripts/install.sh
 # test: Test entrypoint
 #
 FROM install AS test
-ENTRYPOINT [ "tests/run.sh" ]
+
+WORKDIR "${DOTFILES_DIR}/tests"
+ENTRYPOINT [ "./run.sh" ]
