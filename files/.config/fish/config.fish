@@ -1,5 +1,6 @@
 # Only execute in interactive shell
-if status --is-interactive
+if status is-interactive
+
     # Fish specific
     set fish_greeting
     set --global hydro_symbol_prompt "\$"
@@ -12,4 +13,5 @@ if status --is-interactive
     if begin; test -e $HOME/.profile; and type -q replay; end
         replay "source $HOME/.profile"
     end
+
 end

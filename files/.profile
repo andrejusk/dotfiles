@@ -6,30 +6,23 @@
 #  <<   >> ||   \\,-.//
 # (__) (__)(_")  (_/(__)
 #
+
 # set PATH so it includes user's private bin
-export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+mkdir -p ~/.local/bin
 
 # xdg data & config
-if [ -z "$XDG_DATA_HOME" ]; then
-    export XDG_DATA_HOME="$HOME/.local/share"
-fi
+export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
 mkdir -p "$XDG_DATA_HOME"
-if [ -z "$XDG_CONFIG_HOME" ]; then
-    export XDG_CONFIG_HOME="$HOME/.config"
-fi
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
 mkdir -p "$XDG_CONFIG_HOME"
 
 # workspace
-if [ -z "$WORKSPACE" ]; then
-    export WORKSPACE="$HOME/workspace"
-fi
+export WORKSPACE=${WORKSPACE:-"$HOME/workspace"}
 mkdir -p "$WORKSPACE"
 
 # dotfiles
-if [ -z "$DOTFILES" ]; then
-    export DOTFILES="$HOME/.dotfiles"
-fi
+export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
@@ -43,14 +36,12 @@ export POETRY_ROOT="$HOME/.poetry"
 export PATH="$POETRY_ROOT/bin:$PATH"
 
 # nvm
-if [ -z "$NVM_DIR" ]; then
-    export NVM_DIR="$HOME/.nvm"
-fi
+export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
 mkdir -p "$NVM_DIR"
 export PATH="$NVM_DIR/bin:$PATH"
 
 # yarn
-export YARN_DIR="$HOME/.yarn"
+export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
 mkdir -p "$YARN_DIR"
 export PATH="$YARN_DIR/bin:$PATH"
 
@@ -63,9 +54,17 @@ export FZF_DEFAULT_OPTS="--reverse"
 export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_COMPLETION_TRIGGER='**'
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# z (jump around)
+export Z_DATA_DIR=${Z_DATA:-"$XDG_DATA_HOME/z"}
+export Z_DATA=${Z_DATA:-"$Z_DATA_DIR/data"}
+export Z_OWNER=${Z_OWNER:-$USER}
 
 # nix
-if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
+    . $HOME/.nix-profile/etc/profile.d/nix.sh
+fi
 
 #     _       _                    _      ____
 # U  /"\  u  |"|        ___    U  /"\  u / __"| u
@@ -75,10 +74,4 @@ if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile
 #  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
 # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
-alias vim='nvim'
-alias vi='vim'
-
-alias bat='batcat'
-alias cat='bat'
-
 alias j="z"

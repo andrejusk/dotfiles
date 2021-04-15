@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-NAME=`basename "$0"`
+#
+# Script that stows all tracked dotfiles into the user's home directory.
+#
+
 REL_DIR=`dirname "$0"`
 ABS_DIR=`readlink -f $REL_DIR/../` # Scripts are nested inside of /scripts
 

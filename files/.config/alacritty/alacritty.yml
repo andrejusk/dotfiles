@@ -1,0 +1,57 @@
+# env:
+#   TERM: xterm-256color
+
+window:
+  dynamic_title: true
+  dynamic_padding: true
+  decorations: None
+  startup_mode: Windowed
+
+  padding:
+    x: 7
+    y: 7
+
+scrolling:
+  history: 10000
+  multiplier: 3
+
+font:
+  size: 9.0
+  normal:
+    family: FiraCode Nerd Font Mono
+    style: Regular
+
+  bold:
+    family: FiraCode Nerd Font Mono
+    style: Bold
+
+  italic:
+    family: FiraSansCondensed NF
+    style: Italic
+
+  bold_italic:
+    family: FiraSansCondensed NF
+    style: Bold Italic
+
+draw_bold_text_with_bright_colors: false
+background_opacity: 0.95
+
+cursor:
+  style: Beam
+  unfocused_hollow: true
+
+live_config_reload: true
+
+shell:
+  program: /usr/bin/fish
+  args:
+    - --interactive
+    - --login
+
+key_bindings:
+  - { key: V, mods: Control|Shift, action: Paste }
+  - { key: C, mods: Control|Shift, action: Copy }
+  - { key: Insert, mods: Shift, action: PasteSelection }
+  - { key: Key0, mods: Control, action: ResetFontSize }
+  - { key: Plus, mods: Control, action: IncreaseFontSize }
+  - { key: Minus, mods: Control, action: DecreaseFontSize }

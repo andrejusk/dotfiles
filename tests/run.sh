@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-poetry install
-poetry run pytest
+bash -l -c "poetry install && poetry run pytest"

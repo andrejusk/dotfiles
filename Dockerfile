@@ -1,12 +1,12 @@
 #
-# ubuntu-base: Base Ubuntu image with sudo user
+# debian-buster: Base Debian image with sudo user
 #
-FROM ubuntu:focal AS ubuntu-base
+FROM debian:buster AS debian-base
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get -qy update
-RUN apt-get -qy install --no-install-recommends \
+RUN apt-get -qq update
+RUN apt-get -qq install --no-install-recommends \
     apt-utils software-properties-common sudo
 
 # Create user with sudo priviledge
@@ -19,7 +19,7 @@ RUN echo "test-user ALL=(ALL) NOPASSWD: ALL" \
 #
 # source: Source steps
 #
-FROM ubuntu-base AS source
+FROM debian-base AS source
 
 ARG DOTFILES_DIR="/home/test-user/.dotfiles"
 ADD --chown="test-user" . "$DOTFILES_DIR"
@@ -33,7 +33,7 @@ FROM source AS install
 
 USER test-user
 ENV USER=test-user
-ENV UUID="docker"
+ARG UUID="docker"
 RUN ./scripts/install.sh
 
 

@@ -3,13 +3,13 @@
 **/logs
 **/*.deb
 
-# custom functions
-!files/.config/fish/functions/nvm.fish
+# ssh env
+**/id_rsa*
+**/known_hosts*
 
 # setup files
 **/plugged
 **/autoload
-**/functions
 **/completions
 **/conf.d
 **/fish_variables
@@ -20,7 +20,3 @@
 **/TabNine
 **/firebase
 **/pypoetry
-
-# ssh env
-**/id_rsa*
-**/known_hosts*
