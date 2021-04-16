@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Install neovim from unstable debian repo
+curl -fsSL "https://ftp-master.debian.org/keys/archive-key-10.asc" | sudo apt-key add -
 echo "deb http://deb.debian.org/debian unstable main" \
     | sudo tee /etc/apt/sources.list.d/unstable.list
 echo "Package: neovim
