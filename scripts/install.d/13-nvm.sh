@@ -8,7 +8,8 @@ fi
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 nvm --version
-nvm install node
-nvm use node
+nvm alias default lts/fermium
+nvm install lts/fermium
+nvm use lts/fermium
 
 node --version

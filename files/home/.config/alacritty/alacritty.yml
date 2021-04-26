@@ -7,8 +7,12 @@ window:
   decorations: None
   startup_mode: Windowed
 
+  dimensions:
+   columns: 120
+   lines: 32
+
   padding:
-    x: 7
+    x: 12
     y: 7
 
 scrolling:
@@ -16,7 +20,7 @@ scrolling:
   multiplier: 3
 
 font:
-  size: 9.0
+  size: 10.0
   normal:
     family: FiraCode Nerd Font Mono
     style: Regular
@@ -41,12 +45,6 @@ cursor:
   unfocused_hollow: true
 
 live_config_reload: true
-
-shell:
-  program: /usr/bin/fish
-  args:
-    - --interactive
-    - --login
 
 key_bindings:
   - { key: V, mods: Control|Shift, action: Paste }

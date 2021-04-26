@@ -27,7 +27,7 @@ function bin_in_path {
 
 # @arg $1 apt package to test
 function apt_installed {
-    dpkg --status $1
+    dpkg --status $1 >/dev/null
 }
 
 function clean {
@@ -64,4 +64,24 @@ function add_repository {
 # @arg $1 package list file to install
 function install_file {
     sudo apt-get install -qqf $(cat $1)
+}
+
+# @arg $1 JSON object containing the following keys
+#   * name - apt repository
+#   * target - gpg signing key url
+function stow_package {
+    name=$(jq -r ".name" <<<"$1")
+    target=$(jq -r ".target" <<<"$1")
+
+    case $target in
+        HOME)
+            rm $HOME/.bashrc || true
+            rm $HOME/.profile || true
+            target=$HOME
+            ;;
+        *)
+            ;;
+    esac
+
+    sudo stow --dir="$ABS_DIR/files" --target=$target $name
 }

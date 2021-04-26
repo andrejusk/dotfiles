@@ -24,6 +24,7 @@ mkdir -p "$WORKSPACE"
 # dotfiles
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
+
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
@@ -39,15 +40,13 @@ export PATH="$POETRY_ROOT/bin:$PATH"
 export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
 mkdir -p "$NVM_DIR"
 export PATH="$NVM_DIR/bin:$PATH"
+VERSION=`cat $NVM_DIR/alias/lts/fermium`  # Default v14
+export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
 
 # yarn
 export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
 mkdir -p "$YARN_DIR"
 export PATH="$YARN_DIR/bin:$PATH"
-
-# editor
-export EDITOR="nvim"
-export VISUAL="nvim"
 
 # fzf
 export FZF_DEFAULT_OPTS="--reverse"

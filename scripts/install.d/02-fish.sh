@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 fish --version
 
-current_shell=`readlink -f /proc/$$/exe`
+current_shell=`grep "^$USER" /etc/passwd`
+current_shell=${current_shell##*:}
 fish_shell=`which fish`
 if [[ "$current_shell" != "$fish_shell" ]]; then
     chsh -s "$fish_shell"

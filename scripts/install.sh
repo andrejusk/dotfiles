@@ -22,7 +22,7 @@ LOG_DIR="${ABS_DIR}/logs"
 mkdir -p "$LOG_DIR"
 LOG_TARGET=${LOG_TARGET:-"${LOG_DIR}/${UUID}.log"}
 
-main() {
+install() {
     echo "Running $NAME at $TIME"
     echo "Running as $USER on $HOST"
 
@@ -53,8 +53,11 @@ main() {
     done
 
     # Install dotfiles on system and load them
-    figlet -c "Bootstrapping..."
-    $ABS_DIR/scripts/bootstrap.sh
+    figlet -c "Stowing..."
+    for i in $(jq ".stow_packages | keys | .[]" "$CONFIG"); do
+        value=$(jq -r ".stow_packages[$i]" "$CONFIG")
+        stow_package "$value"
+    done
     source "$HOME/.profile"
 
     # Run custom installer scripts
@@ -65,5 +68,5 @@ main() {
     done
 }
 
-echo "main: Logging to $LOG_TARGET"
-main 2>&1 | tee "$LOG_TARGET"
+echo "install: Logging to $LOG_TARGET"
+install 2>&1 | tee "$LOG_TARGET"

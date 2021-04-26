@@ -45,9 +45,11 @@
         "devscripts",
         "docker-ce",
         "docker-ce-cli",
+        "emacs",
         "fd-find",
         "figlet",
         "fish",
+        "fonts-nanum",
         "fortune-mod",
         "google-cloud-sdk",
         "git",
@@ -67,7 +69,9 @@
     ],
     "node_dependencies": [
         "firebase-tools",
-        "neovim"
+        "neovim",
+        "typescript",
+        "typescript-language-server"
     ],
     "pip_dependencies": [
         "awscli",
@@ -76,5 +80,11 @@
         "poetry",
         "python-language-server[all]",
         "pyvim"
+    ],
+    "stow_packages": [
+        {
+            "name": "home",
+            "target": "HOME"
+        }
     ]
 }
