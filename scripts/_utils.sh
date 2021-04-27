@@ -83,5 +83,6 @@ function stow_package {
             ;;
     esac
 
+    echo "Stowing $ABS_DIR/files/$name to $target"
     sudo stow --dir="$ABS_DIR/files" --target=$target $name
 }
