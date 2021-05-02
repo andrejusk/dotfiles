@@ -3,10 +3,15 @@ locals {
 }
 
 # =================================================================
-# Public bucket for static content
+# Public bucket for static content with uploader service account
 # =================================================================
 resource "google_project_service" "storage" {
   service = "storage.googleapis.com"
+}
+
+resource "google_service_account" "uploader_sa" {
+  account_id   = "${var.prefix}-uploader-sa"
+  display_name = "Uploader Service Account"
 }
 
 resource "google_storage_bucket" "bucket" {
@@ -20,27 +25,19 @@ resource "google_storage_bucket" "bucket" {
   }
 }
 
-resource "google_storage_default_object_access_control" "bucket_public" {
+resource "google_storage_bucket_acl" "bucket_acl" {
   bucket = google_storage_bucket.bucket.name
-  role   = "READER"
-  entity = "allUsers"
+
+  role_entity = [
+    "READER:allUsers",
+    "OWNER:user-${google_service_account.uploader_sa.email}",
+  ]
 }
 
 resource "google_storage_bucket_object" "index" {
   name   = "index.html"
   source = "${path.module}/public/index.html"
   bucket = google_storage_bucket.bucket.name
-}
-
-resource "google_service_account" "uploader_sa" {
-  account_id   = "${var.prefix}-uploader-sa"
-  display_name = "Uploader Service Account"
-}
-
-resource "google_storage_default_object_access_control" "upload" {
-  bucket = google_storage_bucket.bucket.name
-  role   = "OWNER"
-  entity = "user-${google_service_account.uploader_sa.email}"
 }
 
 # =================================================================
