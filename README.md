@@ -1,10 +1,10 @@
-# andrejusk/dotfiles
+# dots.andrejus.dev
 
 Collection of experimental dotfiles and supporting install scripts.
 
 ## Install
 
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/scripts/setup.sh -qO - | bash
+    wget https://dots.andrejus.dev/setup.sh -qO - | bash
 
 ## Stack
 

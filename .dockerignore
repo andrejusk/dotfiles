@@ -1,3 +1,8 @@
 .gitignore
 .dockerignore
 Dockerfile
+
+**/plugged
+**/completions
+**/conf.d
+**/fish_variables

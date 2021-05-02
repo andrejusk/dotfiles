@@ -51,6 +51,7 @@
         "fish",
         "fonts-nanum",
         "fortune-mod",
+        "fzf",
         "google-cloud-sdk",
         "git",
         "kubectl",

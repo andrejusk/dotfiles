@@ -48,13 +48,6 @@ export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
 mkdir -p "$YARN_DIR"
 export PATH="$YARN_DIR/bin:$PATH"
 
-# fzf
-export FZF_DEFAULT_OPTS="--reverse"
-export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git'
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_COMPLETION_TRIGGER='**'
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
 # z (jump around)
 export Z_DATA_DIR=${Z_DATA:-"$XDG_DATA_HOME/z"}
 export Z_DATA=${Z_DATA:-"$Z_DATA_DIR/data"}
@@ -74,3 +67,4 @@ fi
 # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
 alias j="z"
+alias fd=`which fdfind`

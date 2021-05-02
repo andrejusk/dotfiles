@@ -15,7 +15,7 @@ setup_dir=${DOTFILES_DIR:-$HOME/.dotfiles}
 
 # Prevent overwriting existing installation
 mkdir -p $setup_dir
-if [ -z `ls -A $setup_dir` ]; then
+if [[ -z $(ls -A $setup_dir) ]]; then
     echo "Setting up $setup_dir"
 else
     echo "Failed: Setup directory not empty $setup_dir"

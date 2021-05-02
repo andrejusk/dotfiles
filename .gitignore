@@ -8,11 +8,7 @@
 **/known_hosts*
 
 # setup files
-**/plugged
 **/autoload
-**/completions
-**/conf.d
-**/fish_variables
 **/gcloud
 **/coc
 **/configstore
