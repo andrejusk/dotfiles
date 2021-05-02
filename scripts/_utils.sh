@@ -75,8 +75,8 @@ function stow_package {
 
     case $target in
         HOME)
-            rm $HOME/.bashrc || true
-            rm $HOME/.profile || true
+            rm -f $HOME/.bashrc
+            rm -f $HOME/.profile
             target=$HOME
             ;;
         *)
