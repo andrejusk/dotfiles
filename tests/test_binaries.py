@@ -67,7 +67,6 @@ binaries: List[str] = [
     "node",
     "npm",
     "yarn",
-    # "elm",
 
     # language: java
     "java",

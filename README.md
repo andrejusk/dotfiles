@@ -1,31 +1,35 @@
-# dotfiles
+# dots.andrejus.dev
 
-Collection of experimental dotfiles and supporting install scripts.
-Tested on and compatible with:
-
-- Ubuntu 20.04
+Collection of my dotfiles and supporting install scripts
 
 ## Install
 
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/master/setup.pl -qO - | perl
+[![Dotfiles publisher](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml)
+
+    wget https://dots.andrejus.dev/setup.sh -qO - | bash
 
 ## Stack
 
-Shell: 🐟 fish (+ fisher)
+[![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
 
-Editor: neovim (+ vim-plug)
+Tested and maintained against Debian buster
 
-Tools:
+### Shells
 
-- aws, gcloud, firebase
-- docker (+ docker-compose)
-- kubectl
-- terraform
-- screenfetch
+- 🐟 fish (+ fisher)
 
-Languages:
+### Editors
 
-- java
-- js (nvm, node, yarn)
+- neovim (+ vim-plug)
+- emacs
+
+### Languages
+
+- node.js (nvm, yarn)
 - python (pyenv, poetry)
-- ruby
+
+### Tools
+
+- docker
+- terraform
+- gcloud, firebase, awscli

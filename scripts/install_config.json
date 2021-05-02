@@ -1,0 +1,91 @@
+{
+    "apt_repositories": [
+        {
+            "signingKey": "https://apt.releases.hashicorp.com/gpg",
+            "repository": "https://apt.releases.hashicorp.com",
+            "components": "buster main"
+        },
+        {
+            "signingKey": "https://dl.yarnpkg.com/debian/pubkey.gpg",
+            "repository": "https://dl.yarnpkg.com/debian",
+            "components": "stable main"
+        },
+        {
+            "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
+            "repository": "https://packages.cloud.google.com/apt",
+            "components": "cloud-sdk main"
+        },
+        {
+            "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
+            "repository": "https://apt.kubernetes.io/",
+            "components": "kubernetes-xenial main"
+        },
+        {
+            "signingKey": "https://download.docker.com/linux/debian/gpg",
+            "repository": "https://download.docker.com/linux/debian",
+            "components": "buster stable"
+        },
+        {
+            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
+            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
+            "components": "/"
+        }
+    ],
+    "apt_core_dependencies": [
+        "curl",
+        "gnupg",
+        "gnupg2"
+    ],
+    "apt_dependencies": [
+        "apt-transport-https",
+        "ca-certificates",
+        "containerd.io",
+        "cowsay",
+        "default-jre",
+        "devscripts",
+        "docker-ce",
+        "docker-ce-cli",
+        "emacs",
+        "fd-find",
+        "figlet",
+        "fish",
+        "fonts-nanum",
+        "fortune-mod",
+        "fzf",
+        "google-cloud-sdk",
+        "git",
+        "kubectl",
+        "lsb-release",
+        "make",
+        "net-tools",
+        "openssh-client",
+        "openssh-server",
+        "screenfetch",
+        "stow",
+        "terraform",
+        "terraform-ls",
+        "tmux",
+        "unzip",
+        "yarn"
+    ],
+    "node_dependencies": [
+        "firebase-tools",
+        "neovim",
+        "typescript",
+        "typescript-language-server"
+    ],
+    "pip_dependencies": [
+        "awscli",
+        "docker-compose",
+        "neovim",
+        "poetry",
+        "python-language-server[all]",
+        "pyvim"
+    ],
+    "stow_packages": [
+        {
+            "name": "home",
+            "target": "HOME"
+        }
+    ]
+}

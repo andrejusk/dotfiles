@@ -1,0 +1,6 @@
+# Ignore all
+**/*
+!.gitignore
+
+# Keep custom functions
+!nvm.fish

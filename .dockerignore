@@ -1,4 +1,9 @@
 .gitignore
 .dockerignore
 Dockerfile
-README.md
+
+**/plugged
+**/completions
+**/conf.d
+**/fish_variables
+**/functions

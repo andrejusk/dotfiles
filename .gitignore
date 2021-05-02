@@ -1,18 +1,14 @@
-# custom functions
-!files/.config/fish/functions/nvm.fish
-
 # install artefacts
-tmp
-logs/*
+**/tmp
+**/logs
 **/*.deb
 
+# ssh env
+**/id_rsa*
+**/known_hosts*
+
 # setup files
-**/plugged
 **/autoload
-**/functions
-**/completions
-**/conf.d
-**/fish_variables
 **/gcloud
 **/coc
 **/configstore
@@ -20,11 +16,3 @@ logs/*
 **/TabNine
 **/firebase
 **/pypoetry
-
-# pytest
-**/__pycache__
-**/.pytest_cache
-
-# ssh env
-**/id_rsa*
-**/known_hosts*
