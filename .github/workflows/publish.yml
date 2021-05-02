@@ -1,14 +1,17 @@
 name: Dotfiles publisher
-on:
-  push:
-    branches:
-      - master
+on: [push]
+# on:
+#   push:
+#     branches:
+#       - master
 
 jobs:
   publish-installer:
-    name: Publish install script
+    name: Publish setup script
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Publish to CDN
+      - env:
+          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        name: Publish to CDN
         run: ./scripts/publish.sh

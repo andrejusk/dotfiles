@@ -14,6 +14,10 @@ resource "google_storage_bucket" "bucket" {
   depends_on = [google_project_service.storage]
 
   location = var.gcs_location
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "index.html"
+  }
 }
 
 resource "google_storage_default_object_access_control" "bucket_public" {
@@ -22,6 +26,22 @@ resource "google_storage_default_object_access_control" "bucket_public" {
   entity = "allUsers"
 }
 
+resource "google_storage_bucket_object" "index" {
+  name   = "index.html"
+  source = "${path.module}/public/index.html"
+  bucket = google_storage_bucket.bucket.name
+}
+
+resource "google_service_account" "uploader_sa" {
+  account_id   = "${var.prefix}-uploader-sa"
+  display_name = "Uploader Service Account"
+}
+
+resource "google_storage_default_object_access_control" "upload" {
+  bucket = google_storage_bucket.bucket.name
+  role   = "OWNER"
+  entity = "user-${google_service_account.uploader_sa.email}"
+}
 
 # =================================================================
 # Expose bucket via HTTPS using Cloud CDN

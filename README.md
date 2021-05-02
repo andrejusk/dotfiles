@@ -1,6 +1,6 @@
 # dots.andrejus.dev
 
-Collection of experimental dotfiles and supporting install scripts.
+Collection of my dotfiles and supporting install scripts
 
 ## Install
 
@@ -8,21 +8,24 @@ Collection of experimental dotfiles and supporting install scripts.
 
 ## Stack
 
-### Shell
-🐟 fish (+ fisher)
+Tested and maintained against Debian buster
 
-### Editor
-neovim (+ vim-plug)
+### Shells
+
+- 🐟 fish (+ fisher)
+
+### Editors
+
+- neovim (+ vim-plug)
+- emacs
 
 ### Languages
 
-- js (nvm, node, yarn)
+- node.js (nvm, yarn)
 - python (pyenv, poetry)
-- java
 
 ### Tools
 
-- docker (+ docker-compose)
+- docker
 - terraform
 - gcloud, firebase, awscli
-- screenfetch

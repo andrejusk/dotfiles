@@ -40,8 +40,13 @@ export PATH="$POETRY_ROOT/bin:$PATH"
 export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
 mkdir -p "$NVM_DIR"
 export PATH="$NVM_DIR/bin:$PATH"
-VERSION=`cat $NVM_DIR/alias/lts/fermium`  # Default v14
-export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
+
+# node (default v14)
+node_alias="$NVM_DIR/alias/lts/fermium"
+if [ -f "$node_alias" ]; then
+    VERSION=`cat $node_alias`
+    export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
+fi
 
 # yarn
 export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
