@@ -2,13 +2,13 @@
 
 Collection of my dotfiles and supporting install scripts
 
-## Install
+## Installer
 
 [![Dotfiles publisher](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml)
 
     wget https://dots.andrejus.dev/setup.sh -qO - | bash
 
-## Stack
+## The Stack
 
 [![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
 
@@ -21,7 +21,7 @@ Tested and maintained against Debian buster
 ### Editors
 
 - neovim (+ vim-plug)
-- emacs
+- spacemacs
 
 ### Languages
 

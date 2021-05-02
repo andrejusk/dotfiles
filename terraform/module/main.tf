@@ -29,8 +29,21 @@ resource "google_storage_bucket_acl" "bucket_acl" {
   bucket = google_storage_bucket.bucket.name
 
   role_entity = [
-    "READER:allUsers",
+    "OWNER:project-owners-${var.project_number}",
+    "OWNER:project-editors-${var.project_number}",
+    "READER:project-viewers-${var.project_number}",
     "OWNER:user-${google_service_account.uploader_sa.email}",
+  ]
+}
+
+resource "google_storage_default_object_acl" "default_acl" {
+  bucket = google_storage_bucket.bucket.name
+
+  role_entity = [
+    "READER:allUsers",
+    "OWNER:project-owners-${var.project_number}",
+    "OWNER:project-editors-${var.project_number}",
+    "READER:project-viewers-${var.project_number}",
   ]
 }
 

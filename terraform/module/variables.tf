@@ -8,6 +8,11 @@ variable "project" {
   type        = string
 }
 
+variable "project_number" {
+  type        = string
+  description = "The numeric project ID"
+}
+
 variable "domain" {
   description = "DNS name to serve static content"
   type        = string
