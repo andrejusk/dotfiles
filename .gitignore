@@ -9,10 +9,4 @@
 
 # setup files
 **/autoload
-**/gcloud
-**/coc
-**/configstore
-**/wslu
-**/TabNine
-**/firebase
 **/pypoetry
