@@ -7,15 +7,15 @@
 # (__) (__)(_")  (_/(__)
 #
 
-# set PATH so it includes user's private bin
-export PATH="$HOME/.local/bin:$PATH"
-mkdir -p ~/.local/bin
-
 # xdg data & config
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
 mkdir -p "$XDG_DATA_HOME"
+
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
 mkdir -p "$XDG_CONFIG_HOME"
+
+export PATH="$HOME/.local/bin:$PATH"
+mkdir -p ~/.local/bin
 
 # workspace
 export WORKSPACE=${WORKSPACE:-"$HOME/workspace"}
@@ -25,33 +25,35 @@ mkdir -p "$WORKSPACE"
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
 
+# nvm
+export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
+[ -f "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+
+# node (default v14)
+node_alias="$NVM_DIR/alias/lts/fermium"
+if [ -f "$node_alias" ]; then
+    VERSION=`cat $node_alias`
+    nvm install "$VERSION" > /dev/null 2>&1 & disown
+    export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
+fi
+
+
+# yarn
+export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
+mkdir -p "$YARN_DIR"
+export PATH="$YARN_DIR/bin:$PATH"
+
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 if [ -d "$PYENV_ROOT" ]; then
-    [ -x "$(command -v pyenv)" ] && eval "$(pyenv init -)"
+    [ -x `command -v pyenv` ] && eval "$(pyenv init --path)"
 fi
 
 # poetry
 export POETRY_ROOT="$HOME/.poetry"
 export PATH="$POETRY_ROOT/bin:$PATH"
 
-# nvm
-export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
-mkdir -p "$NVM_DIR"
-export PATH="$NVM_DIR/bin:$PATH"
-
-# node (default v14)
-node_alias="$NVM_DIR/alias/lts/fermium"
-if [ -f "$node_alias" ]; then
-    VERSION=`cat $node_alias`
-    export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
-fi
-
-# yarn
-export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
-mkdir -p "$YARN_DIR"
-export PATH="$YARN_DIR/bin:$PATH"
 
 # z (jump around)
 export Z_DATA_DIR=${Z_DATA:-"$XDG_DATA_HOME/z"}
@@ -72,4 +74,4 @@ fi
 # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
 alias j="z"
-alias fd=`which fdfind`
+alias fd=`command -v fdfind`
