@@ -9,5 +9,5 @@ docker build . \
 
 docker run \
     -v "$(pwd)"/logs:/home/test-user/.dotfiles/logs \
-    dotfiles:$tag
+    dotfiles:$tag \
     /bin/bash

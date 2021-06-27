@@ -74,13 +74,13 @@ function stow_package {
     target=$(jq -r ".target" <<<"$1")
 
     case $target in
-        HOME)
-            rm -f $HOME/.bashrc
-            rm -f $HOME/.profile
-            target=$HOME
-            ;;
-        *)
-            ;;
+    HOME)
+        rm -f $HOME/.bashrc
+        rm -f $HOME/.profile
+        target=$HOME
+        ;;
+    *) ;;
+
     esac
 
     echo "Stowing $ABS_DIR/files/$name to $target"

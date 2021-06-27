@@ -9,8 +9,7 @@ if ! bin_in_path "pyenv"; then
         bash
 fi
 
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+eval "$(pyenv init --path)"
 
 pyenv update
 

@@ -27,6 +27,7 @@ export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
 # nvm
 export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
+mkdir -p "$NVM_DIR"
 [ -f "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
 # node (default v14)

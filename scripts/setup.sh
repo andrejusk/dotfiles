@@ -23,7 +23,7 @@ else
 fi
 
 # Download and untar repo
-tmp_dir=`mktemp -d`
+tmp_dir=$(mktemp -d)
 tmp_dest="$tmp_dir/dotfiles.tar.gz"
 wget "https://github.com/$author/$repository/archive/$branch.tar.gz" -qO $tmp_dest
 tar -C $tmp_dir -zxf $tmp_dest

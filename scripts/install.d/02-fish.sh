@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 fish --version
 
-current_shell=`grep "^$USER" /etc/passwd`
+current_shell=$(grep "^$USER" /etc/passwd)
 current_shell=${current_shell##*:}
-fish_shell=`command -v fish`
+fish_shell=$(command -v fish)
 if [[ "$current_shell" != "$fish_shell" ]]; then
     sudo usermod --shell "$fish_shell" "$USER"
 fi

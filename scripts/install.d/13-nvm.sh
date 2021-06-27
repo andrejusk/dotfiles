@@ -5,7 +5,7 @@ if ! bin_in_path "nvm"; then
         "bash"
 fi
 
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
 nvm --version
 nvm alias default lts/fermium
