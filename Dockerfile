@@ -1,5 +1,5 @@
 #
-# debian-buster: Base Debian image with sudo user
+# debian-base: Base Debian image with sudo user
 #
 FROM debian:buster AS debian-base
 
@@ -17,7 +17,7 @@ RUN echo "test-user ALL=(ALL) NOPASSWD: ALL" \
 
 
 #
-# source: Source steps
+# source: Base image with source copied over
 #
 FROM debian-base AS source
 
@@ -27,7 +27,7 @@ WORKDIR "$DOTFILES_DIR"
 
 
 #
-# install: Install steps
+# install: Installation steps
 #
 FROM source AS install
 
@@ -43,4 +43,4 @@ RUN ./scripts/install.sh
 FROM install AS test
 
 WORKDIR "${DOTFILES_DIR}/tests"
-ENTRYPOINT [ "./run.sh" ]
+ENTRYPOINT [ "${DOTFILES_DIR}/tests/run.sh" ]
