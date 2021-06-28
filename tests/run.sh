@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bash -l -c "poetry install && poetry run pytest"
+# pyenv install --skip-existing && pyenv shell
+poetry install && poetry run pytest

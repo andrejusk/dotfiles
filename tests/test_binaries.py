@@ -63,7 +63,6 @@ binaries: List[str] = [
     "poetry",
 
     # langauge: js
-    "nvm",
     "node",
     "npm",
     "yarn",
@@ -71,8 +70,6 @@ binaries: List[str] = [
     # language: java
     "java",
 
-    # langauge: ruby
-    "ruby"
 ]
 
 

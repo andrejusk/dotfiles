@@ -15,14 +15,17 @@ RUN adduser "test-user" sudo
 RUN echo "test-user ALL=(ALL) NOPASSWD: ALL" \
     >>/etc/sudoers
 
-
 #
 # source: Base image with source copied over
 #
 FROM debian-base AS source
 
 ARG DOTFILES_DIR="/home/test-user/.dotfiles"
-ADD --chown="test-user" . "$DOTFILES_DIR"
+RUN mkdir ${DOTFILES_DIR}
+RUN chown test-user ${DOTFILES_DIR}
+
+ADD --chown="test-user" files "$DOTFILES_DIR/files"
+ADD --chown="test-user" scripts "$DOTFILES_DIR/scripts"
 WORKDIR "$DOTFILES_DIR"
 
 
@@ -42,5 +45,6 @@ RUN ./scripts/install.sh
 #
 FROM install AS test
 
+ADD --chown="test-user" tests "$DOTFILES_DIR/tests"
 WORKDIR "${DOTFILES_DIR}/tests"
-ENTRYPOINT [ "${DOTFILES_DIR}/tests/run.sh" ]
+ENTRYPOINT [ "./run.sh" ]
