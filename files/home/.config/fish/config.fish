@@ -14,4 +14,6 @@ if status is-interactive
         replay "source $HOME/.profile"
     end
 
+    pyenv init - | source
+
 end

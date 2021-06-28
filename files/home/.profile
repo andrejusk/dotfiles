@@ -47,8 +47,8 @@ export PATH="$YARN_DIR/bin:$PATH"
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
-if [ -d "$PYENV_ROOT" ]; then
-    [ -x `command -v pyenv` ] && eval "$(pyenv init --path)"
+if [ -x `command -v pyenv` ]; then
+    eval "$(pyenv init --path)"
 fi
 
 # poetry
