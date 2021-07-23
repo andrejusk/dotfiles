@@ -3,7 +3,7 @@
 # Verifies dotfiles installed binaries correctly
 #
 from distutils.spawn import find_executable
-from typing import List
+from typing import List, Text
 from subprocess import run
 import pytest
 
@@ -11,21 +11,21 @@ import pytest
 # --------------------------------------------------------------------------- #
 # Helper functions
 # --------------------------------------------------------------------------- #
-def in_path(binary: str) -> bool:
+def in_path(binary: Text) -> bool:
     """
-    Helper function to check whether `binary` is in PATH.
+    Check whether `binary` is in PATH
     """
     return find_executable(binary) is not None
 
 
-def in_shell_path(shell: str, binary: str) -> bool:
+def in_shell_path(shell: Text, binary: Text) -> bool:
     """
-    Helper function to check whether `binary` is in interactive shell's PATH.
+    Check whether `binary` is in interactive shell's PATH
     """
-    command = "{0} -i -c 'command -v {1}'".format(shell, binary)
+    command = f"{shell} -i -c 'command -v {binary}'"
     try:
         result = run(command, shell=True)
-        return (result.returncode == 0)
+        return result.returncode == 0
     except Exception:
         return False
 
@@ -33,20 +33,20 @@ def in_shell_path(shell: str, binary: str) -> bool:
 # --------------------------------------------------------------------------- #
 # Test fixtures
 # --------------------------------------------------------------------------- #
-shells: List[str] = [
-    'sh',
-    'bash',
-    'fish',
+shells: List[Text] = [
+    "sh",
+    "bash",
+    "fish",
 ]
 
-binaries: List[str] = [
-
+binaries: List[Text] = [
     # extend shells
     *shells,
-
     # tools
     "git",
+    "gh",
     "nvim",
+    "emacs",
     "firebase",
     "aws",
     "gcloud",
@@ -55,21 +55,19 @@ binaries: List[str] = [
     "docker",
     "docker-compose",
     "screenfetch",
-
     # language: python
     "pyenv",
+    "python",
     "python3",
+    "pip",
     "pip3",
     "poetry",
-
     # langauge: js
     "node",
     "npm",
     "yarn",
-
     # language: java
     "java",
-
 ]
 
 
@@ -77,13 +75,13 @@ binaries: List[str] = [
 # Tests
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("shell", shells)
-def test_shells(shell: str):
-    """ Assert all shells we expect are in PATH. """
+def test_shells(shell: Text):
+    """Assert all expected shells are in PATH."""
     assert in_path(shell)
 
 
 @pytest.mark.parametrize("binary", binaries)
 @pytest.mark.parametrize("shell", shells)
-def test_binaries(shell: str, binary: str):
-    """ Asserts all binaries are in all shells. """
+def test_binaries(shell: Text, binary: Text):
+    """Asserts all expected binaries are in all shells."""
     assert in_shell_path(shell, binary)
