@@ -29,6 +29,11 @@
             "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
             "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
             "components": "/"
+        },
+        {
+            "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
+            "repository": "https://cli.github.com/packages",
+            "components": "stable main"
         }
     ],
     "apt_core_dependencies": [
@@ -53,6 +58,7 @@
         "fortune-mod",
         "fzf",
         "google-cloud-sdk",
+        "gh",
         "git",
         "kubectl",
         "lsb-release",
