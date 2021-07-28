@@ -2,6 +2,7 @@
 **/configstore
 **/firebase
 **/gcloud
+**/gh
 **/helm
 **/htop
 **/procps
