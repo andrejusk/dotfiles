@@ -38,12 +38,6 @@ if [ -f "$node_alias" ]; then
     export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
 fi
 
-
-# yarn
-export YARN_DIR=${YARN_DIR:-"$HOME/.yarn"}
-mkdir -p "$YARN_DIR"
-export PATH="$YARN_DIR/bin:$PATH"
-
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
