@@ -4,8 +4,8 @@ variable "prefix" {
 }
 
 variable "project" {
-  description = "Google Cloud project to host resources in"
   type        = string
+  description = "Google Cloud project to host resources in"
 }
 
 variable "project_number" {

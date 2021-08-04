@@ -1,4 +1,4 @@
-# dots.andrejus.dev
+# andrejusk/dotfiles
 
 Collection of my dotfiles and supporting install scripts
 
@@ -15,8 +15,11 @@ to be installed by running:
         uuid-runtime \
         wget
 
+    # Inspect source
+    wget http://dots.andrejus.dev/setup.sh -qO - | less
+
     # One-liner install if running on Ubuntu
-    wget https://dots.andrejus.dev/setup.sh -qO - | bash
+    wget http://dots.andrejus.dev/setup.sh -qO - | bash
 
 ## The Stack
 
