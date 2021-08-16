@@ -127,47 +127,11 @@ Plug 'junegunn/fzf.vim'
 Plug 'antoinemadec/coc-fzf'
 Plug 'airblade/vim-rooter'
 
-" coc
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+" LSP
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-compe'
 " {{{
-    let g:coc_global_extensions = [
-        \ 'coc-actions',
-        \ 'coc-clangd',
-        \ 'coc-css',
-        \ 'coc-docker',
-        \ 'coc-emmet',
-        \ 'coc-emoji',
-        \ 'coc-eslint',
-        \ 'coc-explorer',
-        \ 'coc-fish',
-        \ 'coc-fzf-preview',
-        \ 'coc-git',
-        \ 'coc-go',
-        \ 'coc-groovy',
-        \ 'coc-highlight',
-        \ 'coc-html',
-        \ 'coc-json',
-        \ 'coc-lists',
-        \ 'coc-marketplace',
-        \ 'coc-perl',
-        \ 'coc-prettier',
-        \ 'coc-python',
-        \ 'coc-react-refactor',
-        \ 'coc-rust-analyzer',
-        \ 'coc-sh',
-        \ 'coc-snippets',
-        \ 'coc-styled-components',
-        \ 'coc-svg',
-        \ 'coc-swagger',
-        \ 'coc-tabnine',
-        \ 'coc-toml',
-        \ 'coc-tslint',
-        \ 'coc-tslint-plugin',
-        \ 'coc-tsserver',
-        \ 'coc-vimlsp',
-        \ 'coc-xml',
-        \ 'coc-yaml',
-        \ ]
+    " let
 " }}}
 
 " ts
@@ -176,6 +140,9 @@ Plug 'maxmellon/vim-jsx-pretty'
 
 " elm
 Plug 'andys8/vim-elm-syntax'
+
+" rust
+Plug 'simrat39/rust-tools.nvim'
 
 
 " debugger

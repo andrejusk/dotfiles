@@ -2,6 +2,10 @@
 yarn --version
 
 for dep in $(jq -r ".node_dependencies[]" $CONFIG); do
-    yarn global add $dep
-    yarn global upgrade $dep
+    if grep --silent "$dep" $(yarn global dir)/package.json
+    then
+        yarn global upgrade $dep
+    else
+        yarn global add $dep
+    fi
 done

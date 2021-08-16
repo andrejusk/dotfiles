@@ -1,4 +1,4 @@
-"  Colourscheme
+" Colourscheme
 set background=dark
 colorscheme base16-seti
 
@@ -7,21 +7,40 @@ autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
 
 " Disable deprecated python2 provider
 let g:loaded_python_provider = 0
+set pyxversion=3
 
-" " Call method on window enter
-" augroup WindowManagement
-"   autocmd!
-"   autocmd WinEnter * call Handle_Win_Enter()
-" augroup END
+" Override start cowsay
+let g:startify_custom_header =
+        \ startify#pad(split(system('fortune | cowsay -f dragon-and-cow'), '\n'))
 
-" " Change highlight group of preview window when open
-" function! Handle_Win_Enter()
-"   if &previewwindow
-"     setlocal winhighlight=Normal:MarkdownError
-"   endif
-" endfunction
-"
-" {{{
-    let g:startify_custom_header =
-            \ startify#pad(split(system('fortune | cowsay -f tux'), '\n'))
-" }}}
+" LSP config
+lua << EOF
+local ok, _ = pcall(require, 'lspconfig')
+if not ok then
+  print('skipping lspconfig load')
+else
+  local lspconfig = require("lspconfig")
+  lspconfig.bashls.setup{}
+  lspconfig.dockerls.setup{}
+  lspconfig.efm.setup{}
+  lspconfig.elmls.setup{}
+  lspconfig.gopls.setup{}
+  lspconfig.graphql.setup{}
+  lspconfig.html.setup{}
+  lspconfig.jsonls.setup{}
+  lspconfig.perlls.setup{}
+  lspconfig.pyright.setup{
+    settings = {
+      python = {
+        typeCheckingMode = "strict"
+      }
+    }
+  }
+  lspconfig.rust_analyzer.setup{}
+  lspconfig.terraformls.setup{}
+  lspconfig.tsserver.setup{}
+  lspconfig.vimls.setup{}
+end
+
+EOF
+

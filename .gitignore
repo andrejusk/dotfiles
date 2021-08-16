@@ -1,3 +1,6 @@
+# machine-specific
+*.local
+
 # install artefacts
 **/tmp
 **/logs

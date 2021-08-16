@@ -13,9 +13,6 @@ syntax enable
 filetype on
 filetype plugin on
 
-" Hides buffers instead of closing them
-set hidden
-
 " do not wrap long lines by default
 set nowrap
 
@@ -68,6 +65,9 @@ set nowritebackup
 " ===                                UI                                    === "
 " ============================================================================ "
 
+" Cursor/scroll support in normal/visual modes
+set mouse=nv
+
 " Support italics
 hi Comment cterm=italic
 
@@ -81,7 +81,7 @@ endif
 set splitbelow
 set splitright
 
-" Don't dispay mode in command line (airilne already shows it)
+" Don't dispay mode in command line (airline already shows it)
 set noshowmode
 
 " Set floating window to be slightly transparent

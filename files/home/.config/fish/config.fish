@@ -3,7 +3,7 @@ if status is-interactive
 
     # Fish specific
     set fish_greeting
-    set --global hydro_symbol_prompt "\$"
+    set --global hydro_symbol_prompt "λ"
     set --global hydro_symbol_git_dirty "~"
     if type -q base16-seti
         base16-seti

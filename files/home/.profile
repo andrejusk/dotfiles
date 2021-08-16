@@ -17,6 +17,8 @@ mkdir -p "$XDG_CONFIG_HOME"
 export PATH="$HOME/.local/bin:$PATH"
 mkdir -p ~/.local/bin
 
+export PATH="/snap/bin:$PATH"
+
 # workspace
 export WORKSPACE=${WORKSPACE:-"$HOME/workspace"}
 mkdir -p "$WORKSPACE"
@@ -37,6 +39,7 @@ if [ -f "$node_alias" ]; then
     nvm install "$VERSION" > /dev/null 2>&1 & disown
     export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
 fi
+export PATH="$(yarn global bin):$PATH"
 
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
@@ -70,3 +73,8 @@ fi
 #
 alias j="z"
 alias fd=`command -v fdfind`
+
+# machine-specific overrides
+if [ -e $HOME/.profile.local ]; then
+    source $HOME/.profile.local
+fi

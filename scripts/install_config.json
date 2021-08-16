@@ -26,8 +26,8 @@
             "components": "buster stable"
         },
         {
-            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
-            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
+            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_11/Release.key",
+            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_11/",
             "components": "/"
         },
         {
@@ -75,10 +75,21 @@
         "yarn"
     ],
     "node_dependencies": [
+        "bash-language-server",
+        "dockerfile-language-server-nodejs",
+        "elm",
+        "elm-test",
+        "elm-format",
+        "@elm-tooling/elm-language-server",
         "firebase-tools",
+        "graphql-language-service-cli",
         "neovim",
+        "pyright",
         "typescript",
-        "typescript-language-server"
+        "typescript-language-server",
+        "vim-language-server",
+        "vscode-json-languageserver",
+        "vscode-langservers-extracted"
     ],
     "pip_dependencies": [
         "awscli",
