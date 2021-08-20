@@ -15,5 +15,6 @@ if status is-interactive
     end
 
     pyenv init - | source
+    poetry completions fish > ~/.config/fish/completions/poetry.fish
 
 end

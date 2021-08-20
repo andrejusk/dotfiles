@@ -58,6 +58,7 @@
         "fortune-mod",
         "fzf",
         "google-cloud-sdk",
+        "gopls",
         "gh",
         "git",
         "kubectl",
@@ -95,7 +96,6 @@
         "awscli",
         "docker-compose",
         "neovim",
-        "poetry",
         "python-language-server[all]",
         "pyvim"
     ],

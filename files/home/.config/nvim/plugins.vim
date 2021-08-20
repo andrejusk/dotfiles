@@ -8,6 +8,7 @@ Plug 'chriskempson/base16-vim'
 
 " dev icons
 Plug 'ryanoasis/vim-devicons'
+Plug 'kyazdani42/nvim-web-devicons'
 " {{{
     let g:webdevicons_enable_airline_tabline = 1
     let g:webdevicons_enable_airline_statusline = 1
@@ -124,14 +125,46 @@ Plug 'junegunn/fzf.vim'
     let g:fzf_preview_window = ['right:50%', 'ctrl-/']
     let g:fzf_buffers_jump = 1
 " }}}
-Plug 'antoinemadec/coc-fzf'
-Plug 'airblade/vim-rooter'
 
 " LSP
 Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'glepnir/lspsaga.nvim'
 Plug 'hrsh7th/nvim-compe'
 " {{{
-    " let
+    set completeopt=menuone,noselect
+
+    let g:compe = {}
+    let g:compe.enabled = v:true
+    let g:compe.autocomplete = v:true
+    let g:compe.debug = v:false
+    let g:compe.min_length = 1
+    let g:compe.preselect = 'enable'
+    let g:compe.throttle_time = 80
+    let g:compe.source_timeout = 200
+    let g:compe.resolve_timeout = 800
+    let g:compe.incomplete_delay = 400
+    let g:compe.max_abbr_width = 100
+    let g:compe.max_kind_width = 100
+    let g:compe.max_menu_width = 100
+    let g:compe.documentation = v:true
+
+    let g:compe.source = {}
+    let g:compe.source.path = v:true
+    let g:compe.source.buffer = v:true
+    let g:compe.source.calc = v:true
+    let g:compe.source.nvim_lsp = v:true
+    let g:compe.source.nvim_lua = v:true
+    let g:compe.source.vsnip = v:true
+    let g:compe.source.ultisnips = v:true
+    let g:compe.source.luasnip = v:true
+    let g:compe.source.emoji = v:true
+    let g:compe.source.spell = v:true
+    let g:compe.source.tags = v:true
+    let g:compe.source.snippets_nvim = v:true
+    let g:compe.source.treesitter = v:true
+
+    highlight link CompeDocumentation NormalFloat
 " }}}
 
 " ts

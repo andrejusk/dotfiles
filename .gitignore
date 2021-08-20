@@ -1,6 +1,10 @@
 # machine-specific
 *.local
 
+# IDE
+.vscode
+.idea
+
 # install artefacts
 **/tmp
 **/logs
