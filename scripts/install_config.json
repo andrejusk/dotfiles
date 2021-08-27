@@ -34,6 +34,11 @@
             "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
             "repository": "https://cli.github.com/packages",
             "components": "stable main"
+        },
+        {
+            "signingKey": "https://apt.boltops.com/boltops-key.public",
+            "repository": "https://apt.boltops.com",
+            "components": "stable main"
         }
     ],
     "apt_core_dependencies": [
@@ -71,6 +76,7 @@
         "stow",
         "terraform",
         "terraform-ls",
+        "terraspace",
         "tmux",
         "unzip",
         "yarn"
