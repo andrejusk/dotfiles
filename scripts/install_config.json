@@ -66,6 +66,7 @@
         "gopls",
         "gh",
         "git",
+        "ispell",
         "kubectl",
         "lsb-release",
         "make",

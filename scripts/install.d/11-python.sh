@@ -2,8 +2,8 @@
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
 if ! bin_in_path "pip3"; then
-    pyenv install 3.9.0
-    pyenv global 3.9.0
+    pyenv install $PYENV_VERSION
+    pyenv global $PYENV_VERSION
 fi
 
 pip install --upgrade pip
