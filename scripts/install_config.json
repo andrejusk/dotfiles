@@ -104,7 +104,8 @@
         "docker-compose",
         "neovim",
         "python-language-server[all]",
-        "pyvim"
+        "pyvim",
+        "pyre-check"
     ],
     "stow_packages": [
         {

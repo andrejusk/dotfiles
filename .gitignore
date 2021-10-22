@@ -10,10 +10,6 @@
 **/logs
 **/*.deb
 
-# ssh env
-**/id_rsa*
-**/known_hosts*
-
 # setup files
 **/autoload
 **/pypoetry
