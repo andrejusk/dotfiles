@@ -51,13 +51,17 @@ function install {
 #   * signingKey - gpg signing key url
 #   * components - apt components
 function add_repository {
+    source_file="/etc/apt/sources.list.d/dots.list"
     repository=$(jq -r ".repository" <<<"$1")
-    if ! grep -q "^deb .*${repository}" /etc/apt/sources.list; then
+    if [ ! -f "$source_file" ]; then
+        touch $source_file
+    fi
+    if ! grep -q "^deb .*${repository}" "$source_file"; then
         signingKey=$(jq -r ".signingKey" <<<"$1")
         components=$(jq -r ".components" <<<"$1")
-        curl -fsSL $signingKey | sudo apt-key add -
+        curl -fsSL $signingKey | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/dots.gpg > /dev/null
         source="deb [arch=$(dpkg --print-architecture)] ${repository} ${components}"
-        sudo add-apt-repository --yes "$source"
+        echo $source | sudo tee $source_file > /dev/null
     fi
 }
 
