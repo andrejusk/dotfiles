@@ -9,12 +9,17 @@ This function should only modify configuration layer settings."
    dotspacemacs-ask-for-lazy-installation t
 
    dotspacemacs-configuration-layer-path '()
-   dotspacemacs-configuration-layers '(python
-                                       (typescript :variables
-                 typescript-backend 'lsp
-                 typescript-fmt-tool 'prettier)
+   dotspacemacs-configuration-layers
+    '(
+      python
+      (typescript :variables
+                  typescript-backend 'lsp
+                  typescript-fmt-tool 'prettier
+                  typescript-linter 'eslint)
      react
-     javascript
+     (javascript :variables
+                 javascript-backend 'lsp
+                 javascript-fmt-tool 'prettier)
      auto-completion
      better-defaults
      emacs-lisp

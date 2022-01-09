@@ -12,5 +12,5 @@ python3 --version
 pip3 --version
 
 for dep in $(jq -r ".pip_dependencies[]" $CONFIG); do
-    pip3 install --upgrade $dep
+    pip3 install --quiet --upgrade $dep
 done

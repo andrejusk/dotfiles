@@ -27,7 +27,7 @@ function bin_in_path {
 
 # @arg $1 apt package to test
 function apt_installed {
-    dpkg --status $1 >/dev/null
+    dpkg --list $1 >/dev/null
 }
 
 function clean {
@@ -54,7 +54,7 @@ function add_repository {
     source_file="/etc/apt/sources.list.d/dots.list"
     repository=$(jq -r ".repository" <<<"$1")
     if [ ! -f "$source_file" ]; then
-        touch $source_file
+        sudo touch $source_file
     fi
     if ! grep -q "^deb .*${repository}" "$source_file"; then
         signingKey=$(jq -r ".signingKey" <<<"$1")

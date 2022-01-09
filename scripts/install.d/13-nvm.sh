@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 nvm_version="v0.38.0"
-if ! bin_in_path "nvm"; then
+if [ -d "$NVM_DIR" ]; then
     download_run "https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh" \
         "bash"
 fi
