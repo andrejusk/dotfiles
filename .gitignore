@@ -6,10 +6,11 @@
 .idea
 
 # install artefacts
-**/tmp
-**/logs
-**/*.deb
+.dotlock
+tmp
+logs
+.deb
 
 # setup files
-**/autoload
-**/pypoetry
+autoload
+pypoetry
