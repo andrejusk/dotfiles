@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+#
+# Ensure neovim is installed,
+# run plugin installation/updates
+#
+
+
 # Install neovim from unstable debian repo
 if ! bin_in_path "nvim"; then
     curl -fsSL "https://ftp-master.debian.org/keys/archive-key-10.asc" | sudo apt-key add -
