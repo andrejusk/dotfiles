@@ -5,16 +5,14 @@ if status is-interactive
     set fish_greeting
     set --global hydro_symbol_prompt "λ"
     set --global hydro_symbol_git_dirty "~"
-    if type -q base16-seti
-        base16-seti
-    end
 
     # Cross-shell setup
     if begin; test -e $HOME/.profile; and type -q replay; end
         replay "source $HOME/.profile"
+    else
+        echo "dots warn: .profile could not be loaded"
     end
 
     pyenv init - | source
-    poetry completions fish > ~/.config/fish/completions/poetry.fish
 
 end

@@ -1,6 +1,11 @@
-if [ -z "${DOTS_LOCK}" ]; then
-    export DOTS_LOCK=1
+#
+# Dots initialisation script:
+#  - Sets environment variables
+#  - Binds aliases
+#
 
+
+function dots_init {
     # U _____ u _   _  _     __
     # \| ___"|/| \ |"| \ \   /"/u
     #  |  _|" <|  \| |> \ \ / //
@@ -8,41 +13,51 @@ if [ -z "${DOTS_LOCK}" ]; then
     #  |_____| |_| \_| U  \_/-(_/
     #  <<   >> ||   \\,-.//
     # (__) (__)(_")  (_/(__)
-    #
-    # xdg data & config
-    export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
-    mkdir -p "$XDG_DATA_HOME"
 
-    export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
-    mkdir -p "$XDG_CONFIG_HOME"
-
-    # .local/bin
-    export PATH="$HOME/.local/bin:$PATH"
-    mkdir -p ~/.local/bin
-
-    # snap
-    export PATH="/snap/bin:$PATH"
+    # dotfiles
+    export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
     # workspace
     export WORKSPACE=${WORKSPACE:-"$HOME/workspace"}
     mkdir -p "$WORKSPACE"
 
-    # dotfiles
-    export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
+    # xdg data & config
+    export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
+    mkdir -p "$XDG_DATA_HOME"
+    export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
+    mkdir -p "$XDG_CONFIG_HOME"
+
+    # local user binaries
+    mkdir -p "$HOME/.local/bin"
+    export PATH="$HOME/.local/bin:$PATH"
+
+    # snap
+    export PATH="/snap/bin:$PATH"
 
     # nvm
     export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
-    mkdir -p "$NVM_DIR"
-    [ -f "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-
-    # node (default v14)
-    node_alias="$NVM_DIR/alias/lts/fermium"
-    if [ -f "$node_alias" ]; then
-        VERSION=`cat $node_alias`
-        export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
+    if [ -f "$NVM_DIR/nvm.sh" ]; then
+        source "$NVM_DIR/nvm.sh"
+    else
+        echo "dots warn: $NVM_DIR not found"
     fi
 
-    # python (default 3.8)
+    # node
+    export NODE_VERSION=${NODE_VERSION:-"lts/fermium"}
+    node_alias="$NVM_DIR/alias/$NODE_VERSION"
+    if [ -f "$node_alias" ]; then
+        VERSION=$(cat "$node_alias")
+        export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
+    else
+        echo "dots warn: $node_alias not found"
+    fi
+
+    # yarn
+    if command -v yarn >/dev/null; then
+        export PATH="$(yarn global bin):$PATH"
+    fi
+
+    # python
     VENV=$1
     VENV=${VENV:-"3.8.11"}
 
@@ -51,8 +66,10 @@ if [ -z "${DOTS_LOCK}" ]; then
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
     export WORKON_HOME="$HOME/.cache/pypoetry/virtualenvs"
-    if [ -x `command -v pyenv` ]; then
+    if [ -x $(command -v pyenv) ]; then
         eval "$(pyenv init --path)"
+    else
+        echo "dots warn: pyenv not found"
     fi
 
     # poetry
@@ -65,8 +82,12 @@ if [ -z "${DOTS_LOCK}" ]; then
     export Z_OWNER=${Z_OWNER:-$USER}
 
     # nix
+    export NIX_PATH="$HOME/.nix-defexpr/channels"
     if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
         . $HOME/.nix-profile/etc/profile.d/nix.sh
+    fi
+    if [ -e $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
+        . $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
     fi
 
     # WSL-specific X11 forwarding support
@@ -80,6 +101,7 @@ if [ -z "${DOTS_LOCK}" ]; then
         export TERM=eterm-color
     fi
 
+
     #     _       _                    _      ____
     # U  /"\  u  |"|        ___    U  /"\  u / __"| u
     #  \/ _ \/ U | | u     |_"_|    \/ _ \/ <\___ \/
@@ -88,12 +110,22 @@ if [ -z "${DOTS_LOCK}" ]; then
     #  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
     # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
     #
+
+    # FIXME isn't getting alias'd??
     alias j="z"
-    alias fd=`command -v fdfind`
+    alias fd=$(command -v fdfind)
+    alias which="command -v $@"
+    alias la="exa -la"
+    alias cat="batcat"
 
     # Machine-specific overrides
     if [ -e $HOME/.profile.local ]; then
         source $HOME/.profile.local
     fi
+}
 
+# Ensure dots only initialise once
+if [ -z "${DOTS_LOCK}" ]; then
+    export DOTS_LOCK=1
+    dots_init
 fi
