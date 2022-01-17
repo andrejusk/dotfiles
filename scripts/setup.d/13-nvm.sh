@@ -2,7 +2,8 @@
 
 #
 # Ensure nvm is installed
-# Ensure default node version is aliased, installed and active
+# Ensure default node version
+# is aliased, installed and active
 #
 
 

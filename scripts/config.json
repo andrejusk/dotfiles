@@ -1,71 +1,80 @@
 {
+    "stow_packages": [
+        {
+            "name": "home",
+            "target": "HOME"
+        }
+    ],
     "apt_repositories": [
         {
+            "identifier": "hashicorp",
             "signingKey": "https://apt.releases.hashicorp.com/gpg",
             "repository": "https://apt.releases.hashicorp.com",
             "components": "buster main"
         },
         {
+            "identifier": "yarn",
             "signingKey": "https://dl.yarnpkg.com/debian/pubkey.gpg",
             "repository": "https://dl.yarnpkg.com/debian",
             "components": "stable main"
         },
         {
+            "identifier": "gcloud",
             "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
             "repository": "https://packages.cloud.google.com/apt",
             "components": "cloud-sdk main"
         },
         {
+            "identifier": "gcloud-k8s",
             "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
             "repository": "https://apt.kubernetes.io/",
             "components": "kubernetes-xenial main"
         },
         {
+            "identifier": "docker",
             "signingKey": "https://download.docker.com/linux/debian/gpg",
             "repository": "https://download.docker.com/linux/debian",
             "components": "buster stable"
         },
         {
-            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_11/Release.key",
-            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_11/",
-            "components": "/"
-        },
-        {
+            "identifier": "github",
             "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
             "repository": "https://cli.github.com/packages",
             "components": "stable main"
         },
         {
+            "identifier": "boltops",
             "signingKey": "https://apt.boltops.com/boltops-key.public",
             "repository": "https://apt.boltops.com",
             "components": "stable main"
         }
     ],
     "apt_core_dependencies": [
+        "apt-transport-https",
+        "apt-utils",
+        "ca-certificates",
         "curl",
+        "figlet",
         "gnupg",
-        "gnupg2"
+        "gnupg2",
+        "stow"
     ],
     "apt_dependencies": [
-        "apt-transport-https",
-        "ca-certificates",
+        "cmatrix",
         "containerd.io",
         "cowsay",
         "default-jre",
         "devscripts",
-        "docker-ce",
         "docker-ce-cli",
+        "docker-ce",
         "emacs",
         "fd-find",
-        "figlet",
-        "fish",
         "fonts-nanum",
         "fortune-mod",
         "fzf",
-        "google-cloud-sdk",
-        "gopls",
         "gh",
         "git",
+        "google-cloud-sdk",
         "ispell",
         "kubectl",
         "lsb-release",
@@ -74,27 +83,26 @@
         "openssh-client",
         "openssh-server",
         "screenfetch",
-        "stow",
-        "terraform",
         "terraform-ls",
+        "terraform",
         "terraspace",
         "tmux",
         "unzip",
         "yarn"
     ],
     "node_dependencies": [
+        "@elm-tooling/elm-language-server",
         "bash-language-server",
         "dockerfile-language-server-nodejs",
-        "elm",
-        "elm-test",
         "elm-format",
-        "@elm-tooling/elm-language-server",
+        "elm-test",
+        "elm",
         "firebase-tools",
         "graphql-language-service-cli",
         "neovim",
         "pyright",
-        "typescript",
         "typescript-language-server",
+        "typescript",
         "vim-language-server",
         "vscode-json-languageserver",
         "vscode-langservers-extracted"
@@ -103,14 +111,8 @@
         "awscli",
         "docker-compose",
         "neovim",
+        "pyre-check",
         "python-language-server[all]",
-        "pyvim",
-        "pyre-check"
-    ],
-    "stow_packages": [
-        {
-            "name": "home",
-            "target": "HOME"
-        }
+        "pyvim"
     ]
 }

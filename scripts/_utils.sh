@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+
+#
 # Utility functions for common tasks
+#
 
 # @arg $1 URL to download
 # @arg $2 Path to file
@@ -25,49 +28,50 @@ function bin_in_path {
     command -v $1
 }
 
-# @arg $1 apt package to test
-function apt_installed {
-    dpkg --list $1 >/dev/null
-}
 
 function clean {
-    sudo apt-get clean -qq
+    sudo apt-get clean --yes && sudo apt-get autoremove --yes
 }
 
 function update {
-    sudo apt-get update -qq
+    sudo apt-get update --yes
 }
 
-# @arg $1 apt package to install if not present
+# @arg $@ apt package(s) to install
 function install {
-    if ! apt_installed $1; then
-        sudo apt-get install -qq $1
-    fi
+    sudo apt-get install --yes --no-install-recommends $@
+}
+
+# @arg $1 package list file to install
+# Lines beginning with hash are ignored
+function install_file {
+    grep -vE '^#' $1 | xargs \
+        sudo apt-get install --yes --no-install-recommends
 }
 
 # Add apt repository
 # @arg $1 JSON object containing the following keys
+#   * idnetifier - id for use in filenames
 #   * repository - apt repository
 #   * signingKey - gpg signing key url
 #   * components - apt components
 function add_repository {
-    source_file="/etc/apt/sources.list.d/dots.list"
+    id=$(jq -r ".identifier" <<<"$1")
     repository=$(jq -r ".repository" <<<"$1")
-    if [ ! -f "$source_file" ]; then
-        sudo touch $source_file
-    fi
-    if ! grep -q "^deb .*${repository}" "$source_file"; then
-        signingKey=$(jq -r ".signingKey" <<<"$1")
-        components=$(jq -r ".components" <<<"$1")
-        curl -fsSL $signingKey | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/dots.gpg > /dev/null
-        source="deb [arch=$(dpkg --print-architecture)] ${repository} ${components}"
-        echo $source | sudo tee $source_file > /dev/null
-    fi
-}
+    signing_key=$(jq -r ".signingKey" <<<"$1")
+    components=$(jq -r ".components" <<<"$1")
 
-# @arg $1 package list file to install
-function install_file {
-    sudo apt-get install -qqf $(cat $1)
+    source_file="/etc/apt/sources.list.d/${id}.list"
+    sudo touch "$source_file"
+
+    gpg_file="/etc/apt/trusted.gpg.d/${id}.gpg"
+    sudo touch "$gpg_file"
+
+    if ! grep -q "^deb .*${repository}" "$source_file"; then
+        curl -fsSL "$signing_key" | gpg --dearmor | sudo tee "$gpg_file" >/dev/null
+        source="deb [arch=$(dpkg --print-architecture)] ${repository} ${components}"
+        echo "$source" | sudo tee "$source_file" >/dev/null
+    fi
 }
 
 # @arg $1 JSON object containing the following keys

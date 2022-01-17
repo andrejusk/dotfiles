@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Run docker post-installation setup:
+# Run docker post-installation setup
 #
 
 

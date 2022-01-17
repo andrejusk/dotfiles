@@ -10,7 +10,7 @@ if ! bin_in_path "pyenv"; then
     echo "Installing pyenv..."
 
     # see https://github.com/pyenv/pyenv/wiki/common-build-problems
-    pyenv_list_file="$INSTALL_DIR/10-pyenv-pkglist"
+    pyenv_list_file="$SETUP_DIR/10-pyenv-pkglist"
     install_file "$pyenv_list_file"
 
     # see https://github.com/pyenv/pyenv-installer

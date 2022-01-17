@@ -1,5 +1,5 @@
-# machine-specific
-*.local
+# machine-specific files
+files/**/*.local
 
 # IDE
 .vscode
@@ -7,9 +7,7 @@
 
 # install artefacts
 .dotlock
-tmp
 logs
-.deb
 
 # setup files
 autoload

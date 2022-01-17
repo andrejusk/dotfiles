@@ -2,71 +2,83 @@
 set -eo pipefail
 
 #
-# Script that installs system dependencies specified in a config,
-# and runs all post-install scripts contained in a subdirectory.
+# Install system dependencies in specified config,
+# run all post-install scripts contained in a subdirectory
 #
 
-TIME=${TIME:-$(date)}
+
+TIME=$(date)
+HOST=$(hostname)
 UUID=${UUID:-$(uuidgen)}
-HOST=${HOST:-$(hostname)}
 
 NAME=$(basename "$0")
 REL_DIR=$(dirname "$0")
 ABS_DIR=$(readlink -f $REL_DIR/../) # Scripts are nested inside of /scripts
 
 UTILS="${REL_DIR}/_utils.sh"
-CONFIG="${REL_DIR}/install_config.json"
-INSTALL_DIR="${REL_DIR}/install.d"
+CONFIG="${REL_DIR}/config.json"
+SETUP_DIR="${REL_DIR}/setup.d"
 
+# Prevent running as root
+if [[ $EUID -eq 0 ]]; then
+    echo "Fatal: Running as sudo. Please run as user"
+    exit 1
+fi
+
+# Initialise log
 LOG_DIR="${ABS_DIR}/logs"
-mkdir -p "$LOG_DIR"
+mkdir -p $LOG_DIR
 LOG_TARGET=${LOG_TARGET:-"${LOG_DIR}/${UUID}.log"}
+touch $LOG_TARGET
+
+# Prevent concurrent runs
+LOCK_PATH="${ABS_DIR}/.dotlock"
+if [ -f $LOCK_PATH ]; then
+    echo "Fatal: ${LOCK_PATH} present. Please finish previous run"
+    exit 1
+else
+    # File-based lock prompts user for sudo password
+    # before handing session over to install script
+    sudo touch $LOCK_PATH
+fi
+trap "sudo rm -f ${LOCK_PATH}" EXIT
 
 install() {
-    echo "Running $NAME at $TIME"
-    echo "Running as $USER on $HOST"
-
-    # Prevent running as root
-    if [[ $EUID -eq 0 ]]; then
-        echo "Failed: Running as sudo. Please run as user"
-        exit 1
-    fi
+    echo "Running as ${USER} on ${HOST} (runID ${UUID})"
 
     # Load installer dependencies
-    source "$UTILS"
+    echo "Sourcing utility script..."
+    source $UTILS
+
+    echo "Verifying core apt dependencies are up-to-date..."
     update
-    install jq
-    for dep in $(jq -r ".apt_core_dependencies[]" "$CONFIG"); do
-        install "$dep"
-    done
+    install jq # Required for parsing config file
+    install $(jq -r ".apt_core_dependencies[]" "$CONFIG")
 
     # Add apt repositories
+    echo "Verifying apt repositories are present... "
     for i in $(jq ".apt_repositories | keys | .[]" "$CONFIG"); do
-        value=$(jq -r ".apt_repositories[$i]" "$CONFIG")
-        add_repository "$value"
+        add_repository "$(jq -r ".apt_repositories[$i]" "$CONFIG")"
     done
     update
 
     # Install apt dependencies
-    for dep in $(jq -r ".apt_dependencies[]" "$CONFIG"); do
-        install "$dep"
-    done
+    install $(jq -r ".apt_dependencies[]" "$CONFIG")
 
     # Install dotfiles on system and load them
     figlet -c "Stowing..."
     for i in $(jq ".stow_packages | keys | .[]" "$CONFIG"); do
-        value=$(jq -r ".stow_packages[$i]" "$CONFIG")
-        stow_package "$value"
+        stow_package "$(jq -r ".stow_packages[$i]" "$CONFIG")"
     done
     source "$HOME/.profile"
 
-    # Run custom installer scripts
+    # Run setup scripts
     figlet -c "Installing..."
-    for script in $INSTALL_DIR/*.sh; do
+    for script in $SETUP_DIR/*.sh; do
         figlet -c "$(basename $script)"
         source $script
     done
 }
 
-echo "install: Logging to $LOG_TARGET"
-install 2>&1 | tee "$LOG_TARGET"
+echo "${NAME}: Logging to ${LOG_TARGET}"
+install 2>&1 | tee $LOG_TARGET

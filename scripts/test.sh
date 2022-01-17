@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
+
+#
+# Build image and run test suite
+#
+
 
 IMAGE=${IMAGE:-"andrejusk/dotfiles"}
 tag=${TAG:-uuidgen}
 
-docker build . \
+docker buildx build . \
     --build-arg UUID=$tag \
     --cache-from $IMAGE \
     --tag $IMAGE:$tag \
     --target test
 
-docker run \
-    -v "$(pwd)"/logs:/home/test-user/.dotfiles/logs \
-    $IMAGE:$tag
+docker run $IMAGE:$tag

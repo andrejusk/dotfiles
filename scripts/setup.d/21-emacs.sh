@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Ensure spacemacs configuration layer is checked out
+# Ensure spacemacs config is checked out
 #
 
 

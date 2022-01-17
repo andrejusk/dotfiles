@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
-tag=$(uuidgen)
-docker build . \
+#
+# Build image and run bash prompt
+#
+
+
+tag=${TAG:-uuidgen}
+
+docker buildx build . \
     --build-arg UUID=$tag \
     --tag dotfiles:$tag \
-    --target install
+    --target source
 
 docker run \
-    -v "$(pwd)"/logs:/home/test-user/.dotfiles/logs \
+    -it \
     dotfiles:$tag \
     /bin/bash

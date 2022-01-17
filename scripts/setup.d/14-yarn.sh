@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 #
-# Ensure global node pacakges are installed
-# and up to date
+# Ensure global node pacakges
+# are installed and up to date
 #
 
 

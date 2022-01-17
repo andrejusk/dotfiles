@@ -2,9 +2,10 @@
 set -eo pipefail
 
 #
-# Script that checks out a compatible dotfiles repository
-# and runs the installer to set up a new installation.
+# Check out a compatible dotfiles repository
+# and set up a new installation
 #
+
 
 author=${GITHUB_AUTHOR:-andrejusk}
 repository=${GITHUB_REPOSITORY:-dotfiles}
