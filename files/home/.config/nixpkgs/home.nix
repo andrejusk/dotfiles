@@ -22,17 +22,19 @@
   programs.home-manager.enable = true;
   home.packages = with pkgs; [
     bat # cat rewrite in Rust
+    cmatrix
+    cowsay
     direnv
     exa # ls rewrite in Rust
     fd # find rewrite in Rust
-    fzf # Fuzzy finder
     fish
+    fortune
+    fzf # Fuzzy finder
     httpie
     lorri # Easy Nix shell
     niv # Nix dependency management
     ripgrep # grep rewrite in Rust
     sd # Fancy sed
-    skim # High-powered fuzzy finder written in Rust
     tokei # Handy tool to see lines of code by language
   ];
 }

@@ -60,9 +60,7 @@
         "stow"
     ],
     "apt_dependencies": [
-        "cmatrix",
         "containerd.io",
-        "cowsay",
         "default-jre",
         "devscripts",
         "docker-ce-cli",
@@ -70,8 +68,6 @@
         "emacs",
         "fd-find",
         "fonts-nanum",
-        "fortune-mod",
-        "fzf",
         "gh",
         "git",
         "google-cloud-sdk",

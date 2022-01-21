@@ -110,8 +110,6 @@ function dots_init {
     #  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
     # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
     #
-
-    # FIXME isn't getting alias'd??
     alias j="z"
     alias fd=$(command -v fdfind)
     alias which="command -v $@"

@@ -20,4 +20,4 @@ nix-channel --update
 nix-shell '<home-manager>' -A install
 source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 
-home-manager build
+home-manager switch
