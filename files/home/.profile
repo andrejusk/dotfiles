@@ -6,16 +6,9 @@
 
 
 function dots_init {
-    # U _____ u _   _  _     __
-    # \| ___"|/| \ |"| \ \   /"/u
-    #  |  _|" <|  \| |> \ \ / //
-    #  | |___ U| |\  |u /\ V /_,-.
-    #  |_____| |_| \_| U  \_/-(_/
-    #  <<   >> ||   \\,-.//
-    # (__) (__)(_")  (_/(__)
 
     # dotfiles
-    export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
+    export DOTS_DIR=${DOTS_DIR:-"$HOME/.dotfiles"}
 
     # workspace
     export WORKSPACE=${WORKSPACE:-"$HOME/workspace"}
@@ -100,21 +93,6 @@ function dots_init {
         export SHELL=$(command -v bash)
         export TERM=eterm-color
     fi
-
-
-    #     _       _                    _      ____
-    # U  /"\  u  |"|        ___    U  /"\  u / __"| u
-    #  \/ _ \/ U | | u     |_"_|    \/ _ \/ <\___ \/
-    #  / ___ \  \| |/__     | |     / ___ \  u___) |
-    # /_/   \_\  |_____|  U/| |\u  /_/   \_\ |____/>>
-    #  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
-    # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
-    #
-    alias j="z"
-    alias fd=$(command -v fdfind)
-    alias which="command -v $@"
-    alias la="exa -la"
-    alias cat="batcat"
 
     # Machine-specific overrides
     if [ -e $HOME/.profile.local ]; then

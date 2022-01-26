@@ -19,12 +19,12 @@ RUN useradd -r -u 1001 --create-home -m "test-user" && \
 #
 FROM debian-base AS source
 
-ARG DOTFILES_DIR="/home/test-user/.dotfiles"
-RUN mkdir ${DOTFILES_DIR} && chown test-user ${DOTFILES_DIR}
+ARG DOTS_DIR="/home/test-user/.dotfiles"
+RUN mkdir ${DOTS_DIR} && chown test-user ${DOTS_DIR}
 
-ADD --chown="test-user" files "$DOTFILES_DIR/files"
-ADD --chown="test-user" scripts "$DOTFILES_DIR/scripts"
-WORKDIR "$DOTFILES_DIR"
+ADD --chown="test-user" files "$DOTS_DIR/files"
+ADD --chown="test-user" scripts "$DOTS_DIR/scripts"
+WORKDIR "$DOTS_DIR"
 
 
 #
@@ -43,6 +43,6 @@ RUN ./scripts/install.sh
 #
 FROM install AS test
 
-ADD --chown="test-user" tests "$DOTFILES_DIR/tests"
-WORKDIR "${DOTFILES_DIR}/tests"
+ADD --chown="test-user" tests "$DOTS_DIR/tests"
+WORKDIR "${DOTS_DIR}/tests"
 ENTRYPOINT [ "./run.sh" ]

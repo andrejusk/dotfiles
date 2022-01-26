@@ -96,6 +96,7 @@
         "firebase-tools",
         "graphql-language-service-cli",
         "neovim",
+        "pnpm",
         "pyright",
         "typescript-language-server",
         "typescript",

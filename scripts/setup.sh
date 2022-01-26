@@ -12,7 +12,7 @@ repository=${GITHUB_REPOSITORY:-dotfiles}
 branch=${GITHUB_BRANCH:-master}
 echo "Using repository $author/$repository at $branch"
 
-setup_dir=${DOTFILES_DIR:-$HOME/.dotfiles}
+setup_dir=${DOTS_DIR:-$HOME/.dotfiles}
 
 # Prevent overwriting existing installation
 mkdir -p $setup_dir
