@@ -9,7 +9,7 @@ jobs:
     name: Publish setup script
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
