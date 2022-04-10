@@ -17,5 +17,6 @@ else
     echo "Poetry already present"
 fi
 
+# FIXME when switching python versions, requires a manual re-run of above
 poetry self update
 poetry --version

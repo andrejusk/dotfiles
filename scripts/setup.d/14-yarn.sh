@@ -4,6 +4,8 @@
 # Ensure global node pacakges
 # are installed and up to date
 #
+# TODO use pnpm -g https://pnpm.io/cli/add
+#
 
 
 yarn --version

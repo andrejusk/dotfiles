@@ -63,6 +63,7 @@
         "containerd.io",
         "default-jre",
         "devscripts",
+        "diffoscope",
         "docker-ce-cli",
         "docker-ce",
         "emacs",

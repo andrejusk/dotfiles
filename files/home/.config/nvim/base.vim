@@ -5,9 +5,6 @@
 " Leader key <SPACE>
 let g:mapleader=' '
 
-" Use posix-compliant shell
-set shell=sh
-
 " Enable syntax highlighting
 syntax enable
 filetype on
