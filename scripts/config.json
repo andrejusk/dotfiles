@@ -60,6 +60,7 @@
         "stow"
     ],
     "apt_dependencies": [
+        "asciinema",
         "containerd.io",
         "default-jre",
         "devscripts",
