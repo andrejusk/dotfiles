@@ -66,14 +66,14 @@ install() {
     install $(jq -r ".apt_dependencies[]" "$CONFIG")
 
     # Install dotfiles on system and load them
-    figlet -c "Stowing..."
+    figlet -c "Installing..."
     for i in $(jq ".stow_packages | keys | .[]" "$CONFIG"); do
         stow_package "$(jq -r ".stow_packages[$i]" "$CONFIG")"
     done
     source "$HOME/.profile"
 
     # Run setup scripts
-    figlet -c "Installing..."
+    figlet -c "Setting up..."
     for script in $SETUP_DIR/*.sh; do
         figlet -c "$(basename $script)"
         source $script
