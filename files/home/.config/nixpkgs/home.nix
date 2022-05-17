@@ -71,6 +71,7 @@
             la = "exa -la";
             cat = "batcat";
             which = "command -v $argv";
+            aptup = "sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y && sudo apt autoremove -y";
         };
 
         shellInit =
