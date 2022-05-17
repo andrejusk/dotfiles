@@ -44,6 +44,7 @@ fi
 trap "sudo rm -f ${LOCK_PATH}" EXIT
 
 install() {
+    # Start log
     echo "Running as ${USER} on ${HOST} (runID ${UUID})"
 
     # Load installer dependencies
@@ -56,7 +57,7 @@ install() {
     install $(jq -r ".apt_core_dependencies[]" "$CONFIG")
 
     # Add apt repositories
-    echo "Verifying apt repositories are present... "
+    echo "Verifying apt repositories are present and up-to-date... "
     for i in $(jq ".apt_repositories | keys | .[]" "$CONFIG"); do
         add_repository "$(jq -r ".apt_repositories[$i]" "$CONFIG")"
     done
@@ -65,11 +66,14 @@ install() {
     # Install apt dependencies
     install $(jq -r ".apt_dependencies[]" "$CONFIG")
 
+    # TODO exit early if --apt-only is passed via command-line
+
     # Install dotfiles on system and load them
     figlet -c "Installing..."
     for i in $(jq ".stow_packages | keys | .[]" "$CONFIG"); do
         stow_package "$(jq -r ".stow_packages[$i]" "$CONFIG")"
     done
+    echo "Loading dots profile..."
     source "$HOME/.profile"
 
     # Run setup scripts

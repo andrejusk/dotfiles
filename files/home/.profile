@@ -59,17 +59,18 @@ if [ -f "$node_alias" ]; then
     if [[ ! $PATH == *$VERSION* ]]; then
         export PATH="$NVM_DIR/versions/node/$VERSION/bin:$PATH"
     fi
+
+    # FIXME better dependency
+    # -------------------------------------------------------------------------
+    # yarn
+    if command -v yarn >/dev/null; then
+        YARN_PATH=$(yarn global bin)
+        if [[ ! $PATH == *$YARN_PATH* ]]; then
+            export PATH="$YARN_PATH:$PATH"
+        fi
+    fi
 else
     echo "dots warn: '$node_alias' not found"
-fi
-
-# -----------------------------------------------------------------------------
-# yarn
-if command -v yarn >/dev/null; then
-    YARN_PATH=$(yarn global bin)
-    if [[ ! $PATH == *$YARN_PATH* ]]; then
-        export PATH="$YARN_PATH:$PATH"
-    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -107,14 +108,15 @@ export NIX_PATH="$HOME/.nix-defexpr/channels"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
     . $HOME/.nix-profile/etc/profile.d/nix.sh
 fi
-if [ -e $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
+if ! [ -z "${__HM_SESS_VARS_SOURCED}" ] && [ -e $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
     . $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 fi
 
 # -----------------------------------------------------------------------------
 # WSL-specific X11 forwarding support
-if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
+if grep -qEi "(Microsoft|WSL)" /proc/version &>/dev/null; then
     export DISPLAY=$(awk '/nameserver/ {print $2}' /etc/resolv.conf):0.0
 fi
+# TODO sys32 PATH
 
 export PATH="$HOME/.poetry/bin:$PATH"
