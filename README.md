@@ -1,13 +1,14 @@
 # andrejusk/dotfiles
 
-Collection of my dotfiles and supporting install scripts
+Collection of dotfiles and install scripts
+
 
 ## Installer
 
 [![Dotfiles publisher](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml)
 
-Each push to master publishes the setup script, allowing the repo
-to be installed by running:
+Each push to `master` branch publishes a setup script.
+This allows the repository to be installed by running:
 
     # Dependencies if running on Debian
     sudo apt update && sudo apt install --no-install-recommends --yes \
@@ -18,8 +19,21 @@ to be installed by running:
     # Inspect source
     wget http://dots.andrejus.dev/setup.sh -qO - | less
 
-    # One-liner install if running on Ubuntu
+    # One-liner install
     wget http://dots.andrejus.dev/setup.sh -qO - | bash
+
+
+Check out the repository directly:
+
+    # Dependencies
+    sudo apt update && sudo apt install --no-install-recommends --yes git
+
+    # Clone
+    git clone git@github.com:andrejusk/dotfiles.git $HOME/.dotfiles
+
+    # Run the installer
+    $HOME/.dotfiles/scripts/install.sh
+
 
 ## The Stack
 
