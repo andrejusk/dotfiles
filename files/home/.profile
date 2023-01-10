@@ -26,9 +26,11 @@ export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
 
 # nvm
-export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
-mkdir -p "$NVM_DIR"
-[ -f "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+if [ -z "$NVM_DIR" ]; then
+    export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
+    mkdir -p "$NVM_DIR"
+    [ -f "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+fi
 
 # node (default v14)
 node_alias="$NVM_DIR/alias/lts/fermium"
