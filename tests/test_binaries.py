@@ -45,9 +45,6 @@ binaries: List[Text] = [
     # tools
     "git",
     "gh",
-    "nvim",
-    "emacs",
-    "firebase",
     "aws",
     "gcloud",
     "terraform",
