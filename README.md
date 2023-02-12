@@ -48,4 +48,5 @@ Tested and maintained against Debian buster
 - docker
 - terraform (+ ls)
 - gcloud, firebase, awscli
+- redis cli
 - kubectl
