@@ -10,11 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1.1.0
+
+      # Set up the gcloud auth credentials
+      - name: 'Set up auth'
+        uses: 'google-github-actions/auth@v1'
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          export_default_credentials: true
-      - name: Publish to CDN
-        run: ./scripts/publish.sh
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      # Set up the gcloud CLI
+      - name: 'Set up Cloud SDK'
+        uses: google-github-actions/setup-gcloud@v1.1.0
+
+      # Publish the setup script
+      - name: 'Run publish script'
+        run: scripts/publish
