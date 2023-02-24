@@ -12,7 +12,7 @@ HOST=${HOST:-$(hostname)}
 
 NAME=$(basename "$0")
 REL_DIR=$(dirname "$0")
-ABS_DIR=$(readlink -f $REL_DIR/../) # Scripts are nested inside of /scripts
+ABS_DIR=$(readlink -f $REL_DIR/../) # Scripts are nested inside of /script
 
 UTILS="${REL_DIR}/_utils.sh"
 CONFIG="${REL_DIR}/install_config.json"

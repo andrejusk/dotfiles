@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Utility functions for common tasks
 
 # @arg $1 URL to download
@@ -78,6 +77,14 @@ function stow_package {
         rm -f $HOME/.bashrc
         rm -f $HOME/.profile
         target=$HOME
+        ;;
+    CONFIG)
+        mkdir $HOME/.config
+        target=$HOME/.config
+        ;;
+    SSH)
+        mkdir $HOME/.ssh
+        target=$HOME/.ssh
         ;;
     *) ;;
 

@@ -1,10 +1,11 @@
 # andrejusk/dotfiles
 
-Collection of my dotfiles and supporting install scripts
+[![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
+
+Collection of dotfiles and supporting install scripts
+to set up a reproducible development environment
 
 ## Installer
-
-[![Dotfiles publisher](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/andrejusk/dotfiles/actions/workflows/publish.yml)
 
 Each push to master publishes the setup script, allowing the repo
 to be installed by running:
@@ -15,27 +16,24 @@ to be installed by running:
         uuid-runtime \
         wget
 
+
     # Inspect source
-    wget http://dots.andrejus.dev/setup.sh -qO - | less
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup -qO - | less
 
     # One-liner install if running on Ubuntu
-    wget http://dots.andrejus.dev/setup.sh -qO - | bash
+    wget https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup -qO - | bash
 
 ## The Stack
 
-[![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
+Tested and maintained against Debian bullseye
 
-Tested and maintained against Debian buster
-
-### Shells
+### Shell
 
 - 🐟 fish (+ fisher)
 
-### Editors
+### Editor
 
 - vscode
-- neovim (+ vim-plug)
-- spacemacs
 
 ### Languages
 

@@ -92,8 +92,16 @@
     ],
     "stow_packages": [
         {
+            "name": "config",
+            "target": "CONFIG"
+        },
+        {
             "name": "home",
             "target": "HOME"
+        },
+        {
+            "name": "ssh",
+            "target": "SSH"
         }
     ]
 }

@@ -1,7 +1,7 @@
 #
 # debian-base: Base Debian image with sudo user
 #
-FROM debian:buster AS debian-base
+FROM debian:bullseye AS debian-base
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 ENV DEBIAN_FRONTEND noninteractive
@@ -25,7 +25,7 @@ RUN mkdir ${DOTFILES_DIR}
 RUN chown test-user ${DOTFILES_DIR}
 
 ADD --chown="test-user" files "$DOTFILES_DIR/files"
-ADD --chown="test-user" scripts "$DOTFILES_DIR/scripts"
+ADD --chown="test-user" script "$DOTFILES_DIR/script"
 WORKDIR "$DOTFILES_DIR"
 
 
@@ -37,7 +37,7 @@ FROM source AS install
 USER test-user
 ENV USER=test-user
 ARG UUID="docker"
-RUN ./scripts/install.sh
+RUN ./script/install
 
 
 #
