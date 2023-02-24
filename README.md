@@ -13,9 +13,7 @@ to be installed by running:
     # Dependencies if running on Debian
     sudo apt update && sudo apt install --no-install-recommends --yes \
         software-properties-common \
-        uuid-runtime \
         wget
-
 
     # Inspect source
     wget https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup -qO - | less

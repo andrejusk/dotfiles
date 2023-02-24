@@ -2,7 +2,7 @@
 set -euo pipefail
 
 IMAGE=${IMAGE:-"andrejusk/dotfiles"}
-tag=${TAG:-uuidgen}
+tag=${TAG:-$(cat /proc/sys/kernel/random/uuid)}
 
 docker build . \
     --build-arg UUID=$tag \

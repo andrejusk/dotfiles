@@ -46,18 +46,20 @@ function install {
 
 # Add apt repository
 # @arg $1 JSON object containing the following keys
+#   * key        - entry key
 #   * repository - apt repository
 #   * signingKey - gpg signing key url
 #   * components - apt components
 function add_repository {
+    key=$(jq -r ".key" <<<"$1")
     repository=$(jq -r ".repository" <<<"$1")
-    if ! grep -q "^deb .*${repository}" /etc/apt/sources.list; then
-        signingKey=$(jq -r ".signingKey" <<<"$1")
-        components=$(jq -r ".components" <<<"$1")
-        curl -fsSL $signingKey | sudo apt-key add -
-        source="deb [arch=$(dpkg --print-architecture)] ${repository} ${components}"
-        sudo add-apt-repository --yes "$source"
-    fi
+    signingKey=$(jq -r ".signingKey" <<<"$1")
+    components=$(jq -r ".components" <<<"$1")
+    source="deb [arch=$(dpkg --print-architecture)] ${repository} ${components}"
+    echo "$source" | sudo tee "/etc/apt/sources.list.d/${key}.list" >/dev/null
+    wget -O- "$signingKey" |
+        gpg --dearmor |
+        sudo tee "/etc/apt/keyrings/${key}.gpg" >/dev/null
 }
 
 # @arg $1 package list file to install
@@ -79,11 +81,11 @@ function stow_package {
         target=$HOME
         ;;
     CONFIG)
-        mkdir $HOME/.config
+        mkdir -p $HOME/.config
         target=$HOME/.config
         ;;
     SSH)
-        mkdir $HOME/.ssh
+        mkdir -p $HOME/.ssh
         target=$HOME/.ssh
         ;;
     *) ;;

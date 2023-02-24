@@ -1,36 +1,43 @@
 {
     "apt_repositories": [
         {
+            "key": "hashicorp",
             "signingKey": "https://apt.releases.hashicorp.com/gpg",
             "repository": "https://apt.releases.hashicorp.com",
-            "components": "buster main"
+            "components": "bullseye main"
         },
         {
+            "key": "yarn",
             "signingKey": "https://dl.yarnpkg.com/debian/pubkey.gpg",
             "repository": "https://dl.yarnpkg.com/debian",
             "components": "stable main"
         },
         {
+            "key": "google-cloud",
             "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
             "repository": "https://packages.cloud.google.com/apt",
             "components": "cloud-sdk main"
         },
         {
+            "key": "google-k8s",
             "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
             "repository": "https://apt.kubernetes.io/",
             "components": "kubernetes-xenial main"
         },
         {
+            "key": "docker",
             "signingKey": "https://download.docker.com/linux/debian/gpg",
             "repository": "https://download.docker.com/linux/debian",
-            "components": "buster stable"
+            "components": "bullseye stable"
         },
         {
+            "key": "fish",
             "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
             "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
             "components": "/"
         },
         {
+            "key": "github",
             "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
             "repository": "https://cli.github.com/packages",
             "components": "stable main"
@@ -64,7 +71,7 @@
         "lsb-release",
         "make",
         "net-tools",
-        "netcat",
+        "netcat-traditional",
         "openssh-client",
         "openssh-server",
         "redis-tools",

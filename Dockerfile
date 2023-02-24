@@ -7,7 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -qq update
 RUN apt-get -qq install --no-install-recommends \
-    software-properties-common sudo uuid-runtime
+    software-properties-common sudo
 
 # Create user with sudo priviledge
 RUN useradd -r -u 1001 --create-home -m "test-user"
