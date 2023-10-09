@@ -2,28 +2,29 @@
 
 [![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
 
-Collection of dotfiles and supporting install scripts
-to set up a reproducible development environment
+My collection of dotfiles and install scripts
+to set up reproducible dev environments
 
-## Installer
+## Usage
 
-Each push to master publishes the setup script, allowing the repo
-to be installed by running:
+A local repository can be installed by running:
 
-    # Dependencies if running on Debian
-    sudo apt update && sudo apt install --no-install-recommends --yes \
-        software-properties-common \
-        wget
+    ./script/install
+
+### Automated install
+
+This repository can be installed without a local copy
+by invoking the `setup` script directly via `curl`:
 
     # Inspect source
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup -qO - | less
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | less
 
-    # One-liner install if running on Ubuntu
-    wget https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup -qO - | bash
+    # Run
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | bash
 
-## The Stack
+## Features
 
-Tested and maintained against Debian bullseye
+My dotfiles include configuration for the following tools:
 
 ### Shell
 

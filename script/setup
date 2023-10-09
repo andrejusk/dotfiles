@@ -1,34 +1,82 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
+# --------------------------------------------------------------------
+# Summary: Script to checkout a compatible
+# repository and run `script/install`
 #
-# Script that checks out a compatible dotfiles repository
-# and runs the installer to set up a new installation.
+# Optional arguments:
+#   GITHUB_AUTHOR: GitHub author of repository
+#    Defaults to "andrejusk"
+#   GITHUB_REPOSITORY: GitHub repository name
+#    Defaults to "dotfiles"
+#   GITHUB_BRANCH: GitHub branch name
+#    Defaults to "master"
+#   DOTFILES_DIR: Directory to install dotfiles to
+#    Defaults to "$HOME/.dotfiles"
+#   DOTFILES_SKIP_INSTALL: Skip running `script/install`
+#    Defaults to false
+#
+# Required binaries:
+#   curl
+#   tar
 #
 
-author=${GITHUB_AUTHOR:-andrejusk}
-repository=${GITHUB_REPOSITORY:-dotfiles}
-branch=${GITHUB_BRANCH:-master}
-echo "Using repository $author/$repository at $branch"
+echo "============================================================"
+echo "Running \"$(basename "$0")\" at \"$(date)\""
+echo "Running as \"$(whoami)\" on \"$(hostname)\""
+echo "============================================================"
 
-setup_dir=${DOTFILES_DIR:-$HOME/.dotfiles}
-
-# Prevent overwriting existing installation
-mkdir -p $setup_dir
-if [[ -z $(ls -A $setup_dir) ]]; then
-    echo "Setting up $setup_dir"
-else
-    echo "Failed: Setup directory not empty $setup_dir"
+# Exit if wget is not installed
+if ! command -v curl &> /dev/null; then
+    echo "Failed: curl is not installed"
     exit 1
 fi
 
-# Download and untar repo
+# Exit if tar is not installed
+if ! command -v tar &> /dev/null; then
+    echo "Failed: tar is not installed"
+    exit 1
+fi
+
+# Read and check if setup directory is empty
+setup_dir=${DOTFILES_DIR:-$HOME/.dotfiles}
+mkdir -p $setup_dir
+if [[ -z $(ls -A $setup_dir) ]]; then
+    echo "Setting up in directory \"$setup_dir\""
+else
+    echo "Failed: Setup directory not empty \"$setup_dir\""
+    exit 1
+fi
+
+# Read GitHub repository and branch from environment variables
+author=${GITHUB_AUTHOR:-andrejusk}
+repository=${GITHUB_REPOSITORY:-dotfiles}
+branch=${GITHUB_BRANCH:-master}
+
+# Check if repository and branch exists
+if curl -s "https://api.github.com/repos/$author/$repository" | grep -q "Not Found"; then
+    echo "Failed: GitHub repository \"$author/$repository\" does not exist"
+    exit 1
+fi
+if curl -s "https://api.github.com/repos/$author/$repository/branches/$branch" | grep -q "not found"; then
+    echo "Failed: Branch \"$branch\" does not exist in GitHub repository \"$author/$repository\""
+    exit 1
+fi
+echo "Using GitHub repository \"$author/$repository\" at \"$branch\""
+
+# Download and extract repo
 tmp_dir=$(mktemp -d)
 tmp_dest="$tmp_dir/dotfiles.tar.gz"
-wget "https://github.com/$author/$repository/archive/$branch.tar.gz" -qO $tmp_dest
+checkout_url="https://github.com/$author/$repository/archive/$branch.tar.gz"
+curl -sL $checkout_url -o $tmp_dest
 tar -C $tmp_dir -zxf $tmp_dest
 mv $tmp_dir/$repository-$branch/* $setup_dir
 rm -rf $tmp_dir
 
-# Run installer
-$setup_dir/script/install
+# Run installer unless DOTFILES_SKIP_INSTALL is set
+if [[ -z "$DOTFILES_SKIP_INSTALL" ]]; then
+    $setup_dir/script/install
+else
+    echo "Skipping install"
+fi

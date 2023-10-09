@@ -1,5 +1,6 @@
 # install artefacts
-**/tmp
+tmp
+temp
 **/logs
 **/*.deb
 

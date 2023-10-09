@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# --------------------------------------------------------------------
+# Script that sets up git in dotfiles directory.
+#
+# Optional arguments:
+#   GITHUB_AUTHOR: GitHub author of repository
+#    Defaults to "andrejusk"
+#   GITHUB_REPOSITORY: GitHub repository name
+#    Defaults to "dotfiles"
+#   GITHUB_BRANCH: GitHub branch name
+#    Defaults to "master"
+#  DOTFILES_DIR: Directory where dotfiles are installed
+#    Defaults to parent directory of this script
+#
+
+echo "============================================================"
+echo "Running \"$(basename "$0")\" at \"$(date)\""
+echo "Running as \"$(whoami)\" on \"$(hostname)\""
+echo "============================================================"
+
+dir=${DOTFILES_DIR:-$(dirname "$0")}
+dir=$(realpath "$dir/..")
+
+author=${GITHUB_AUTHOR:-andrejusk}
+repository=${GITHUB_REPOSITORY:-dotfiles}
+branch=${GITHUB_BRANCH:-master}
+
+echo "Using GitHub repository \"$author/$repository\" at \"$branch\""
+echo "Using dotfiles directory \"$dir\""
+echo "<<< git logs"
+printf "\n"
+
+git -C $dir init
+git -C $dir remote add origin "git@github.com:$author/$repository.git"
+git -C $dir fetch origin $branch
+git -C $dir reset --hard FETCH_HEAD
+git -C $dir branch --set-upstream-to=origin/$branch $branch
+git -C $dir pull --rebase
+
+printf "\n"
+echo ">>> git logs"
+echo "Done!"

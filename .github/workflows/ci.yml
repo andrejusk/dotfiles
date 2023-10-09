@@ -10,4 +10,4 @@ jobs:
 
       # Run the tests
       - name: 'Run tests'
-        run: ./script/test
+        run: ./tools/test

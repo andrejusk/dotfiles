@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# --------------------------------------------------------------------
+# This script is used to run the install script in a docker container
+# and then run the test script.
+#
+
 IMAGE=${IMAGE:-"andrejusk/dotfiles"}
 tag=${TAG:-$(cat /proc/sys/kernel/random/uuid)}
 

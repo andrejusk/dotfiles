@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# --------------------------------------------------------------------
+# This script is used to run the install script in a docker container.
+#
+
 tag=$(cat /proc/sys/kernel/random/uuid)
 docker build . \
     --build-arg UUID=$tag \
