@@ -28,7 +28,7 @@ My dotfiles include configuration for the following tools:
 
 ### Shell
 
-- 🐟 fish (+ fisher)
+- zsh
 
 ### Editor
 

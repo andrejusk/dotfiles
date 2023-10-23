@@ -36,7 +36,7 @@ def in_shell_path(shell: Text, binary: Text) -> bool:
 shells: List[Text] = [
     "sh",
     "bash",
-    "fish",
+    "zsh",
 ]
 
 binaries: List[Text] = [
