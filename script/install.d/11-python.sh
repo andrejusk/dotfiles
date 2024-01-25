@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Description:
+#   Configure Python.
+#
+
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
 if ! bin_in_path "pip3"; then

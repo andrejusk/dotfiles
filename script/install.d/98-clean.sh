@@ -2,13 +2,12 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Print operating system information.
+#   Clean up after installation.
 #
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    sw_vers
+    brew cleanup
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    lsb_release -a
-else
-    echo "Unknown OS: $OSTYPE"
+    sudo apt-get autoremove -qq
+    sudo apt-get clean -qq
 fi

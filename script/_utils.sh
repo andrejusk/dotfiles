@@ -31,10 +31,6 @@ function apt_installed {
     dpkg --status $1 >/dev/null
 }
 
-function clean {
-    sudo apt-get clean -qq
-}
-
 function update {
     sudo apt-get update -qq
 }
