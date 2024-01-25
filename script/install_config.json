@@ -81,7 +81,8 @@
         "terraform",
         "tmux",
         "unzip",
-        "yarn"
+        "yarn",
+	"zsh"
     ],
     "node_dependencies": [
         "firebase-tools",
