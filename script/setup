@@ -5,18 +5,6 @@ set -eo pipefail
 # Summary: Script to checkout a compatible
 # repository and run `script/install`
 #
-# Optional arguments:
-#   GITHUB_AUTHOR: GitHub author of repository
-#    Defaults to "andrejusk"
-#   GITHUB_REPOSITORY: GitHub repository name
-#    Defaults to "dotfiles"
-#   GITHUB_BRANCH: GitHub branch name
-#    Defaults to "master"
-#   DOTFILES_DIR: Directory to install dotfiles to
-#    Defaults to "$HOME/.dotfiles"
-#   DOTFILES_SKIP_INSTALL: Skip running `script/install`
-#    Defaults to false
-#
 # Required binaries:
 #   curl
 #   tar
