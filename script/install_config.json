@@ -31,22 +31,11 @@
             "components": "bullseye stable"
         },
         {
-            "key": "fish",
-            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
-            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
-            "components": "/"
-        },
-        {
             "key": "github",
             "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
             "repository": "https://cli.github.com/packages",
             "components": "stable main"
         }
-    ],
-    "apt_core_dependencies": [
-        "curl",
-        "gnupg",
-        "gnupg2"
     ],
     "apt_dependencies": [
         "apt-transport-https",
@@ -60,7 +49,6 @@
         "emacs",
         "fd-find",
         "figlet",
-        "fish",
         "fonts-nanum",
         "fortune-mod",
         "fzf",
@@ -76,13 +64,11 @@
         "openssh-server",
         "redis-tools",
         "screenfetch",
-        "stow",
         "terraform-ls",
         "terraform",
         "tmux",
         "unzip",
-        "yarn",
-	"zsh"
+        "yarn"
     ],
     "node_dependencies": [
         "firebase-tools",
@@ -97,19 +83,5 @@
         "poetry",
         "python-language-server[all]",
         "pyvim"
-    ],
-    "stow_packages": [
-        {
-            "name": "config",
-            "target": "CONFIG"
-        },
-        {
-            "name": "home",
-            "target": "HOME"
-        },
-        {
-            "name": "ssh",
-            "target": "SSH"
-        }
     ]
 }

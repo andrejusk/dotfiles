@@ -7,12 +7,11 @@
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     export NONINTERACTIVE=1
-    if ! bin_in_path brew; then
-        download_run https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh /bin/bash
-    else
-        brew update
+    if ! command -v brew &> /dev/null; then
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
 
+    brew update
     brew --version
 
     unset NONINTERACTIVE

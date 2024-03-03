@@ -11,10 +11,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         font-fira-code-nerd-font
     )
 
-    brew tap homebrew/cask-fonts
-    for font in "${fonts_list[@]}"; do
-        brew install --cask "$font"
-    done
+    if ! brew list "${fonts_list[@]}" &> /dev/null; then
+        brew tap homebrew/cask-fonts
+        for font in "${fonts_list[@]}"; do
+            brew install --cask "$font"
+        done
+    fi
 
     unset fonts_list
 fi
