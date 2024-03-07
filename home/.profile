@@ -21,6 +21,13 @@ fi
 mkdir -p ~/.local/bin
 unset local_bin_path
 
+# homebrew
+brew_path="/opt/homebrew/bin/brew"
+if [ -x "$brew_path" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+unset brew_path
+
 # workspace
 export WORKSPACE=${WORKSPACE:-"$HOME/Workspace"}
 mkdir -p "$WORKSPACE"

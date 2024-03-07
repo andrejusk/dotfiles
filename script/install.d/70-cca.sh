@@ -6,7 +6,9 @@
 #
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! command -v cca &> /dev/null; then
+    if ! brew list --cask colour-contrast-analyser &> /dev/null; then
         brew install --cask colour-contrast-analyser
+    else
+        echo "Colour Contrast Analyser (CCA) is already installed."
     fi
 fi

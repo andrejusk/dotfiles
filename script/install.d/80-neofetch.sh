@@ -12,3 +12,5 @@ if ! command -v "neofetch" &>/dev/null; then
         brew install neofetch
     fi
 fi
+
+echo "$(neofetch --version)"

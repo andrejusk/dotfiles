@@ -13,3 +13,5 @@ if ! command -v "terraform" &>/dev/null; then
         brew install hashicorp/tap/terraform
     fi
 fi
+
+terraform --version
