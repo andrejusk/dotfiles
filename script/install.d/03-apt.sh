@@ -20,4 +20,6 @@ if command -v apt-get &> /dev/null; then
     fi
 
     unset apt_packages
+else
+    echo "Skipping: apt-get not found"
 fi

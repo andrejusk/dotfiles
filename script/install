@@ -14,6 +14,7 @@ sudo -v
 
 dir=$(dirname "$0")
 install_dir="$dir/install.d"
+export DOTFILES=$(dirname "$dir")
 
 if [[ -z "$LOG_TARGET" ]]; then
     timestamp=$(date +%Y-%m-%dT%H:%M:%S)
@@ -25,7 +26,7 @@ if [[ -z "$LOG_TARGET" ]]; then
     log_dir="$dir/logs"
     mkdir -p "$log_dir"
     log_target=${LOG_TARGET:-"$log_dir/$uuid.log"}
-elif
+else
     log_target="$LOG_TARGET"
 fi
 
@@ -37,7 +38,7 @@ install() {
         script_name=$(basename $script)
         printf "\n\n<<< $script_name:\n"
         source $script
-        printf "\n\n>>> $script_name\n"
+        printf "\n>>> $script_name\n"
         unset script_name
     done
 }

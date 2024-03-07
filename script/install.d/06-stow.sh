@@ -15,13 +15,14 @@ fi
 
 stow --version
 
-root_dir=$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")
+root_dir=${DOTFILES:-$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")}
 
 rm -f $HOME/.bash_profile
 rm -f $HOME/.bashrc
 rm -f $HOME/.gitconfig
 rm -f $HOME/.profile
 rm -f $HOME/.zshrc
+rm -f $HOME/.p10k.zsh
 rm -f $HOME/.ssh/config
 
 mkdir -p $HOME/.config
