@@ -5,4 +5,4 @@
 #   Print system information.
 #
 
-screenfetch
+neofetch

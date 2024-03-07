@@ -5,17 +5,21 @@ set -eo pipefail
 # Script to run all install scripts contained in install.d
 #
 
-# Prevent running as root and check sudo access
+# Prevent running as root
 if [[ $EUID -eq 0 ]]; then
     echo "Failed: Running as sudo. Please run as user"
     exit 1
 fi
+
+# Ensure sudo credentials are cached
 sudo -v
 
+# Set up directory variables
 dir=$(dirname "$0")
 install_dir="$dir/install.d"
 export DOTFILES=$(dirname "$dir")
 
+# Set up log destination
 if [[ -z "$LOG_TARGET" ]]; then
     timestamp=$(date +%Y-%m-%dT%H:%M:%S)
     uuid=$(
@@ -29,7 +33,14 @@ if [[ -z "$LOG_TARGET" ]]; then
 else
     log_target="$LOG_TARGET"
 fi
+touch "$log_target"
+if [[ ! -f "$log_target" ]]; then
+    echo "Failed: Unable to create log file \"$log_target\""
+    exit 1
+fi
+log_abs_target=$(readlink -f "$log_target")
 
+# Run install scripts
 install() {
     echo "Running \"$(basename "$0")\" at \"$(date)\""
     echo "Running as \"$(whoami)\" on \"$(hostname)\""
@@ -42,8 +53,9 @@ install() {
         unset script_name
     done
 }
+echo "install: Logging to \"$log_abs_target\""
+install 2>&1 | tee "$log_abs_target"
 
-echo "install: Logging to \"$log_target\""
-install 2>&1 | tee "$log_target"
-
-unset uuid dir install_dir log_dir log_target
+# Clean up
+unset uuid dir install_dir log_dir log_abs_target log_target
+echo "Thank you!"

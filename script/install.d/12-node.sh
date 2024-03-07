@@ -5,29 +5,35 @@
 #   Configure Node.js.
 #
 
-nvm_version="0.39.7"
-if ! bin_in_path "nvm"; then
-    download_run "https://raw.githubusercontent.com/nvm-sh/nvm/v${nvm_version}/install.sh" \
-        "bash"
-fi
-
 NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+
+nvm_version="0.39.7"
+if ! command -v "nvm" &>/dev/null; then
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v${nvm_version}/install.sh)"
+    [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+fi
 
 nvm --version
 nvm alias default lts/iron
 nvm install lts/iron
 nvm use lts/iron
 
-node --version
+echo "Node.js $(node --version)"
 
-yarn --version
+echo "npm $(npm --version)"
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    for dep in $(jq -r ".node_dependencies[]" $CONFIG); do
-        yarn global add $dep
-        yarn global upgrade $dep
-    done
+npm_dependencies=(
+    "firebase-tools"
+    "neovim"
+    "typescript-language-server"
+    "typescript"
+)
+
+npm_dependencies=($(comm -13 <(printf "%s\n" "${npm_dependencies[@]}" | sort) <(npm list -g --depth=0 --parseable | awk -F'/' '{print $NF}' | sort)))
+
+if [ ${#npm_dependencies[@]} -gt 0 ]; then
+    npm install -g "${npm_dependencies[@]}"
 fi
 
-unset nvm_version
+unset nvm_version npm_dependencies

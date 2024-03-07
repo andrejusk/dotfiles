@@ -69,19 +69,5 @@
         "tmux",
         "unzip",
         "yarn"
-    ],
-    "node_dependencies": [
-        "firebase-tools",
-        "neovim",
-        "typescript-language-server",
-        "typescript"
-    ],
-    "pip_dependencies": [
-        "awscli",
-        "docker-compose",
-        "neovim",
-        "poetry",
-        "python-language-server[all]",
-        "pyvim"
     ]
 }
