@@ -7,12 +7,11 @@
 
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
-if ! command -v "pip3" &>/dev/null; then
+if ! command -v "python" &>/dev/null; then
     pyenv install 3.12.1
     pyenv global 3.12.1
 fi
 
-pip install --quiet --upgrade --user pip
 pip3 install --quiet --upgrade --user pip
 python3 --version
 pip3 --version
@@ -31,6 +30,13 @@ if [ ${#pip_dependencies[@]} -gt 0 ]; then
 fi
 
 unset installed_packages pip_dependencies PYTHON_KEYRING_BACKEND
+
+local_bin_path="$HOME/.local/bin"
+if [[ ":$PATH:" != *":$local_bin_path:"* ]]; then
+    export PATH="$local_bin_path:$PATH"
+fi
+mkdir -p ~/.local/bin
+unset local_bin_path
 
 if ! command -v "pipx" &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
