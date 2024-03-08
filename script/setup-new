@@ -39,7 +39,7 @@ fi
 
 # Read GitHub repository and branch from environment variables
 author=${GITHUB_AUTHOR:-andrejusk}
-repository=${GITHUB_REPOSITORY:-dotfiles}
+repository=${GITHUB_REPO:-dotfiles}
 branch=${GITHUB_BRANCH:-master}
 
 # Check if repository and branch exists

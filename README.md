@@ -15,10 +15,10 @@ A local repository can be installed by running:
 ### Automated setup
 
 This repository can be installed without a local copy
-by invoking the `setup` script directly via `curl`:
+by invoking the `setup-new` script directly via `curl`:
 
     # Inspect source
-    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | less
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | less
 
     # Run
-    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | bash
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | bash

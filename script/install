@@ -5,6 +5,9 @@ set -eo pipefail
 # Script to run all install scripts contained in install.d
 #
 
+printf "\n\t <<< dots installer >>>\n"
+printf "\t========================\n\n\n"
+
 # Prevent running as root
 if [[ $EUID -eq 0 ]]; then
     echo "Failed: Running as sudo. Please run as user"

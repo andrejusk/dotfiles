@@ -7,7 +7,7 @@
 
 if ! command -v "neofetch" &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sudo apt-get install -qq neofetch
+        sudo apt-get install neofetch -qq
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         brew install neofetch
     fi

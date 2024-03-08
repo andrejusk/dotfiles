@@ -18,6 +18,4 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "Adding user to docker group"
         sudo usermod -aG docker "$USER"
     fi
-
-    unset docker_group
 fi

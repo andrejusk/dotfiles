@@ -16,4 +16,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     brew --version
 
     unset NONINTERACTIVE
+else
+    echo "Skipping: Not macOS"
 fi

@@ -25,7 +25,6 @@ if ! command -v "pyenv" &> /dev/null; then
             liblzma-dev
             zlib1g-dev
         )
-        pyenv_packages=($(comm -13 <(printf "%s\n" "${pyenv_packages[@]}" | sort) <(dpkg --get-selections | awk '{print $1}' | sort)))
         if [ ${#pyenv_packages[@]} -gt 0 ]; then
             sudo apt-get install -qq "${pyenv_packages[@]}"
         fi
@@ -50,6 +49,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     unset virtualenv_path
 fi
 
-eval "$(pyenv init --path)"
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
 
 pyenv --version

@@ -19,12 +19,6 @@
             "components": "cloud-sdk main"
         },
         {
-            "key": "google-k8s",
-            "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
-            "repository": "https://apt.kubernetes.io/",
-            "components": "kubernetes-xenial main"
-        },
-        {
             "key": "docker",
             "signingKey": "https://download.docker.com/linux/debian/gpg",
             "repository": "https://download.docker.com/linux/debian",

@@ -40,3 +40,9 @@ export POWERLEVEL10K="$ZSH/custom/themes/powerlevel10k"
 if [ ! -d "$POWERLEVEL10K" ]; then
     git clone -q --depth=1 https://github.com/romkatv/powerlevel10k.git $POWERLEVEL10K
 fi
+
+# change default shell to zsh
+if [[ "$SHELL" != *zsh ]]; then
+    sudo chsh -s "$(command -v zsh)" "$(whoami)"
+    sudo usermod -s "$(command -v zsh)" "$(whoami)"
+fi
