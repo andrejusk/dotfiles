@@ -17,8 +17,8 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -qq "${apt_packages[@]}"
 
     unset apt_packages
+
+    apt --version
 else
     echo "Skipping: apt-get not found"
 fi
-
-apt --version
