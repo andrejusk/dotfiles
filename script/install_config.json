@@ -23,12 +23,6 @@
             "signingKey": "https://download.docker.com/linux/debian/gpg",
             "repository": "https://download.docker.com/linux/debian",
             "components": "bullseye stable"
-        },
-        {
-            "key": "github",
-            "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
-            "repository": "https://cli.github.com/packages",
-            "components": "stable main"
         }
     ],
     "apt_dependencies": [
@@ -46,7 +40,6 @@
         "fonts-nanum",
         "fortune-mod",
         "fzf",
-        "gh",
         "git",
         "google-cloud-sdk",
         "kubectl",

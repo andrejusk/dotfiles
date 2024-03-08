@@ -8,7 +8,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sw_vers
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    lsb_release -a
+    cat /etc/os-release
 else
     echo "Unknown OS: $OSTYPE"
 fi

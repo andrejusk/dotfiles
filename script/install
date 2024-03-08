@@ -9,13 +9,15 @@ printf "\n\t <<< dots installer >>>\n"
 printf "\t========================\n\n\n"
 
 # Prevent running as root
-if [[ $EUID -eq 0 ]]; then
+if [[ $EUID -eq 0 && -z "$SKIP_SUDO_CHECK" ]]; then
     echo "Failed: Running as sudo. Please run as user"
     exit 1
 fi
 
 # Ensure sudo credentials are cached
-sudo -v
+if [[ -z "$SKIP_SUDO_CHECK" ]]; then
+    sudo -v
+fi
 
 # Set up directory variables
 dir=$(dirname "$0")

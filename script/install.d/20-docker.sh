@@ -1,11 +1,4 @@
-#!/usr/bin/env bash
-
-# -----------------------------------------------------------------------------
-# Description:
-#   (Ubuntu only) Configure docker.
-#
-
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* && -z "$SKIP_DOCKER_CONFIG" ]]; then
     docker --version
 
     readonly docker_group="docker"

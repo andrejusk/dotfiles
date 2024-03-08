@@ -10,12 +10,11 @@ if command -v apt-get &> /dev/null; then
         curl
         gnupg
         gnupg2
+        wget
     )
 
     sudo apt-get update -qq
-    if [ ${#apt_packages[@]} -gt 0 ]; then
-        sudo apt-get install -qq "${apt_packages[@]}"
-    fi
+    sudo apt-get install -qq "${apt_packages[@]}"
 
     unset apt_packages
 else
@@ -23,4 +22,3 @@ else
 fi
 
 apt --version
-echo "Last updated: $(ls -l /var/lib/apt/periodic/update-success-stamp | awk '{print $6" "$7" "$8}')"

@@ -5,29 +5,16 @@
 #   Configure pyenv.
 #
 
-if ! command -v "pyenv" &> /dev/null; then
+export PYENV_ROOT="$HOME/.pyenv"
+if ! echo $PATH | grep -q "$PYENV_ROOT"; then
+    export PATH="$PYENV_ROOT/bin:$PATH"
+fi
+if ! command -v "pyenv" &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # see https://github.com/pyenv/pyenv/wiki/common-build-problems
-        ppyenv_packages=(
-            build-essential
-            libssl-dev
-            libbz2-dev
-            libreadline-dev
-            libsqlite3-dev
-            libxml2-dev
-            libxmlsec1-dev
-            llvm
-            libncurses5-dev
-            libncursesw5-dev
-            xz-utils
-            tk-dev
-            libffi-dev
-            liblzma-dev
-            zlib1g-dev
-        )
-        if [ ${#pyenv_packages[@]} -gt 0 ]; then
-            sudo apt-get install -qq "${pyenv_packages[@]}"
-        fi
+        # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+        sudo apt-get install -qq build-essential libssl-dev zlib1g-dev \
+            libbz2-dev libreadline-dev libsqlite3-dev curl \
+            libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 
         # see https://github.com/pyenv/pyenv-installer
         bash -c "$(curl -fsSL https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer)"
@@ -49,8 +36,6 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     unset virtualenv_path
 fi
 
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+eval "$(pyenv init --path)"
 
 pyenv --version

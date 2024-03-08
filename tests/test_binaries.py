@@ -6,6 +6,7 @@ from distutils.spawn import find_executable
 from typing import List, Text
 from subprocess import run
 import pytest
+import os
 
 
 # --------------------------------------------------------------------------- #
@@ -22,7 +23,7 @@ def in_shell_path(shell: Text, binary: Text) -> bool:
     """
     Check whether `binary` is in interactive shell's PATH
     """
-    command = f"{shell} -i -c 'command -v {binary}'"
+    command = f"{shell} -c 'command -v {binary}'"
     try:
         result = run(command, shell=True)
         return result.returncode == 0
@@ -42,16 +43,14 @@ shells: List[Text] = [
 binaries: List[Text] = [
     # extend shells
     *shells,
+
     # tools
     "git",
     "gh",
-    "aws",
-    "gcloud",
     "terraform",
-    "kubectl",
-    "docker",
-    "docker-compose",
+    "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "screenfetch",
+
     # language: python
     "pyenv",
     "python",
@@ -59,10 +58,12 @@ binaries: List[Text] = [
     "pip",
     "pip3",
     "poetry",
+
     # langauge: js
     "node",
     "npm",
     "yarn",
+
     # language: java
     "java",
 ]
