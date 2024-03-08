@@ -1,7 +1,7 @@
 #
 # debian-base: Base Debian image with sudo user
 #
-FROM debian:trixie-slim AS base
+FROM debian:bookworm-slim AS base
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 ENV DEBIAN_FRONTEND noninteractive

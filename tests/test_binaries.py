@@ -49,7 +49,7 @@ binaries: List[Text] = [
     "gh",
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
-    "screenfetch",
+    "neofetch",
 
     # language: python
     "pyenv",
@@ -63,10 +63,9 @@ binaries: List[Text] = [
     "node",
     "npm",
     "yarn",
-
-    # language: java
-    "java",
 ]
+binaries = [binary for binary in binaries if binary is not None]
+
 
 
 # --------------------------------------------------------------------------- #
