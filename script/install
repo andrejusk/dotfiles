@@ -2,69 +2,65 @@
 set -eo pipefail
 
 # --------------------------------------------------------------------
-# Script that installs system dependencies specified in a config,
-# and runs all post-install scripts contained in a subdirectory.
+# Script to run all install scripts contained in install.d
 #
 
-uuid=${UUID:-$(cat /proc/sys/kernel/random/uuid)}
-dir=$(dirname "$0")
-utils="${dir}/_utils.sh"
-config="${dir}/install_config.json"
-install_dir="${dir}/install.d"
-log_dir="${dir}/logs"
+printf "\n\t <<< dots installer >>>\n"
+printf "\t========================\n\n\n"
 
-# Create log directory if it doesn't exist
-# and the log path hasn't been overridden
-if [[ -z "$LOG_TARGET" ]]; then
-    mkdir -p "$log_dir"
+# Prevent running as root
+if [[ $EUID -eq 0 && -z "$SKIP_SUDO_CHECK" ]]; then
+    echo "Failed: Running as sudo. Please run as user"
+    exit 1
 fi
-log_target=${LOG_TARGET:-"${log_dir}/${uuid}.log"}
 
+# Ensure sudo credentials are cached
+if [[ -z "$SKIP_SUDO_CHECK" ]]; then
+    sudo -v
+fi
+
+# Set up directory variables
+dir=$(dirname "$0")
+install_dir="$dir/install.d"
+export DOTFILES=$(dirname "$dir")
+
+# Set up log destination
+if [[ -z "$LOG_TARGET" ]]; then
+    timestamp=$(date +%Y-%m-%dT%H:%M:%S)
+    uuid=$(
+        uuidgen 2> /dev/null \
+        || cat /proc/sys/kernel/random/uuid 2> /dev/null \
+        || echo $RANDOM
+    )
+    log_dir="$dir/logs"
+    mkdir -p "$log_dir"
+    log_target=${LOG_TARGET:-"$log_dir/$uuid.log"}
+else
+    log_target="$LOG_TARGET"
+fi
+touch "$log_target"
+if [[ ! -f "$log_target" ]]; then
+    echo "Failed: Unable to create log file \"$log_target\""
+    exit 1
+fi
+log_abs_target=$(readlink -f "$log_target")
+
+# Run install scripts
 install() {
     echo "Running \"$(basename "$0")\" at \"$(date)\""
     echo "Running as \"$(whoami)\" on \"$(hostname)\""
 
-    # Prevent running as root
-    if [[ $EUID -eq 0 ]]; then
-        echo "Failed: Running as sudo. Please run as user"
-        exit 1
-    fi
-
-    # Load installer dependencies
-    source "$utils"
-    update
-    install jq
-    for dep in $(jq -r ".apt_core_dependencies[]" "$config"); do
-        install "$dep"
-    done
-
-    # Add apt repositories
-    for i in $(jq ".apt_repositories | keys | .[]" "$config"); do
-        value=$(jq -r ".apt_repositories[$i]" "$config")
-        add_repository "$value"
-    done
-    update
-
-    # Install apt dependencies
-    for dep in $(jq -r ".apt_dependencies[]" "$config"); do
-        install "$dep"
-    done
-
-    # Install dotfiles on system and load them
-    figlet -c "Stowing..."
-    for i in $(jq ".stow_packages | keys | .[]" "$config"); do
-        value=$(jq -r ".stow_packages[$i]" "$config")
-        stow_package "$value"
-    done
-    source "$HOME/.profile"
-
-    # Run custom installer scripts
-    figlet -c "Installing..."
     for script in $install_dir/*.sh; do
-        figlet -c "$(basename $script)"
+        script_name=$(basename $script)
+        printf "\n\n<<< $script_name:\n"
         source $script
+        printf "\n>>> $script_name\n"
+        unset script_name
     done
 }
+echo "install: Logging to \"$log_abs_target\""
+install 2>&1 | tee "$log_abs_target"
 
-echo "install: Logging to \"$log_target\""
-install 2>&1 | tee "$log_target"
+# Clean up
+unset uuid dir install_dir log_dir log_abs_target log_target
+echo "Thank you!"

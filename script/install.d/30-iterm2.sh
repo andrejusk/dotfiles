@@ -2,13 +2,11 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Print operating system information.
+#   (macOS only) Install iTerm2.
 #
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    sw_vers
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    cat /etc/os-release
-else
-    echo "Unknown OS: $OSTYPE"
+    if ! brew list --cask iterm2 &>/dev/null; then
+        brew install --cask iterm2
+    fi
 fi

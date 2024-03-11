@@ -19,34 +19,11 @@
             "components": "cloud-sdk main"
         },
         {
-            "key": "google-k8s",
-            "signingKey": "https://packages.cloud.google.com/apt/doc/apt-key.gpg",
-            "repository": "https://apt.kubernetes.io/",
-            "components": "kubernetes-xenial main"
-        },
-        {
             "key": "docker",
             "signingKey": "https://download.docker.com/linux/debian/gpg",
             "repository": "https://download.docker.com/linux/debian",
             "components": "bullseye stable"
-        },
-        {
-            "key": "fish",
-            "signingKey": "https://download.opensuse.org/repositories/shells:fish/Debian_10/Release.key",
-            "repository": "https://download.opensuse.org/repositories/shells:/fish/Debian_10/",
-            "components": "/"
-        },
-        {
-            "key": "github",
-            "signingKey": "https://cli.github.com/packages/githubcli-archive-keyring.gpg",
-            "repository": "https://cli.github.com/packages",
-            "components": "stable main"
         }
-    ],
-    "apt_core_dependencies": [
-        "curl",
-        "gnupg",
-        "gnupg2"
     ],
     "apt_dependencies": [
         "apt-transport-https",
@@ -60,11 +37,9 @@
         "emacs",
         "fd-find",
         "figlet",
-        "fish",
         "fonts-nanum",
         "fortune-mod",
         "fzf",
-        "gh",
         "git",
         "google-cloud-sdk",
         "kubectl",
@@ -76,39 +51,10 @@
         "openssh-server",
         "redis-tools",
         "screenfetch",
-        "stow",
         "terraform-ls",
         "terraform",
         "tmux",
         "unzip",
         "yarn"
-    ],
-    "node_dependencies": [
-        "firebase-tools",
-        "neovim",
-        "typescript-language-server",
-        "typescript"
-    ],
-    "pip_dependencies": [
-        "awscli",
-        "docker-compose",
-        "neovim",
-        "poetry",
-        "python-language-server[all]",
-        "pyvim"
-    ],
-    "stow_packages": [
-        {
-            "name": "config",
-            "target": "CONFIG"
-        },
-        {
-            "name": "home",
-            "target": "HOME"
-        },
-        {
-            "name": "ssh",
-            "target": "SSH"
-        }
     ]
 }

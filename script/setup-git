@@ -2,7 +2,7 @@
 set -eo pipefail
 
 # --------------------------------------------------------------------
-# Script that sets up git in dotfiles directory.
+# Script that sets up git remote in dotfiles directory.
 #
 # Optional arguments:
 #   GITHUB_AUTHOR: GitHub author of repository
@@ -38,6 +38,8 @@ git -C $dir fetch origin $branch
 git -C $dir reset --hard FETCH_HEAD
 git -C $dir branch --set-upstream-to=origin/$branch $branch
 git -C $dir pull --rebase
+
+unset dir author repository branch
 
 printf "\n"
 echo ">>> git logs"

@@ -1,9 +1,10 @@
 # andrejusk/dotfiles
 
-[![Dotfiles CI](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
+[![Dotfiles CI status badge](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
 
-My collection of dotfiles and install scripts
-to set up reproducible dev environments
+A collection of dotfiles and install scripts
+to set up my development environment
+🛠️ 📂️ 🚀
 
 ## Usage
 
@@ -11,39 +12,13 @@ A local repository can be installed by running:
 
     ./script/install
 
-### Automated install
+### Automated setup
 
 This repository can be installed without a local copy
-by invoking the `setup` script directly via `curl`:
+by invoking the `setup-new` script directly via `curl`:
 
     # Inspect source
-    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | less
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | less
 
     # Run
-    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup | bash
-
-## Features
-
-My dotfiles include configuration for the following tools:
-
-### Shell
-
-- 🐟 fish (+ fisher)
-
-### Editor
-
-- vscode
-
-### Languages
-
-- node.js (nvm, yarn)
-- python (pyenv, poetry)
-
-### Tools
-
-- git, gh
-- docker
-- terraform (+ ls)
-- gcloud, firebase, awscli
-- redis cli
-- kubectl
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | bash

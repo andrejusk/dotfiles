@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
-screenfetch
+
+# -----------------------------------------------------------------------------
+# Description:
+#   Print system information.
+#
+
+neofetch
