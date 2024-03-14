@@ -50,6 +50,8 @@ binaries: List[Text] = [
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "neofetch",
+    "redis-cli",
+    "redis-server",
 
     # language: python
     "pyenv",
