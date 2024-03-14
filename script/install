@@ -20,7 +20,7 @@ if [[ -z "$SKIP_SUDO_CHECK" ]]; then
 fi
 
 # Set up directory variables
-dir=$(dirname "$0")
+dir=$(dirname $(readlink "$0"))
 install_dir="$dir/install.d"
 export DOTFILES=$(dirname "$dir")
 
