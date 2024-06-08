@@ -94,4 +94,5 @@ fi
 # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
 alias j="z"
-alias fd=`command -v fdfind`
+alias fd="command -v fdfind"
+alias dots="$DOTFILES/install"
