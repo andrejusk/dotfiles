@@ -8,9 +8,8 @@ source $HOME/.profile
 export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
+export DISABLE_AUTO_UPDATE="true"
 export ZSH="$HOME/.oh-my-zsh"
-
-zstyle ':omz:update' frequency 13
 
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 plugins=(
