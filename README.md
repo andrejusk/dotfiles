@@ -12,6 +12,14 @@ A local repository can be installed by running:
 
     ./script/install
 
+Once installed, updates can be applied by running:
+
+    dots
+
+A specific script can be installed by running:
+
+    dots script1 script2 ...
+
 ### Automated setup
 
 This repository can be installed without a local copy
