@@ -1,3 +1,11 @@
-alias j="z"
-alias fd="command -v fdfind"
+# dotfiles
 alias dots=$DOTFILES/install
+
+# jump around
+alias j="z"
+
+# zip
+alias tarz="tar -czvf"
+# unzip
+alias tarx="tar -xzvf"
+alias taru="tarx"
