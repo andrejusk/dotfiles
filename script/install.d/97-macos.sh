@@ -26,8 +26,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     # Appearance
     # ----------
-    # Multicolour -- Appearance
-    defaults write -globalDomain AppleAquaColorVariant -int 0
+    # Graphite -- Appearance (prevent top-left window colours)
+    defaults write -globalDomain AppleAquaColorVariant -int 6
 
     # on -- Appearance: Dark mode
     defaults write -globalDomain AppleInterfaceStyle -string "Dark"
