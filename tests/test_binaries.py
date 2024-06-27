@@ -43,7 +43,6 @@ shells: List[Text] = [
 binaries: List[Text] = [
     # extend shells
     *shells,
-
     # tools
     "git",
     "gh",
@@ -52,7 +51,6 @@ binaries: List[Text] = [
     "neofetch",
     "redis-cli",
     "redis-server",
-
     # language: python
     "pyenv",
     "python",
@@ -61,14 +59,12 @@ binaries: List[Text] = [
     "pip3",
     "pipx",
     "poetry",
-
     # langauge: js
     "node",
     "npm",
     "yarn",
 ]
 binaries = [binary for binary in binaries if binary is not None]
-
 
 
 # --------------------------------------------------------------------------- #
