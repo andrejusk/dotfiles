@@ -85,6 +85,7 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
     . $HOME/.nix-profile/etc/profile.d/nix.sh
 fi
 
+
 #     _       _                    _      ____
 # U  /"\  u  |"|        ___    U  /"\  u / __"| u
 #  \/ _ \/ U | | u     |_"_|    \/ _ \/ <\___ \/
@@ -93,5 +94,7 @@ fi
 #  \\    >>  //  \\.-,_|___|_,-.\\    >>  )(  (__)
 # (__)  (__)(_")("_)\_)-' '-(_/(__)  (__)(__)
 #
-alias j="z"
-alias fd=`command -v fdfind`
+
+if [ -f ~/.aliases ]; then
+  source ~/.aliases
+fi

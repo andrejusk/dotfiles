@@ -5,6 +5,11 @@
 #   Print SSH key.
 #
 
+# skip if CODESPACES is set
+if [ -n "$CODESPACES" ]; then
+    export SKIP_SSH_CONFIG=1
+fi
+
 # skip if SKIP_SSH_CONFIG is set
 if [ -z "$SKIP_SSH_CONFIG" ]; then
     ssh_method="ed25519"

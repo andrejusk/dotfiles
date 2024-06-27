@@ -17,3 +17,5 @@ if ! command -v gh &>/dev/null; then
         brew install gh
     fi
 fi
+
+gh --version
