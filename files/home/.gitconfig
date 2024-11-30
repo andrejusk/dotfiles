@@ -2,6 +2,15 @@
   name = Andrejus
   email = git@andrejus.uk
 
+[github]
+user = andrejusk
+[credential "https://github.com"]
+    helper = 
+    helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+    helper = 
+    helper = !/usr/bin/gh auth git-credential
+
 [alias]
 # List aliases
 la = "!git config -l | grep alias | cut -c 7-"
@@ -82,6 +91,3 @@ assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
 st = stash
 sa = stash apply
 stl = stash list
-
-[github]
-user = andrejusk
