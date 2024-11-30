@@ -7,6 +7,7 @@
 
 if command -v apt-get &> /dev/null; then
     apt_packages=(
+        ca-certificates
         curl
         gnupg
         gnupg2
