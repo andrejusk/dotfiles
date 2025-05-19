@@ -3,6 +3,7 @@ authors = ["andrejus <hi@andrejus.uk>"]
 description = "Verifies dotfiles install"
 name = "dotfiles-test"
 version = "0.0.1"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.9"
