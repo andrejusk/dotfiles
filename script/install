@@ -5,17 +5,30 @@ set -eo pipefail
 # Script to run all install scripts contained in install.d
 #
 
-printf "\n\t <<< dots >>>\n"
-printf "\t==============\n\n\n"
+if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
+    RED="\033[1;31m"
+    GREEN="\033[1;32m"
+    GREY="\033[1;30m"
+    NC="\033[0m"
+else
+    RED=""
+    GREEN=""
+    GREY=""
+    NC=""
+fi
+
+printf "\n\t${GREEN} <<< dots >>> ${NC}\n"
+printf "\t${GREY}==============${NC}\n\n"
 
 # Prevent running as root
 if [[ $EUID -eq 0 && -z "$SKIP_SUDO_CHECK" ]]; then
-    echo "Failed: Running as sudo. Please run as user"
+    echo -e "${RED}Failed: Running as sudo. Please run as user${NC}\n"
     exit 1
 fi
 
 # Ensure sudo credentials are cached
 if [[ -z "$SKIP_SUDO_CHECK" ]]; then
+    echo -e "${GREY}Checking sudo credentials...${NC}"
     sudo -v
 fi
 
@@ -44,7 +57,7 @@ else
 fi
 touch "$log_target"
 if [[ ! -f "$log_target" ]]; then
-    echo "Failed: Unable to create log file \"$log_target\""
+    echo -e "${RED}Failed: Unable to create log file \"$log_target\"${NC}\n"
     exit 1
 fi
 log_abs_target=$(readlink -f "$log_target")
@@ -54,12 +67,12 @@ targets=($@)
 
 # Run install scripts
 run() {
-    echo "Running \"$(basename "$0")\" at \"$(date)\""
-    echo "Running as \"$(whoami)\" on \"$(hostname)\""
+    echo -e "${GREY}Running \"$(basename "$0")\" at \"$(date)\"${NC}"
+    echo -e "${GREY}Running as \"$(whoami)\" on \"$(hostname)\"${NC}"
     if [[ -n "$targets" ]]; then
-        echo "Running ${#targets[@]} install target(s): ${targets[@]}"
+        echo -e "${GREY}Running ${#targets[@]} install target(s): ${targets[@]}${NC}"
     else
-        echo "Running all install targets"
+        echo -e "${GREY}Running all install targets${NC}"
     fi
 
     for script in $install_dir/*.sh; do
@@ -71,16 +84,29 @@ run() {
             fi
         fi
 
-        script_name=$(basename $script)
-        printf "\n\n<<< $script_name:\n"
+        local script_name=$(basename $script)
+
+        printf "\n\n${GREY}<<< $script_name:${NC}\n"
+        local start_time=$(date +%s.%N)
         source $script
-        printf "\n>>> $script_name\n"
-        unset script_name
+        local end_time=$(date +%s.%N)
+        local execution_time=$(echo "$end_time - $start_time" | bc)
+        local execution_ms=$(echo "$execution_time * 1000" | bc | awk '{printf "%.0f", $0}')
+        local execution_ms_formatted=$(printf "%'.0f" "$execution_ms")
+        local time_color="$GREY"
+        if (( execution_ms > 1000 )); then
+            time_color="$RED"
+        fi
+        printf "\n${GREY}>>> $script_name, "
+        printf "completed in ${time_color}${execution_ms_formatted}ms${NC}\n"
     done
 }
-echo "install: Logging to \"$log_abs_target\""
+echo -e "\n${GREY}install: Logging to \"$log_abs_target\"${NC}"
+start_time=$(date +%s.%N)
 run 2>&1 | tee "$log_abs_target"
+end_time=$(date +%s.%N)
 
-# Clean up
-unset uuid dir install_dir log_dir log_abs_target log_target
-echo "Thank you!"
+total_time_raw=$(echo "$end_time - $start_time" | bc)
+total_time=$(echo "$total_time_raw" | awk '{printf "%.3g", $1}')
+echo -e "\n${GREY}Thank you!${NC}"
+echo -e "${GREY}Total time: ${GREEN}${total_time}s${NC}\n"
