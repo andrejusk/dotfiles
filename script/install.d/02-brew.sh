@@ -6,7 +6,15 @@
 #
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [ -d "/opt/homebrew/bin" ]; then
+        export PATH="/opt/homebrew/bin:$PATH"
+    fi
     export NONINTERACTIVE=1
+    export HOMEBREW_NO_ANALYTICS=1
+    export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+    export HOMEBREW_NO_ENV_HINTS=1
+    export HOMEBREW_NO_AUTO_UPDATE=1
+    export HOMEBREW_NO_INSTALL_CLEANUP=1
     if ! command -v brew &> /dev/null; then
         echo "Installing Homebrew..."
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -14,11 +22,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     else
         echo "Homebrew is already installed."
     fi
-
-    brew update
     brew --version
 
-    unset NONINTERACTIVE
+    unset NONINTERACTIVE \
+        HOMEBREW_NO_ANALYTICS \
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK \
+        HOMEBREW_NO_ENV_HINTS \
+        HOMEBREW_NO_AUTO_UPDATE \
+        HOMEBREW_NO_INSTALL_CLEANUP
 else
     echo "Skipping: Not macOS"
 fi

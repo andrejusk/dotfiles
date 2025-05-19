@@ -27,4 +27,6 @@ if [ -z "$SKIP_SSH_CONFIG" ]; then
     cat $ssh_pub
 
     unset ssh_method ssh_target ssh_key ssh_pub
+else
+    echo "Skipping SSH configuration"
 fi
