@@ -11,6 +11,16 @@ if [[ -n "$WSL_DISTRO_NAME" ]]; then
     export SKIP_DOCKER_CONFIG=1
 fi
 
+# skip if in CODESPACES
+if [[ -n "$CODESPACES" ]]; then
+    export SKIP_DOCKER_CONFIG=1
+fi
+
+# skip on mac
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export SKIP_DOCKER_CONFIG=1
+fi
+
 if [[ -z "$SKIP_DOCKER_CONFIG" ]]; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if ! command -v docker &> /dev/null; then
@@ -43,4 +53,6 @@ if [[ -z "$SKIP_DOCKER_CONFIG" ]]; then
         fi
     fi
     docker --version
+else
+    echo "Skipping Docker configuration"
 fi

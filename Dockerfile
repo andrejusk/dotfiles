@@ -4,15 +4,16 @@
 FROM debian:bookworm-slim AS base
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get -qq update
 RUN apt-get -qq install --no-install-recommends \
+    bc \
     curl \
     gnupg \
     gnupg2 \
+    lsb-release \
     openssh-client \
     software-properties-common \
-    lsb-release \
     sudo \
     wget
 
@@ -41,9 +42,9 @@ WORKDIR "$DOTFILES_DIR"
 FROM source AS install
 
 ENV USER="test-user"
-ENV SKIP_SUDO_CHECK "true"
-ENV SKIP_SSH_CONFIG "true"
-ENV SKIP_DOCKER_CONFIG "true"
+ENV SKIP_SUDO_CHECK="true"
+ENV SKIP_SSH_CONFIG="true"
+ENV SKIP_DOCKER_CONFIG="true"
 
 USER test-user
 ARG UUID="docker"

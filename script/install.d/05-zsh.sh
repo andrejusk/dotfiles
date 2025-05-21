@@ -22,23 +22,22 @@ if [ ! -d "$ZSH" ]; then
     # https://github.com/ohmyzsh/ohmyzsh#unattended-install
     bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
+export ZSH_CUSTOM="$ZSH/custom"
 
 # install zsh-syntax-highlighting
-export ZSH_SYNTAX_HIGHLIGHTING="$ZSH/custom/plugins/zsh-syntax-highlighting"
+export ZSH_SYNTAX_HIGHLIGHTING="$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 if [ ! -d "$ZSH_SYNTAX_HIGHLIGHTING" ]; then
-    git clone -q https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_SYNTAX_HIGHLIGHTING
+    git clone -q \
+        https://github.com/zsh-users/zsh-syntax-highlighting.git \
+        $ZSH_SYNTAX_HIGHLIGHTING
 fi
 
 # install zsh-autosuggestions
-export ZSH_AUTOSUGGESTIONS="$ZSH/custom/plugins/zsh-autosuggestions"
+export ZSH_AUTOSUGGESTIONS="$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 if [ ! -d "$ZSH_AUTOSUGGESTIONS" ]; then
-    git clone -q https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_AUTOSUGGESTIONS
-fi
-
-# install powerlevel10k
-export POWERLEVEL10K="$ZSH/custom/themes/powerlevel10k"
-if [ ! -d "$POWERLEVEL10K" ]; then
-    git clone -q --depth=1 https://github.com/romkatv/powerlevel10k.git $POWERLEVEL10K
+    git clone -q \
+        https://github.com/zsh-users/zsh-autosuggestions.git \
+        $ZSH_AUTOSUGGESTIONS
 fi
 
 # change default shell to zsh

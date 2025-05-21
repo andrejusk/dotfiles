@@ -2,7 +2,7 @@
 #
 # Verifies dotfiles installed binaries correctly
 #
-from distutils.spawn import find_executable
+from shutil import which
 from typing import List, Text
 from subprocess import run
 import pytest
@@ -16,7 +16,7 @@ def in_path(binary: Text) -> bool:
     """
     Check whether `binary` is in PATH
     """
-    return find_executable(binary) is not None
+    return which(binary) is not None
 
 
 def in_shell_path(shell: Text, binary: Text) -> bool:

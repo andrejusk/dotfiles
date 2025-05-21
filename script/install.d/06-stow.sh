@@ -28,6 +28,6 @@ rm -f $HOME/.ssh/config
 mkdir -p $HOME/.config
 mkdir -p $HOME/.ssh
 
-sudo stow --dir="$root_dir/files" --target="$HOME" home
-sudo stow --dir="$root_dir/files" --target="$HOME/.config" dot-config
-sudo stow --dir="$root_dir/files" --target="$HOME/.ssh" dot-ssh
+stow --dir="$root_dir/files" --target="$HOME" home
+stow --dir="$root_dir/files" --target="$HOME/.config" dot-config
+stow --dir="$root_dir/files" --target="$HOME/.ssh" dot-ssh

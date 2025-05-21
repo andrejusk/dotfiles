@@ -15,9 +15,9 @@ if ! command -v "nvm" &>/dev/null; then
 fi
 
 nvm --version
-nvm alias default lts/iron
-nvm install lts/iron
-nvm use lts/iron
+nvm alias default lts/jod
+nvm install lts/jod
+nvm use lts/jod
 
 echo "Node.js $(node --version)"
 
