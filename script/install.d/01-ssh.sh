@@ -7,6 +7,7 @@
 
 # skip if CODESPACES is set
 if [ -n "$CODESPACES" ]; then
+    echo -e "${GREY}Running in a GitHub Codespace${NC}"
     export SKIP_SSH_CONFIG=1
 fi
 
@@ -28,5 +29,5 @@ if [ -z "$SKIP_SSH_CONFIG" ]; then
 
     unset ssh_method ssh_target ssh_key ssh_pub
 else
-    echo "Skipping SSH configuration"
+    echo -e "${YELLOW}Skipping SSH configuration${NC}"
 fi
