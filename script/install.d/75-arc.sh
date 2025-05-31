@@ -11,4 +11,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     else
         echo "Arc Browser is already installed."
     fi
+else
+    echo "Skipping: Not macOS"
 fi
