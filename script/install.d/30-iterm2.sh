@@ -10,5 +10,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         brew install --cask iterm2
     fi
 else
-    echo "Skipping: Not macOS"
+    echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi

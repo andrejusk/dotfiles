@@ -20,5 +20,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     unset fonts_list
 else
-    echo "Skipping: Not macOS"
+    echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi

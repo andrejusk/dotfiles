@@ -31,5 +31,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         HOMEBREW_NO_AUTO_UPDATE \
         HOMEBREW_NO_INSTALL_CLEANUP
 else
-    echo "Skipping: Not macOS"
+    echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi
