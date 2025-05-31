@@ -25,27 +25,7 @@ _dots_load_omz() {
 }
 _dots_load_omz
 
-# Load nvm
-# -----------------------------------------------------------------------------
-_dots_load_nvm() {
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-}
-_dots_load_nvm
-
-# -----------------------------------------------------------------------------
-_dots_load_brew() {
-    export HOMEBREW_NO_ANALYTICS=1
-    [ -x "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-}
-_dots_load_brew
-
-# -----------------------------------------------------------------------------
-_dots_load_pyenv() {
-    [ -x `command -v pyenv` ] && eval "$(pyenv init --path)"
-}
-_dots_load_pyenv
-
+# Build shell prompt
 # -----------------------------------------------------------------------------
 _dots_build_prompt() {
     local final_prompt=""
@@ -60,6 +40,7 @@ _dots_build_prompt() {
 }
 _dots_build_prompt
 
+# Finish bench profiling
 # -----------------------------------------------------------------------------
 if [[ -n "$ZSH_BENCH" ]]; then
     zprof
