@@ -1,11 +1,5 @@
-# dotfiles
-alias dots=$DOTFILES/install
-
-# jump around
-alias j="z"
-
-# zip
-alias tarz="tar -czvf"
-# unzip
-alias tarx="tar -xzvf"
-alias taru="tarx"
+alias bench='ZSH_BENCH=1 exec zsh'
+alias dots='cd $DOTFILES'
+alias j='z'
+alias reload='source ~/.zshrc'
+alias zen='curl -s https://api.github.com/zen && echo'

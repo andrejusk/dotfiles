@@ -5,15 +5,21 @@
 #   Install cmatrix.
 #
 
-# Check if running in a GitHub Codespace
-if [ -n "$CODESPACES" ]; then
-    echo "Skipping cmatrix installation: Running in a GitHub Codespace"
-else
-    if ! command -v "cmatrix" &>/dev/null; then
+# skip if in CODESPACES
+if [[ -n "$CODESPACES" ]]; then
+    echo -e "${YELLOW}Running in GitHub Codespaces${NC}"
+    export SKIP_CMATRIX_CONFIG=1
+fi
+
+if [[ -z "$SKIP_CMATRIX_CONFIG" ]]; then
+    if ! command -v cmatrix &> /dev/null; then
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             sudo apt-get install -qq cmatrix &>/dev/null
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             brew install cmatrix
         fi
     fi
+    echo -e "${GREEN}cmatrix installed successfully!${NC}"
+else
+    echo -e "${YELLOW}Skipping cmatrix configuration${NC}"
 fi

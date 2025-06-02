@@ -9,7 +9,7 @@ export PYENV_ROOT="$HOME/.pyenv"
 if ! echo $PATH | grep -q "$PYENV_ROOT"; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
-if ! command -v "pyenv" &>/dev/null; then
+if ! command -v pyenv &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
         sudo apt-get install -qq build-essential libssl-dev zlib1g-dev \

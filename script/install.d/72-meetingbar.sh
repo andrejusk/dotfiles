@@ -11,4 +11,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     else
         echo "MeetingBar is already installed."
     fi
+else
+    echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi

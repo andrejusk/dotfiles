@@ -1,31 +1,47 @@
-# https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#how-do-i-configure-instant-prompt
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# Prefix all functions with "_dots" for easier profiling
+# -----------------------------------------------------------------------------
+if [[ -n "$ZSH_BENCH" ]]; then
+    zmodload zsh/zprof
 fi
 
-source $HOME/.profile
+# Load profile
+# -----------------------------------------------------------------------------
+_dots_load_profile() {
+    source $HOME/.profile
+}
+_dots_load_profile
 
-export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# Load oh-my-zsh
+# -----------------------------------------------------------------------------
+_dots_load_omz() {
+    export DISABLE_AUTO_UPDATE="true"
+    export ZSH="$HOME/.oh-my-zsh"
+    plugins=(
+        z
+        zsh-autosuggestions
+        zsh-syntax-highlighting
+    )
+    source $ZSH/oh-my-zsh.sh
+}
+_dots_load_omz
 
-export DISABLE_AUTO_UPDATE="true"
-export ZSH="$HOME/.oh-my-zsh"
+# Build shell prompt
+# -----------------------------------------------------------------------------
+_dots_build_prompt() {
+    local final_prompt=""
 
-# https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
-plugins=(
-    aliases
-    emoji
-    git
-    history
-    poetry
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-)
-source $ZSH/oh-my-zsh.sh
+    local dir_section="%{$fg_bold[blue]%}%~"
+    final_prompt+="$dir_section "
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+    local prompt_char="%{$reset_color%}%%"
+    final_prompt+="$prompt_char "
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    PROMPT="$final_prompt"
+}
+_dots_build_prompt
+
+# Finish bench profiling
+# -----------------------------------------------------------------------------
+if [[ -n "$ZSH_BENCH" ]]; then
+    zprof
+fi

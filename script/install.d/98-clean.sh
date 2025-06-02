@@ -11,3 +11,5 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get autoremove -qq
     sudo apt-get clean -qq
 fi
+
+echo -e "${GREEN}Cleanup completed successfully!${NC}"

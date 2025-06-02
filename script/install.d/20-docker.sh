@@ -8,6 +8,19 @@
 
 # skip if in WSL
 if [[ -n "$WSL_DISTRO_NAME" ]]; then
+    echo -e "${YELLOW}Running in WSL${NC}"
+    export SKIP_DOCKER_CONFIG=1
+fi
+
+# skip if in CODESPACES
+if [[ -n "$CODESPACES" ]]; then
+    echo -e "${YELLOW}Running in GitHub Codespaces${NC}"
+    export SKIP_DOCKER_CONFIG=1
+fi
+
+# skip on mac
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo -e "${YELLOW}Running on macOS${NC}"
     export SKIP_DOCKER_CONFIG=1
 fi
 
@@ -43,4 +56,6 @@ if [[ -z "$SKIP_DOCKER_CONFIG" ]]; then
         fi
     fi
     docker --version
+else
+    echo -e "${YELLOW}Skipping Docker configuration${NC}"
 fi

@@ -10,5 +10,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     cat /etc/os-release
 else
-    echo "Unknown OS: $OSTYPE"
+    echo -e "${RED}Unknown OS: $OSTYPE${NC}"
 fi

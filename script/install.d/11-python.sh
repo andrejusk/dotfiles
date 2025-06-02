@@ -7,7 +7,7 @@
 
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
-if ! command -v "python" &>/dev/null; then
+if ! command -v python &>/dev/null; then
     pyenv install 3.12.1
     pyenv global 3.12.1
 fi
@@ -38,7 +38,7 @@ fi
 mkdir -p ~/.local/bin
 unset local_bin_path
 
-if ! command -v "pipx" &>/dev/null; then
+if ! command -v pipx &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         sudo apt-get install -qq pipx
     elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -48,7 +48,7 @@ fi
 
 echo "pipx $(pipx --version)"
 
-if ! command -v "poetry" &>/dev/null; then
+if ! command -v poetry &>/dev/null; then
     pipx install poetry
 fi
 

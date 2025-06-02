@@ -12,4 +12,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     else
         echo "AppCleaner is already installed."
     fi
+else
+    echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi
