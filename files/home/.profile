@@ -21,7 +21,7 @@ mkdir -p "$WORKSPACE"
 # -----------------------------------------------------------------
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
-# Initialise and load nvm
+# Initialise and load Node
 # -----------------------------------------------------------------
 if [ -z "$NVM_DIR" ]; then
     export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
@@ -34,7 +34,17 @@ _dots_load_nvm() {
 }
 _dots_load_nvm
 
-# Initialise and load pyenv
+node_alias="$NVM_DIR/alias/lts/jod"
+if [ -f "$node_alias" ]; then
+    VERSION=`cat $node_alias`
+    node_bin_path="$NVM_DIR/versions/node/$VERSION/bin"
+    if [[ ":$PATH:" != *":$node_bin_path:"* ]]; then
+        export PATH="$node_bin_path:$PATH"
+    fi
+fi
+unset node_alias VERSION node_bin_path
+
+# Initialise and load Python
 # -----------------------------------------------------------------
 export PYENV_ROOT=${PYENV_ROOT:-"$HOME/.pyenv"}
 if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
@@ -45,8 +55,6 @@ _dots_load_pyenv() {
 }
 _dots_load_pyenv
 
-# poetry
-# -----------------------------------------------------------------
 export POETRY_ROOT=${POETRY_ROOT:-"$HOME/.poetry"}
 if [[ ":$PATH:" != *":$POETRY_ROOT/bin:"* ]]; then
     export PATH="$POETRY_ROOT/bin:$PATH"
