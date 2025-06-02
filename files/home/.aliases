@@ -1,5 +1,5 @@
 alias bench='ZSH_BENCH=1 exec zsh'
-alias dots='$DOTFILES/install'
+alias dots='cd $DOTFILES'
 alias j='z'
 alias reload='source ~/.zshrc'
 alias zen='curl -s https://api.github.com/zen && echo'

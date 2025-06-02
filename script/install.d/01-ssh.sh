@@ -7,7 +7,7 @@
 
 # skip if CODESPACES is set
 if [ -n "$CODESPACES" ]; then
-    echo -e "${GREY}Running in a GitHub Codespace${NC}"
+    echo -e "${YELLOW}Running in a GitHub Codespace${NC}"
     export SKIP_SSH_CONFIG=1
 fi
 

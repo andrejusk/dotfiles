@@ -7,7 +7,7 @@
 
 # skip if in CODESPACES
 if [[ -n "$CODESPACES" ]]; then
-    echo -e "${GREY}Running in GitHub Codespaces${NC}"
+    echo -e "${YELLOW}Running in GitHub Codespaces${NC}"
     export SKIP_CMATRIX_CONFIG=1
 fi
 

@@ -5,7 +5,7 @@
 #   Install terraform.
 #
 
-if ! command -v "terraform" &>/dev/null; then
+if ! command -v terraform &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         terraform_keyring_path="/usr/share/keyrings/hashicorp-archive-keyring.gpg"
         if [[ ! -f "$terraform_keyring_path" ]]; then

@@ -34,21 +34,6 @@ _dots_load_nvm() {
 }
 _dots_load_nvm
 
-_dots_install_node() {
-    node_alias="$NVM_DIR/alias/lts/jod"
-    if [ -f "$node_alias" ]; then
-        VERSION=`cat $node_alias`
-        if [ -x `command -v nvm` ]; then
-            nvm install "$VERSION" > /dev/null 2>&1 & disown
-        fi
-        node_bin_path="$NVM_DIR/versions/node/$VERSION/bin"
-        if [[ ":$PATH:" != *":$node_bin_path:"* ]]; then
-            export PATH="$node_bin_path:$PATH"
-        fi
-    fi
-}
-_dots_install_node
-
 # Initialise and load pyenv
 # -----------------------------------------------------------------
 export PYENV_ROOT=${PYENV_ROOT:-"$HOME/.pyenv"}
