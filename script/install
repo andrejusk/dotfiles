@@ -110,11 +110,11 @@ run() {
     done
 }
 echo -e "\ninstall: Logging to \"$log_abs_target\""
-start_time=$(date +%s.%N)
+total_start_time=$(date +%s.%N)
 run 2>&1 | tee "$log_abs_target"
-end_time=$(date +%s.%N)
+total_end_time=$(date +%s.%N)
 
-total_time_raw=$(echo "$end_time - $start_time" | bc)
+total_time_raw=$(echo "$total_end_time - $total_start_time" | bc)
 total_time=$(echo "$total_time_raw" | awk '{printf "%.3g", $1}')
 echo -e "\nThank you!"
 echo -e "Total time: ${GREEN}${total_time}s${NC}\n"
