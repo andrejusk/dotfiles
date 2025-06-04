@@ -4,7 +4,7 @@
 FROM debian:bookworm-slim AS base
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-ENV DEBIAN_FRONTEND="noninteractive"
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update
 RUN apt-get -qq install --no-install-recommends \
     bc \
