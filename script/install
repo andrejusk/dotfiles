@@ -81,18 +81,18 @@ run() {
 
     for script in $install_dir/*.sh; do
         if [[ -n "$targets" ]]; then
-            script_name=$(basename $script .sh)
+            script_name=$(basename "$script" .sh)
             script_name=${script_name#*-}
             if [[ ! " ${targets[*]} " =~ " $script_name " ]]; then
                 continue
             fi
         fi
 
-        local script_name=$(basename $script)
+        local script_name=$(basename "$script")
 
         printf "\n\n${CYAN}<<< ${CYAN_BOLD}$script_name:${NC}\n"
         local start_time=$(date +%s.%N)
-        source $script
+        source "$script"
         local end_time=$(date +%s.%N)
         local execution_time=$(echo "$end_time - $start_time" | bc)
         local execution_ms=$(echo "$execution_time * 1000" | bc | awk '{printf "%.0f", $0}')

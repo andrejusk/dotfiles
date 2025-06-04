@@ -6,7 +6,7 @@
 #
 
 export PYENV_ROOT="$HOME/.pyenv"
-if ! echo $PATH | grep -q "$PYENV_ROOT"; then
+if ! echo "$PATH" | grep -q "$PYENV_ROOT"; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
 if ! command -v pyenv &>/dev/null; then
@@ -31,7 +31,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [ ! -d "$virtualenv_path" ]; then
         git clone \
             https://github.com/pyenv/pyenv-virtualenv.git \
-            $virtualenv_path
+            "$virtualenv_path"
     fi
     unset virtualenv_path
 fi

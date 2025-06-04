@@ -56,6 +56,6 @@ poetry --version
 
 POETRY_PLUGIN="$ZSH/custom/plugins/poetry"
 if [ ! -d "$POETRY_PLUGIN" ]; then
-    mkdir -p $POETRY_PLUGIN
-    poetry completions zsh > $POETRY_PLUGIN/_poetry
+    mkdir -p "$POETRY_PLUGIN"
+    poetry completions zsh > "$POETRY_PLUGIN/_poetry"
 fi

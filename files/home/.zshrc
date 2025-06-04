@@ -7,7 +7,7 @@ fi
 # Load profile
 # -----------------------------------------------------------------------------
 _dots_load_profile() {
-    source $HOME/.profile
+    source "$HOME/.profile"
 }
 _dots_load_profile
 
@@ -21,7 +21,7 @@ _dots_load_omz() {
         zsh-autosuggestions
         zsh-syntax-highlighting
     )
-    source $ZSH/oh-my-zsh.sh
+    source "$ZSH/oh-my-zsh.sh"
 }
 _dots_load_omz
 
