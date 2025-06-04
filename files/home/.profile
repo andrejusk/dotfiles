@@ -10,7 +10,7 @@ mkdir -p "$XDG_CONFIG_HOME"
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
-mkdir -p $HOME/.local/bin
+mkdir -p "$HOME/.local/bin"
 
 # workspace
 # -----------------------------------------------------------------
@@ -36,7 +36,7 @@ _dots_load_nvm
 
 node_alias="$NVM_DIR/alias/lts/jod"
 if [ -f "$node_alias" ]; then
-    VERSION=`cat $node_alias`
+    VERSION=`cat "$node_alias"`
     node_bin_path="$NVM_DIR/versions/node/$VERSION/bin"
     if [[ ":$PATH:" != *":$node_bin_path:"* ]]; then
         export PATH="$node_bin_path:$PATH"

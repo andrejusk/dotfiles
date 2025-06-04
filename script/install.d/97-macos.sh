@@ -173,9 +173,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             path="${dock_order[$i]}"
             name=$(basename "$path" | sed 's/\.app$//')
             if [[ $dock_state == *"$name"* ]]; then
-                dockutil --move "${path}" --position $i --no-restart
+                dockutil --move "${path}" --position "$i" --no-restart
             else
-                dockutil --add "${path}" --position $i --no-restart
+                dockutil --add "${path}" --position "$i" --no-restart
             fi
         fi
     done

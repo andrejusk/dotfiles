@@ -29,7 +29,7 @@ export ZSH_SYNTAX_HIGHLIGHTING="$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 if [ ! -d "$ZSH_SYNTAX_HIGHLIGHTING" ]; then
     git clone -q \
         https://github.com/zsh-users/zsh-syntax-highlighting.git \
-        $ZSH_SYNTAX_HIGHLIGHTING
+        "$ZSH_SYNTAX_HIGHLIGHTING"
 fi
 
 # install zsh-autosuggestions
@@ -37,7 +37,7 @@ export ZSH_AUTOSUGGESTIONS="$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 if [ ! -d "$ZSH_AUTOSUGGESTIONS" ]; then
     git clone -q \
         https://github.com/zsh-users/zsh-autosuggestions.git \
-        $ZSH_AUTOSUGGESTIONS
+        "$ZSH_AUTOSUGGESTIONS"
 fi
 
 # change default shell to zsh
