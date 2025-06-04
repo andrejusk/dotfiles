@@ -10,7 +10,7 @@ mkdir -p "$XDG_CONFIG_HOME"
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
-mkdir -p $HOME/.local/bin
+mkdir -p "$HOME/.local/bin"
 
 # workspace
 # -----------------------------------------------------------------
