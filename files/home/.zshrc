@@ -33,8 +33,9 @@ _dots_build_prompt() {
     local dir_section="%{$fg_bold[blue]%}%~"
     final_prompt+="$dir_section "
 
-    local prompt_char="%{$reset_color%}%%"
-    final_prompt+="$prompt_char "
+    local prompt_char="\λ"
+    local prompt_suffix="%{$reset_color%}%${prompt_char}%{$reset_color%}"
+    final_prompt+="$prompt_suffix "
 
     PROMPT="$final_prompt"
 }
