@@ -24,7 +24,7 @@ export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 # Initialise and load Node
 # -----------------------------------------------------------------
 if [ -z "$NVM_DIR" ]; then
-    export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
+    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
     mkdir -p "$NVM_DIR"
 fi
 
@@ -36,7 +36,7 @@ _dots_load_nvm
 
 node_alias="$NVM_DIR/alias/lts/jod"
 if [ -f "$node_alias" ]; then
-    VERSION=`cat "$node_alias"`
+    VERSION=$(cat "$node_alias")
     node_bin_path="$NVM_DIR/versions/node/$VERSION/bin"
     if [[ ":$PATH:" != *":$node_bin_path:"* ]]; then
         export PATH="$node_bin_path:$PATH"
@@ -51,7 +51,7 @@ if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
 _dots_load_pyenv() {
-    [ -x `command -v pyenv` ] && eval "$(pyenv init --path)"
+    [ -x $(command -v pyenv) ] && eval "$(pyenv init --path)"
 }
 _dots_load_pyenv
 
@@ -63,7 +63,7 @@ fi
 # aliases
 # -----------------------------------------------------------------
 if [ -f ~/.aliases ]; then
-  source ~/.aliases
+    source ~/.aliases
 fi
 
 # Load homebrew

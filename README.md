@@ -8,17 +8,13 @@ to set up my development environment
 
 ## Usage
 
-A local repository can be installed by running:
+A local repository can be installed and updated by running:
 
-    ./script/install
-
-Once installed, updates can be applied by running:
-
-    dots
+    ./install
 
 A specific script can be installed by running:
 
-    dots script1 script2 ...
+    ./install script1 script2 ...
 
 ### Automated setup
 
