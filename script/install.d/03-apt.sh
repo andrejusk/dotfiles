@@ -21,5 +21,5 @@ if command -v apt-get &> /dev/null; then
 
     apt --version
 else
-    echo -e "${YELLOW}Skipping: apt-get not found${NC}"
+    log_warn "Skipping: apt-get not found"
 fi

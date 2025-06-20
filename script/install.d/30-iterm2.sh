@@ -9,7 +9,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     if ! brew list --cask iterm2 &>/dev/null; then
         brew install --cask iterm2
     fi
-    echo -e "${GREEN}iTerm2 installed successfully!${NC}"
+    log_pass "iTerm2 installed successfully!"
 else
-    echo -e "${YELLOW}Skipping: Not macOS${NC}"
+    log_warn "Skipping: Not macOS"
 fi

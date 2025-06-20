@@ -7,7 +7,7 @@
 
 # skip if in CODESPACES
 if [[ -n "$CODESPACES" ]]; then
-    echo -e "${YELLOW}Running in GitHub Codespaces${NC}"
+    log_warn "Running in GitHub Codespaces"
     export SKIP_CMATRIX_CONFIG=1
 fi
 
@@ -19,7 +19,7 @@ if [[ -z "$SKIP_CMATRIX_CONFIG" ]]; then
             brew install cmatrix
         fi
     fi
-    echo -e "${GREEN}cmatrix installed successfully!${NC}"
+    log_pass "cmatrix installed successfully!"
 else
-    echo -e "${YELLOW}Skipping cmatrix configuration${NC}"
+    log_warn "Skipping cmatrix configuration"
 fi

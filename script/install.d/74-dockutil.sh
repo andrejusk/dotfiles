@@ -12,5 +12,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "dockutil is already installed."
     fi
 else
-    echo -e "${YELLOW}Skipping: Not macOS${NC}"
+    log_warn "Skipping: Not macOS"
 fi
