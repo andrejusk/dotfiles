@@ -23,13 +23,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "Homebrew is already installed."
     fi
     brew --version
-
-    unset NONINTERACTIVE \
-        HOMEBREW_NO_ANALYTICS \
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK \
-        HOMEBREW_NO_ENV_HINTS \
-        HOMEBREW_NO_AUTO_UPDATE \
-        HOMEBREW_NO_INSTALL_CLEANUP
 else
     echo -e "${YELLOW}Skipping: Not macOS${NC}"
 fi

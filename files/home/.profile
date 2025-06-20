@@ -69,7 +69,7 @@ fi
 # Load homebrew
 # -----------------------------------------------------------------------------
 _dots_load_brew() {
-    export HOMEBREW_NO_ANALYTICS=0
+    export HOMEBREW_NO_ANALYTICS=1
     [ -x "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 }
 _dots_load_brew
