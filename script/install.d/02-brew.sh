@@ -24,5 +24,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
     brew --version
 else
-    echo -e "${YELLOW}Skipping: Not macOS${NC}"
+    log_warn "Skipping: Not macOS"
 fi

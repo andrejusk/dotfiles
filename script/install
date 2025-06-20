@@ -6,6 +6,7 @@ set -eo pipefail
 #
 
 if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
+    BLUE="\033[0;34m"
     CYAN="\033[0;36m"
     CYAN_BOLD="\033[1;36m"
     RED="\033[1;31m"
@@ -14,12 +15,43 @@ if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
     GREY="\033[1;30m"
     NC="\033[0m"
 else
+    BLUE=""
+    CYAN=""
+    CYAN_BOLD=""
     RED=""
     GREEN=""
     YELLOW=""
     GREY=""
     NC=""
 fi
+
+# Log functions
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $*"
+}
+
+log_pass() {
+    echo -e "${GREEN}[PASS]${NC} $*"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $*"
+}
+
+log_error() {
+    echo -e "${RED}[FAIL]${NC} $*"
+}
+
+log_debug() {
+    echo -e "${CYAN}$*${NC}"
+}
+
+# Export log functions so they're available in sourced scripts
+export -f log_info
+export -f log_pass
+export -f log_warn
+export -f log_error
+export -f log_debug
 
 printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"

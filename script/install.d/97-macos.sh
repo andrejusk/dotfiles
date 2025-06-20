@@ -185,5 +185,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     killall Dock 2>/dev/null || true
 else
-    echo -e "${YELLOW}Skipping: Not macOS${NC}"
+    log_warn "Skipping: Not macOS"
 fi

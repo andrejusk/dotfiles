@@ -12,4 +12,4 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get clean -qq
 fi
 
-echo -e "${GREEN}Cleanup completed successfully!${NC}"
+log_pass "Cleanup completed successfully!"
