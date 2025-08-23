@@ -7,7 +7,6 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update
 RUN apt-get -qq install --no-install-recommends \
-    bc \
     curl \
     gnupg \
     gnupg2 \

@@ -56,6 +56,23 @@ export -f log_debug
 printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"
 
+# High-resolution time helpers
+# now_ns prints current time in nanoseconds using GNU date if available.
+# On systems where %N isn't supported (e.g., BSD date), it falls back to
+# seconds precision multiplied to nanoseconds. This avoids external deps like bc.
+now_ns() {
+    local ns
+    ns=$(date +%s%N 2>/dev/null || true)
+    if [[ "$ns" =~ ^[0-9]+$ ]]; then
+        echo "$ns"
+    else
+        # Fallback: seconds precision
+        local s
+        s=$(date +%s)
+        echo $(( s * 1000000000 ))
+    fi
+}
+
 # Prevent running as root
 if [[ $EUID -eq 0 && -z "$SKIP_SUDO_CHECK" ]]; then
     echo -e "${RED}Failed: Running as sudo. Please run as user${NC}\n"
@@ -123,12 +140,11 @@ run() {
         local script_name=$(basename "$script")
 
         printf "\n\n${CYAN}<<< ${CYAN_BOLD}$script_name:${NC}\n"
-        local start_time=$(date +%s.%N)
+        local start_ns=$(now_ns)
         source "$script"
-        local end_time=$(date +%s.%N)
-        local execution_time=$(echo "$end_time - $start_time" | bc)
-        local execution_ms=$(echo "$execution_time * 1000" | bc | awk '{printf "%.0f", $0}')
-        local execution_ms_formatted=$(printf "%'.0f" "$execution_ms")
+        local end_ns=$(now_ns)
+        local execution_ms=$(( (end_ns - start_ns) / 1000000 ))
+        local execution_ms_formatted=$(printf "%'d" "$execution_ms")
         local time_color="$GREY"
         if (( execution_ms < 2000 )); then
             time_color="$GREEN"
@@ -142,11 +158,12 @@ run() {
     done
 }
 echo -e "\ninstall: Logging to \"$log_abs_target\""
-total_start_time=$(date +%s.%N)
+total_start_ns=$(now_ns)
 run 2>&1 | tee "$log_abs_target"
-total_end_time=$(date +%s.%N)
+total_end_ns=$(now_ns)
 
-total_time_raw=$(echo "$total_end_time - $total_start_time" | bc)
-total_time=$(echo "$total_time_raw" | awk '{printf "%.3g", $1}')
+total_ms=$(( (total_end_ns - total_start_ns) / 1000000 ))
+total_s=$(( total_ms / 1000 ))
+total_ms_rem=$(( total_ms % 1000 ))
 echo -e "\nThank you!"
-echo -e "Total time: ${GREEN}${total_time}s${NC}\n"
+printf "Total time: ${GREEN}%d.%03ds${NC}\n\n" "$total_s" "$total_ms_rem"
