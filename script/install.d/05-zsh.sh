@@ -8,7 +8,13 @@
 # install zsh
 if ! command -v zsh &> /dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sudo apt-get install -qq zsh
+        if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get install -qq zsh
+        elif command -v pacman >/dev/null 2>&1; then
+            sudo pacman -S --noconfirm zsh
+        else
+            log_warn "Skipping zsh install: no supported package manager found"
+        fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         brew install zsh
     fi

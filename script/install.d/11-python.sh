@@ -40,7 +40,13 @@ unset local_bin_path
 
 if ! command -v pipx &>/dev/null; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sudo apt-get install -qq pipx
+        if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get install -qq pipx
+        elif command -v pacman >/dev/null 2>&1; then
+            sudo pacman -S --noconfirm python-pipx
+        else
+            log_warn "Skipping pipx install: no apt-get or pacman found"
+        fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         brew install pipx
     fi
