@@ -7,10 +7,12 @@
 
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
-if ! command -v python &>/dev/null; then
-    pyenv install 3.12.1
-    pyenv global 3.12.1
+local version="3.13.7"
+
+if ! pyenv versions --bare | grep -q "$version"; then
+    pyenv install "$version"
 fi
+pyenv global "$version"
 
 pip3 install --quiet --upgrade --user pip
 python3 --version

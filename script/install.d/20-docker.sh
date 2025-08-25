@@ -48,12 +48,12 @@ if [[ -z "$SKIP_DOCKER_CONFIG" ]]; then
 
         readonly docker_group="docker"
         if ! grep -q "$docker_group" /etc/group; then
-            echo "Adding docker group"
+            log_info "Adding docker group"
             sudo groupadd "$docker_group"
         fi
 
         if ! groups "$USER" | grep -q "\b$docker_group\b"; then
-            echo "Adding user to docker group"
+            log_info "Adding user to docker group"
             sudo usermod -aG docker "$USER"
         fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
