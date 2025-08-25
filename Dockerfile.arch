@@ -1,0 +1,55 @@
+#
+# arch-base: Base Arch image with sudo user
+#
+FROM archlinux:base AS base
+
+# Install required packages
+RUN pacman -Sy --noconfirm && \
+    pacman -S --noconfirm --needed \
+        base-devel \
+        sudo \
+        curl \
+        gnupg \
+        openssh \
+        wget && \
+    pacman -Scc --noconfirm
+
+# Create user with sudo privilege
+RUN useradd -r -u 1001 --create-home -m "test-user" && \
+    echo "test-user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+#
+# source: Base image with source copied over
+#
+FROM base AS source
+
+ARG DOTFILES_DIR="/workdir/.dotfiles"
+RUN mkdir -p "$DOTFILES_DIR" && \
+    chown -R "test-user" "$DOTFILES_DIR"
+
+ADD --chown="test-user" files "$DOTFILES_DIR/files"
+ADD --chown="test-user" script "$DOTFILES_DIR/script"
+WORKDIR "$DOTFILES_DIR"
+
+#
+# install: Installation steps
+#
+FROM source AS install
+
+ENV USER=test-user
+ENV SKIP_SUDO_CHECK=true
+ENV SKIP_SSH_CONFIG=true
+ENV SKIP_DOCKER_CONFIG=true
+
+USER test-user
+ARG UUID="docker"
+RUN ./script/install
+
+#
+# test: Test entrypoint
+#
+FROM install AS test
+
+ADD --chown="test-user" tests "$DOTFILES_DIR/tests"
+WORKDIR "$DOTFILES_DIR/tests"
+ENTRYPOINT [ "./run.sh" ]

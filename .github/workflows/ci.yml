@@ -5,9 +5,15 @@ jobs:
   tests:
     name: Run test suite
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: [Dockerfile, Dockerfile.arch]
     steps:
       - uses: actions/checkout@v4.2.2
 
       # Run the tests
-      - name: 'Run tests'
+      - name: Run tests (${{ matrix.dockerfile }})
+        env:
+          DOCKERFILE: ${{ matrix.dockerfile }}
         run: ./script/test

@@ -7,6 +7,7 @@ set -euo pipefail
 #
 
 IMAGE=${IMAGE:-"andrejusk/dotfiles"}
+DOCKERFILE=${DOCKERFILE:-Dockerfile}
 uuid=$(
     uuidgen 2> /dev/null \
     || cat /proc/sys/kernel/random/uuid 2> /dev/null \
@@ -14,13 +15,14 @@ uuid=$(
 )
 tag=${TAG:-"$uuid"}
 
-echo "Building $IMAGE:$tag"
+echo "Building $IMAGE:$tag using $DOCKERFILE"
 
 docker build . \
     --build-arg UUID=$uuid \
     --cache-from $IMAGE \
     --tag $IMAGE:$tag \
-    --target test
+    --target test \
+    -f "$DOCKERFILE"
 
 docker run \
     -v "$(pwd)"/logs:/home/test-user/.dotfiles/logs \
