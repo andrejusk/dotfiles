@@ -51,6 +51,8 @@ binaries: List[Text] = [
     "neofetch",
     "redis-cli",
     "redis-server",
+    # debugging tools
+    "gdb",
     # language: python
     "pyenv",
     "python",
