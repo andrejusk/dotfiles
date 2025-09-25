@@ -162,7 +162,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     dock_order=(
         "/System/Library/CoreServices/Finder.app" # Cannot be moved
         "/System/Applications/App Store.app"
-        "/System/Applications/Launchpad.app"
+        "/System/Applications/Apps.app"
         "/System/Applications/System Settings.app"
         "/System/Applications/Utilities/Activity Monitor.app"
         "/Applications/iTerm.app"
