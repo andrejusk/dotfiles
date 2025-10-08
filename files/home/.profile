@@ -59,10 +59,14 @@ if [ -f "$node_alias" ]; then
         current_node_version=$(node --version 2>/dev/null)
         # VERSION from alias file may or may not have 'v' prefix
         expected_version="$VERSION"
-        [[ "$expected_version" != v* ]] && expected_version="v$expected_version"
+        case "$expected_version" in
+            v*) ;;
+            *) expected_version="v$expected_version" ;;
+        esac
         if [ -n "$current_node_version" ] && [ -n "$expected_version" ] && [ "$current_node_version" != "$expected_version" ]; then
             _dots_warn "Node.js version mismatch: current=$current_node_version, expected=$expected_version"
         fi
+        unset current_node_version expected_version
     fi
 else
     # Only warn about missing node if nvm was successfully loaded
@@ -70,7 +74,7 @@ else
         _dots_warn "Node.js not configured: alias file not found at $node_alias"
     fi
 fi
-unset node_alias VERSION node_bin_path expected_version
+unset node_alias VERSION node_bin_path
 
 # Initialise and load Python
 # -----------------------------------------------------------------
@@ -95,14 +99,16 @@ if command -v pyenv &>/dev/null; then
         if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
             _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
         fi
+        unset current_python_version
     elif command -v python3 &>/dev/null; then
         current_python_version=$(python3 --version 2>&1 | awk '{print $2}')
         if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
             _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
         fi
+        unset current_python_version
     fi
 fi
-unset expected_python_version current_python_version
+unset expected_python_version
 
 export POETRY_ROOT=${POETRY_ROOT:-"$HOME/.poetry"}
 if [[ ":$PATH:" != *":$POETRY_ROOT/bin:"* ]]; then
