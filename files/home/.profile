@@ -76,6 +76,16 @@ else
 fi
 unset node_alias VERSION node_bin_path
 
+# Load homebrew
+# -----------------------------------------------------------------------------
+_dots_load_brew() {
+    export HOMEBREW_NO_ANALYTICS=1
+    if [ -x "/opt/homebrew/bin/brew" ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)" || _dots_warn "Failed to initialize homebrew"
+    fi
+}
+_dots_load_brew
+
 # Initialise and load Python
 # -----------------------------------------------------------------
 export PYENV_ROOT=${PYENV_ROOT:-"$HOME/.pyenv"}
@@ -120,13 +130,3 @@ fi
 if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
-
-# Load homebrew
-# -----------------------------------------------------------------------------
-_dots_load_brew() {
-    export HOMEBREW_NO_ANALYTICS=1
-    if [ -x "/opt/homebrew/bin/brew" ]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)" || _dots_warn "Failed to initialize homebrew"
-    fi
-}
-_dots_load_brew
