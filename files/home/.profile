@@ -55,7 +55,7 @@ if [ -f "$node_alias" ]; then
     fi
     
     # Check Node.js version if node is available
-    if command -v node &>/dev/null; then
+    if command -v node >/dev/null 2>&1; then
         current_node_version=$(node --version 2>/dev/null)
         # VERSION from alias file may or may not have 'v' prefix
         expected_version="$VERSION"
@@ -70,7 +70,7 @@ if [ -f "$node_alias" ]; then
     fi
 else
     # Only warn about missing node if nvm was successfully loaded
-    if command -v nvm &>/dev/null && ! command -v node &>/dev/null; then
+    if command -v nvm >/dev/null 2>&1 && ! command -v node >/dev/null 2>&1; then
         _dots_warn "Node.js not configured: alias file not found at $node_alias"
     fi
 fi
@@ -83,7 +83,7 @@ if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
 _dots_load_pyenv() {
-    if command -v pyenv &>/dev/null; then
+    if command -v pyenv >/dev/null 2>&1; then
         eval "$(pyenv init --path)" || _dots_warn "Failed to initialize pyenv"
     else
         _dots_warn "pyenv not found in PATH"
@@ -93,14 +93,14 @@ _dots_load_pyenv
 
 # Check Python version if pyenv is available
 expected_python_version="3.13.7"
-if command -v pyenv &>/dev/null; then
-    if command -v python &>/dev/null; then
+if command -v pyenv >/dev/null 2>&1; then
+    if command -v python >/dev/null 2>&1; then
         current_python_version=$(python --version 2>&1 | awk '{print $2}')
         if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
             _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
         fi
         unset current_python_version
-    elif command -v python3 &>/dev/null; then
+    elif command -v python3 >/dev/null 2>&1; then
         current_python_version=$(python3 --version 2>&1 | awk '{print $2}')
         if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
             _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
