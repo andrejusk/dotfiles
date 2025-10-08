@@ -54,20 +54,23 @@ if [ -f "$node_alias" ]; then
         export PATH="$node_bin_path:$PATH"
     fi
     
-    # Check Node.js version
+    # Check Node.js version if node is available
     if command -v node &>/dev/null; then
         current_node_version=$(node --version 2>/dev/null)
-        expected_node_version=$(cat "$node_alias" 2>/dev/null)
-        if [ -n "$expected_node_version" ] && [ "$current_node_version" != "v$expected_node_version" ]; then
-            _dots_warn "Node.js version mismatch: current=$current_node_version, expected=v$expected_node_version"
+        # VERSION from alias file may or may not have 'v' prefix
+        expected_version="$VERSION"
+        [[ "$expected_version" != v* ]] && expected_version="v$expected_version"
+        if [ -n "$current_node_version" ] && [ -n "$expected_version" ] && [ "$current_node_version" != "$expected_version" ]; then
+            _dots_warn "Node.js version mismatch: current=$current_node_version, expected=$expected_version"
         fi
-    else
-        _dots_warn "Node.js not available in PATH"
     fi
 else
-    _dots_warn "Node.js alias file not found: $node_alias"
+    # Only warn about missing node if nvm was successfully loaded
+    if command -v nvm &>/dev/null && ! command -v node &>/dev/null; then
+        _dots_warn "Node.js not configured: alias file not found at $node_alias"
+    fi
 fi
-unset node_alias VERSION node_bin_path
+unset node_alias VERSION node_bin_path expected_version
 
 # Initialise and load Python
 # -----------------------------------------------------------------
@@ -84,22 +87,22 @@ _dots_load_pyenv() {
 }
 _dots_load_pyenv
 
-# Check Python version
-if command -v python &>/dev/null; then
-    current_python_version=$(python --version 2>&1 | awk '{print $2}')
-    expected_python_version="3.13.7"
-    if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
-        _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
+# Check Python version if pyenv is available
+expected_python_version="3.13.7"
+if command -v pyenv &>/dev/null; then
+    if command -v python &>/dev/null; then
+        current_python_version=$(python --version 2>&1 | awk '{print $2}')
+        if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
+            _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
+        fi
+    elif command -v python3 &>/dev/null; then
+        current_python_version=$(python3 --version 2>&1 | awk '{print $2}')
+        if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
+            _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
+        fi
     fi
-elif command -v python3 &>/dev/null; then
-    current_python_version=$(python3 --version 2>&1 | awk '{print $2}')
-    expected_python_version="3.13.7"
-    if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
-        _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
-    fi
-else
-    _dots_warn "Python not available in PATH"
 fi
+unset expected_python_version current_python_version
 
 export POETRY_ROOT=${POETRY_ROOT:-"$HOME/.poetry"}
 if [[ ":$PATH:" != *":$POETRY_ROOT/bin:"* ]]; then
