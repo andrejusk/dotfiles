@@ -1,3 +1,9 @@
+# Helper function for warnings
+# -----------------------------------------------------------------
+_dots_warn() {
+    echo "WARNING: $*" >&2
+}
+
 # xdg data & config
 # -----------------------------------------------------------------
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
@@ -29,8 +35,14 @@ if [ -z "$NVM_DIR" ]; then
 fi
 
 _dots_load_nvm() {
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    if [ -s "$NVM_DIR/nvm.sh" ]; then
+        \. "$NVM_DIR/nvm.sh" --no-use || _dots_warn "Failed to load nvm.sh"
+    else
+        _dots_warn "nvm.sh not found at $NVM_DIR/nvm.sh"
+    fi
+    if [ -s "$NVM_DIR/bash_completion" ]; then
+        \. "$NVM_DIR/bash_completion" || _dots_warn "Failed to load nvm bash_completion"
+    fi
 }
 _dots_load_nvm
 
@@ -41,6 +53,19 @@ if [ -f "$node_alias" ]; then
     if [[ ":$PATH:" != *":$node_bin_path:"* ]]; then
         export PATH="$node_bin_path:$PATH"
     fi
+    
+    # Check Node.js version
+    if command -v node &>/dev/null; then
+        current_node_version=$(node --version 2>/dev/null)
+        expected_node_version=$(cat "$node_alias" 2>/dev/null)
+        if [ -n "$expected_node_version" ] && [ "$current_node_version" != "v$expected_node_version" ]; then
+            _dots_warn "Node.js version mismatch: current=$current_node_version, expected=v$expected_node_version"
+        fi
+    else
+        _dots_warn "Node.js not available in PATH"
+    fi
+else
+    _dots_warn "Node.js alias file not found: $node_alias"
 fi
 unset node_alias VERSION node_bin_path
 
@@ -51,9 +76,30 @@ if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
 _dots_load_pyenv() {
-    [ -x $(command -v pyenv) ] && eval "$(pyenv init --path)"
+    if command -v pyenv &>/dev/null; then
+        eval "$(pyenv init --path)" || _dots_warn "Failed to initialize pyenv"
+    else
+        _dots_warn "pyenv not found in PATH"
+    fi
 }
 _dots_load_pyenv
+
+# Check Python version
+if command -v python &>/dev/null; then
+    current_python_version=$(python --version 2>&1 | awk '{print $2}')
+    expected_python_version="3.13.7"
+    if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
+        _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
+    fi
+elif command -v python3 &>/dev/null; then
+    current_python_version=$(python3 --version 2>&1 | awk '{print $2}')
+    expected_python_version="3.13.7"
+    if [ -n "$current_python_version" ] && [ "$current_python_version" != "$expected_python_version" ]; then
+        _dots_warn "Python version mismatch: current=$current_python_version, expected=$expected_python_version"
+    fi
+else
+    _dots_warn "Python not available in PATH"
+fi
 
 export POETRY_ROOT=${POETRY_ROOT:-"$HOME/.poetry"}
 if [[ ":$PATH:" != *":$POETRY_ROOT/bin:"* ]]; then
@@ -70,6 +116,8 @@ fi
 # -----------------------------------------------------------------------------
 _dots_load_brew() {
     export HOMEBREW_NO_ANALYTICS=1
-    [ -x "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+    if [ -x "/opt/homebrew/bin/brew" ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)" || _dots_warn "Failed to initialize homebrew"
+    fi
 }
 _dots_load_brew
