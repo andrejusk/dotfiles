@@ -22,7 +22,7 @@ if ! command -v pyenv &>/dev/null; then
         elif command -v pacman >/dev/null 2>&1; then
             # Prefer native packages if available; otherwise install build deps then use installer
             if ! sudo pacman -Qi pyenv >/dev/null 2>&1; then
-                sudo pacman -S --noconfirm --needed base-devel openssl zlib bzip2 readline sqlite xz tk libffi curl
+                sudo pacman -S --noconfirm --needed base-devel openssl zlib-ng-compat bzip2 readline sqlite xz tk libffi curl
                 bash -c "$(curl -fsSL https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer)"
             else
                 sudo pacman -S --noconfirm --needed pyenv pyenv-virtualenv
