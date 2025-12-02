@@ -30,6 +30,9 @@ _dots_load_omz
 _dots_build_prompt() {
     local final_prompt=""
 
+    local user_host="%{$fg_bold[green]%}%n@%m%{$reset_color%}"
+    final_prompt+="$user_host "
+
     local dir_section="%{$fg_bold[blue]%}%~"
     final_prompt+="$dir_section "
 
