@@ -7,7 +7,7 @@
 
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
-local version="3.13.7"
+local version="3.14.2"
 
 if ! pyenv versions --bare | grep -q "$version"; then
     pyenv install "$version"
