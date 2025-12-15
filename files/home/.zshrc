@@ -4,6 +4,9 @@ if [[ -n "$ZSH_BENCH" ]]; then
     zmodload zsh/zprof
 fi
 
+# Cache directory
+_dots_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/dots"
+
 # Load profile
 # -----------------------------------------------------------------------------
 _dots_load_profile() {
@@ -11,16 +14,55 @@ _dots_load_profile() {
 }
 _dots_load_profile
 
+# Create directories (interactive only)
+# -----------------------------------------------------------------------------
+_dots_setup_dirs() {
+    mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$NVM_DIR" "$_dots_cache_dir"
+}
+_dots_setup_dirs
+
+# Cache ls colour support detection
+# -----------------------------------------------------------------------------
+_dots_cache_ls_colors() {
+    local cache_file="$_dots_cache_dir/ls-colors"
+    if [[ -f "$cache_file" ]]; then
+        source "$cache_file"
+    else
+        if ls --color -d . &>/dev/null; then
+            echo 'alias ls="ls --color=auto"' > "$cache_file"
+        elif ls -G -d . &>/dev/null; then
+            echo 'alias ls="ls -G"' > "$cache_file"
+        fi
+        [[ -f "$cache_file" ]] && source "$cache_file"
+    fi
+}
+_dots_cache_ls_colors
+
+# Load aliases
+# -----------------------------------------------------------------------------
+[[ -f ~/.aliases ]] && source ~/.aliases
+
 # Load oh-my-zsh
 # -----------------------------------------------------------------------------
 _dots_load_omz() {
     export DISABLE_AUTO_UPDATE="true"
+    export DISABLE_LS_COLORS="true"  # We handle ls colors above
     export ZSH="$HOME/.oh-my-zsh"
+    export ZSH_THEME=""  # Disable theme, we build our own prompt
     plugins=(
         z
         zsh-autosuggestions
         zsh-syntax-highlighting
     )
+    
+    # Cache compinit daily
+    autoload -Uz compinit
+    if [[ -f ~/.zcompdump && $(date +'%j') == $(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null) ]]; then
+        compinit -C
+    else
+        compinit
+    fi
+    
     source "$ZSH/oh-my-zsh.sh"
 }
 _dots_load_omz
@@ -167,23 +209,9 @@ _dots_prompt_init
 # Lazy Loading
 # -----------------------------------------------------------------------------
 
-# Setup paths for global binaries (no init required)
-_dots_setup_paths() {
-    # NVM default node binaries
-    local nvm_default="$HOME/.config/nvm/versions/node/$(cat "$HOME/.config/nvm/alias/default" 2>/dev/null)/bin"
-    [[ -d "$nvm_default" ]] && export PATH="$nvm_default:$PATH"
-    
-    # Pyenv shims
-    [[ -d "$HOME/.pyenv/shims" ]] && export PATH="$HOME/.pyenv/shims:$PATH"
-    
-    # Global pip/pipx binaries
-    [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
-}
-
 # NVM lazy loading
 _dots_init_nvm() {
     unfunction nvm node npm npx yarn pnpm corepack 2>/dev/null
-    export NVM_DIR="${NVM_DIR:-$HOME/.config/nvm}"
     [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
     [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 }
@@ -198,9 +226,6 @@ _dots_load_nvm_lazy() {
 # Pyenv lazy loading
 _dots_init_pyenv() {
     unfunction pyenv python python3 pip pip3 poetry pipx 2>/dev/null
-    export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
-    [[ -d "$PYENV_ROOT/bin" ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-    
     if command -v pyenv &>/dev/null; then
         eval "$(pyenv init -)"
         eval "$(pyenv virtualenv-init -)" 2>/dev/null
@@ -224,7 +249,6 @@ _dots_setup_lazy_completions() {
 
 # Initialize lazy loading
 _dots_lazy_init() {
-    _dots_setup_paths
     _dots_load_nvm_lazy
     _dots_load_pyenv_lazy
     _dots_setup_lazy_completions
