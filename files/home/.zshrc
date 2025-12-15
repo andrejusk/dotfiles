@@ -29,9 +29,9 @@ _dots_load_omz
 # -----------------------------------------------------------------------------
 
 # 1. Constants & Configuration (only set once)
-(( ${+PROMPT_MIN_DURATION} )) || typeset -gri PROMPT_MIN_DURATION=2       # Minimum seconds to show execution time
-(( ${+PROMPT_FLASH_DELAY} )) || typeset -gri PROMPT_FLASH_DELAY=5        # Flash duration in centiseconds (50ms)
-(( ${+EXIT_SIGINT} )) || typeset -gri EXIT_SIGINT=130             # Exit code for SIGINT (128 + 2)
+(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2       # Minimum seconds to show execution time
+(( ${+PROMPT_FLASH_DELAY} )) || typeset -gi PROMPT_FLASH_DELAY=5         # Flash duration in centiseconds (50ms)
+(( ${+EXIT_SIGINT} )) || typeset -gi EXIT_SIGINT=130                     # Exit code for SIGINT (128 + 2)
 
 # State variables
 typeset -gi _prompt_cmd_start_time=0
@@ -51,7 +51,8 @@ _dots_setup_colours() {
         _pc_bluegrey=$'%{\e[38;2;114;144;184m%}'
         _pc_flash_bg=$'\e[48;2;248;140;20m'
         _pc_flash_fg=$'\e[38;2;0;0;0m'
-    elif [[ "${TERM}" == *256color* || "${terminfo[colors]}" -ge 256 ]] 2>/dev/null; then
+    elif [[ "${TERM}" == *256color* ]] || \
+         { (( ${+terminfo[colors]} )) && (( ${terminfo[colors]} >= 256 )); }; then
         # 256 colour
         _pc_teal=$'%{\e[38;5;43m%}'
         _pc_orange=$'%{\e[38;5;208m%}'
@@ -218,8 +219,8 @@ _dots_ctrl_c_widget() {
     RPROMPT=""
     zle reset-prompt
     
-    # Non-blocking delay using zselect
-    zselect -t "$PROMPT_FLASH_DELAY" 2>/dev/null
+    # Non-blocking delay using zselect (with fallback)
+    zselect -t "$PROMPT_FLASH_DELAY" 2>/dev/null || :
     
     # Restore normal prompt
     PROMPT=$'\n'"${line1}"$'\n'"${_prompt_symbol} "
