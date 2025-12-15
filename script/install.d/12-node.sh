@@ -5,7 +5,7 @@
 #   Configure Node.js.
 #
 
-NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
 [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
 nvm_version="0.40.3"
