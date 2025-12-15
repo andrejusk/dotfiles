@@ -28,15 +28,20 @@ _dots_load_omz
 # Build shell prompt
 # -----------------------------------------------------------------------------
 
+# 1. Constants & Configuration (only set once)
+(( ${+PROMPT_MIN_DURATION} )) || typeset -gri PROMPT_MIN_DURATION=2       # Minimum seconds to show execution time
+(( ${+PROMPT_FLASH_DELAY} )) || typeset -gri PROMPT_FLASH_DELAY=5        # Flash duration in centiseconds (50ms)
+(( ${+EXIT_SIGINT} )) || typeset -gri EXIT_SIGINT=130             # Exit code for SIGINT (128 + 2)
+
 # State variables
-typeset -g _prompt_cmd_start_time=0
-typeset -g _prompt_cmd_duration=0
+typeset -gi _prompt_cmd_start_time=0
+typeset -gi _prompt_cmd_duration=0
 typeset -g _prompt_cached_session=""
 typeset -g _prompt_cached_path=""
 typeset -g _prompt_symbol=""
 typeset -g _prompt_flash_symbol=""
 
-# Detect colour support and set palette
+# 2. Colour Setup (run once)
 _dots_setup_colours() {
     if [[ "$COLORTERM" == "truecolor" || "$COLORTERM" == "24bit" ]]; then
         # True colour
@@ -67,8 +72,8 @@ _dots_setup_colours() {
     _pc_bold=$'%{\e[1m%}'
 }
 
-# Abbreviate path: keep last 3 components full, abbreviate rest to first char
-# Sets _prompt_cached_path directly (no subshell)
+# 3. Cached State Functions
+# Update cached path (called on chpwd and precmd)
 _dots_update_path() {
     local dir="${PWD/#$HOME/~}"
     local -a parts
@@ -109,7 +114,7 @@ _dots_update_path() {
     fi
 }
 
-# Get session identifier (sets _prompt_cached_session directly)
+# Initialize session identifier (called once at startup)
 _dots_init_session() {
     # GitHub Codespace
     if [[ -n "$CODESPACE_NAME" ]]; then
@@ -137,7 +142,7 @@ _dots_init_session() {
     _prompt_cached_session=""
 }
 
-# Initialize symbols (called once at startup, EUID doesn't change)
+# Initialize symbols (called once at startup)
 _dots_init_symbols() {
     local reset=$'\e[0m'
     if [[ $EUID -eq 0 ]]; then
@@ -149,6 +154,7 @@ _dots_init_symbols() {
     fi
 }
 
+# 4. Hooks
 # Pre-exec hook: record command start time
 _dots_preexec() {
     _prompt_cmd_start_time=$EPOCHSECONDS
@@ -179,8 +185,8 @@ _dots_precmd() {
         line2_right="${_pc_red}[${last_exit}]${_pc_reset}"
     fi
     
-    # Execution time (if >= 2s) - inline formatting
-    if (( _prompt_cmd_duration >= 2 )); then
+    # Execution time (if >= minimum duration) - inline formatting
+    if (( _prompt_cmd_duration >= PROMPT_MIN_DURATION )); then
         [[ -n "$line2_right" ]] && line2_right+=" "
         if (( _prompt_cmd_duration >= 60 )); then
             line2_right+="${_pc_bluegrey}($(( _prompt_cmd_duration / 60 ))m $(( _prompt_cmd_duration % 60 ))s)${_pc_reset}"
@@ -194,6 +200,7 @@ _dots_precmd() {
     RPROMPT="${line2_right}"
 }
 
+# 5. Widgets
 # CTRL+C ZLE widget (can modify BUFFER)
 _dots_ctrl_c_widget() {
     BUFFER=""
@@ -211,8 +218,8 @@ _dots_ctrl_c_widget() {
     RPROMPT=""
     zle reset-prompt
     
-    # Non-blocking delay using zselect (50ms)
-    zselect -t 5 2>/dev/null
+    # Non-blocking delay using zselect
+    zselect -t "$PROMPT_FLASH_DELAY" 2>/dev/null
     
     # Restore normal prompt
     PROMPT=$'\n'"${line1}"$'\n'"${_prompt_symbol} "
@@ -229,9 +236,10 @@ TRAPINT() {
         return 0
     fi
     # Not in ZLE, use default behaviour
-    return $(( 128 + 2 ))
+    return $(( EXIT_SIGINT ))
 }
 
+# 6. Initialisation
 _dots_build_prompt() {
     # Load required modules
     zmodload zsh/datetime 2>/dev/null
