@@ -33,6 +33,8 @@ typeset -g _prompt_cmd_start_time=0
 typeset -g _prompt_cmd_duration=0
 typeset -g _prompt_cached_session=""
 typeset -g _prompt_cached_path=""
+typeset -g _prompt_symbol=""
+typeset -g _prompt_flash_symbol=""
 
 # Detect colour support and set palette
 _dots_setup_colours() {
@@ -65,8 +67,9 @@ _dots_setup_colours() {
     _pc_bold=$'%{\e[1m%}'
 }
 
-# Abbreviate path: keep last 2 components full, abbreviate rest to first char
-_dots_abbrev_path() {
+# Abbreviate path: keep last 3 components full, abbreviate rest to first char
+# Sets _prompt_cached_path directly (no subshell)
+_dots_update_path() {
     local dir="${PWD/#$HOME/~}"
     local -a parts
     local prefix=""
@@ -81,17 +84,20 @@ _dots_abbrev_path() {
         separator="/"
         dir="${dir:2}"
     elif [[ "$dir" == "~" ]]; then
-        echo "~"
+        _prompt_cached_path="~"
         return
     fi
     
-    [[ -z "$dir" ]] && { echo "$prefix"; return; }
+    if [[ -z "$dir" ]]; then
+        _prompt_cached_path="$prefix"
+        return
+    fi
     
     parts=("${(@s:/:)dir}")
     local count=${#parts[@]}
     
     if (( count <= 3 )); then
-        echo "${prefix}${separator}${dir}"
+        _prompt_cached_path="${prefix}${separator}${dir}"
     else
         local result=""
         local i
@@ -99,71 +105,47 @@ _dots_abbrev_path() {
             result+="${parts[$i]:0:1}/"
         done
         result+="${parts[-3]}/${parts[-2]}/${parts[-1]}"
-        echo "${prefix}${separator}${result}"
+        _prompt_cached_path="${prefix}${separator}${result}"
     fi
 }
 
-# Get session identifier
-_dots_session_id() {
+# Get session identifier (sets _prompt_cached_session directly)
+_dots_init_session() {
     # GitHub Codespace
     if [[ -n "$CODESPACE_NAME" ]]; then
-        echo "$CODESPACE_NAME"
+        _prompt_cached_session="$CODESPACE_NAME"
         return
     fi
     # Dev container
     if [[ -n "$REMOTE_CONTAINERS_IPC" || -f /.dockerenv ]]; then
         if [[ -n "$DEVCONTAINER_ID" ]]; then
-            echo "$DEVCONTAINER_ID"
+            _prompt_cached_session="$DEVCONTAINER_ID"
             return
         fi
         # Try container hostname
         if [[ -f /etc/hostname ]]; then
-            cat /etc/hostname
+            _prompt_cached_session="$(</etc/hostname)"
             return
         fi
     fi
     # SSH session
     if [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]]; then
-        echo "%n@%m"
+        _prompt_cached_session="%n@%m"
         return
     fi
     # Local - no identifier
-    echo ""
+    _prompt_cached_session=""
 }
 
-# Get input symbol based on user
-_dots_get_symbol() {
-    if [[ $EUID -eq 0 ]]; then
-        echo "${_pc_orange}${_pc_bold}#${_pc_reset}"
-    else
-        echo ">"
-    fi
-}
-
-# Get flash symbol (orange background, black foreground)
-_dots_get_flash_symbol() {
+# Initialize symbols (called once at startup, EUID doesn't change)
+_dots_init_symbols() {
     local reset=$'\e[0m'
     if [[ $EUID -eq 0 ]]; then
-        echo "%{${_pc_flash_bg}${_pc_flash_fg}%}#%{${reset}%}"
+        _prompt_symbol="${_pc_orange}${_pc_bold}#${_pc_reset}"
+        _prompt_flash_symbol="%{${_pc_flash_bg}${_pc_flash_fg}%}#%{${reset}%}"
     else
-        echo "%{${_pc_flash_bg}${_pc_flash_fg}%}>%{${reset}%}"
-    fi
-}
-
-# Update cached path (called on directory change)
-_dots_update_path() {
-    _prompt_cached_path="$(_dots_abbrev_path)"
-}
-
-# Format duration
-_dots_format_duration() {
-    local seconds=$1
-    if (( seconds >= 60 )); then
-        local mins=$(( seconds / 60 ))
-        local secs=$(( seconds % 60 ))
-        echo "(${mins}m ${secs}s)"
-    else
-        echo "(${seconds}s)"
+        _prompt_symbol=">"
+        _prompt_flash_symbol="%{${_pc_flash_bg}${_pc_flash_fg}%}>%{${reset}%}"
     fi
 }
 
@@ -175,12 +157,10 @@ _dots_preexec() {
 # Pre-cmd hook: calculate duration, set prompt
 _dots_precmd() {
     local last_exit=$?
-    local duration=0
     
     # Calculate duration if we have a start time
     if (( _prompt_cmd_start_time > 0 )); then
-        duration=$(( EPOCHSECONDS - _prompt_cmd_start_time ))
-        _prompt_cmd_duration=$duration
+        _prompt_cmd_duration=$(( EPOCHSECONDS - _prompt_cmd_start_time ))
         _prompt_cmd_start_time=0
     else
         _prompt_cmd_duration=0
@@ -193,28 +173,24 @@ _dots_precmd() {
     local line1="${_pc_teal}${_prompt_cached_path}${_pc_reset}"
     [[ -n "$_prompt_cached_session" ]] && line1+="  ${_pc_orange}${_prompt_cached_session}${_pc_reset}"
     
-    local symbol="$(_dots_get_symbol)"
-    
     local line2_right=""
     # Exit code (if non-zero)
     if (( last_exit != 0 )); then
         line2_right="${_pc_red}[${last_exit}]${_pc_reset}"
     fi
     
-    # Execution time (if >= 2s)
+    # Execution time (if >= 2s) - inline formatting
     if (( _prompt_cmd_duration >= 2 )); then
-        local time_str="$(_dots_format_duration $_prompt_cmd_duration)"
-        if [[ -n "$line2_right" ]]; then
-            line2_right+=" "
+        [[ -n "$line2_right" ]] && line2_right+=" "
+        if (( _prompt_cmd_duration >= 60 )); then
+            line2_right+="${_pc_bluegrey}($(( _prompt_cmd_duration / 60 ))m $(( _prompt_cmd_duration % 60 ))s)${_pc_reset}"
+        else
+            line2_right+="${_pc_bluegrey}(${_prompt_cmd_duration}s)${_pc_reset}"
         fi
-        line2_right+="${_pc_bluegrey}${time_str}${_pc_reset}"
     fi
     
-    # Build newline prefix (blank line before prompt)
-    local nl_prefix=$'\n'
-    
     # Set prompts
-    PROMPT="${nl_prefix}${line1}"$'\n'"${symbol} "
+    PROMPT=$'\n'"${line1}"$'\n'"${_prompt_symbol} "
     RPROMPT="${line2_right}"
 }
 
@@ -230,19 +206,16 @@ _dots_ctrl_c_widget() {
     local line1="${_pc_teal}${_prompt_cached_path}${_pc_reset}"
     [[ -n "$_prompt_cached_session" ]] && line1+="  ${_pc_orange}${_prompt_cached_session}${_pc_reset}"
     
-    local nl_prefix=$'\n'
-    local flash_symbol="$(_dots_get_flash_symbol) "
-    
-    PROMPT="${nl_prefix}${line1}"$'\n'"${flash_symbol}"
+    # Flash prompt
+    PROMPT=$'\n'"${line1}"$'\n'"${_prompt_flash_symbol} "
     RPROMPT=""
     zle reset-prompt
     
-    # Brief delay then restore
-    sleep 0.1
+    # Non-blocking delay using zselect (50ms)
+    zselect -t 5 2>/dev/null
     
     # Restore normal prompt
-    local symbol="$(_dots_get_symbol) "
-    PROMPT="${nl_prefix}${line1}"$'\n'"${symbol}"
+    PROMPT=$'\n'"${line1}"$'\n'"${_prompt_symbol} "
     zle reset-prompt
 }
 zle -N _dots_ctrl_c_widget
@@ -262,12 +235,12 @@ TRAPINT() {
 _dots_build_prompt() {
     # Load required modules
     zmodload zsh/datetime 2>/dev/null
+    zmodload zsh/zselect 2>/dev/null
     
-    # Setup colours
+    # Setup colours and symbols
     _dots_setup_colours
-    
-    # Cache session ID (doesn't change during session)
-    _prompt_cached_session="$(_dots_session_id)"
+    _dots_init_symbols
+    _dots_init_session
     
     # Enable prompt substitution
     setopt PROMPT_SUBST
