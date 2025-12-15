@@ -21,17 +21,12 @@ mkdir -p "$WORKSPACE"
 # -----------------------------------------------------------------
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 
-# Initialise and load Node
+# Node configuration (lazy loaded in .zshrc)
 # -----------------------------------------------------------------
-export NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
+export NVM_DIR=${NVM_DIR:-"$HOME/.config/nvm"}
 mkdir -p "$NVM_DIR"
 
-_dots_load_nvm() {
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-}
-_dots_load_nvm
-
+# Add default node to PATH (no NVM init required)
 node_alias="$NVM_DIR/alias/lts/jod"
 if [ -f "$node_alias" ]; then
     VERSION=$(cat "$node_alias")
@@ -42,16 +37,16 @@ if [ -f "$node_alias" ]; then
 fi
 unset node_alias VERSION node_bin_path
 
-# Initialise and load Python
+# Python configuration (lazy loaded in .zshrc)
 # -----------------------------------------------------------------
 export PYENV_ROOT=${PYENV_ROOT:-"$HOME/.pyenv"}
 if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
-_dots_load_pyenv() {
-    [ -x $(command -v pyenv) ] && eval "$(pyenv init --path)"
-}
-_dots_load_pyenv
+# Add pyenv shims to PATH (no init required)
+if [[ ":$PATH:" != *":$PYENV_ROOT/shims:"* ]]; then
+    export PATH="$PYENV_ROOT/shims:$PATH"
+fi
 
 export POETRY_ROOT=${POETRY_ROOT:-"$HOME/.poetry"}
 if [[ ":$PATH:" != *":$POETRY_ROOT/bin:"* ]]; then
@@ -64,10 +59,9 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
-# Load homebrew
+# Homebrew configuration (lazy loaded in .zshrc)
 # -----------------------------------------------------------------------------
-_dots_load_brew() {
-    export HOMEBREW_NO_ANALYTICS=1
-    [ -x "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-}
-_dots_load_brew
+export HOMEBREW_NO_ANALYTICS=1
+if [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
+    [ -x "/opt/homebrew/bin/brew" ] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+fi
