@@ -111,34 +111,44 @@ _dots_session() {
 }
 
 _dots_git_info_sync() {
-    local git_dir
-    git_dir="$(git rev-parse --git-dir 2>/dev/null)" || return
+    local branch="" ahead=0 behind=0 staged=0 unstaged=0 untracked=0
+    local line
     
-    local branch=""
-    if [[ -f "$git_dir/HEAD" ]]; then
-        local head=$(<"$git_dir/HEAD")
-        if [[ "$head" == ref:* ]]; then
-            branch="${head#ref: refs/heads/}"
-        else
-            branch="${head:0:7}"
-        fi
-    fi
+    while IFS= read -r line; do
+        case "$line" in
+            "# branch.head "*)
+                branch="${line#\# branch.head }"
+                [[ "$branch" == "(detached)" ]] && branch=""
+                ;;
+            "# branch.oid "*)
+                # Use short oid for detached HEAD
+                [[ -z "$branch" ]] && branch="${${line#\# branch.oid }:0:7}"
+                ;;
+            "# branch.ab "*)
+                local ab="${line#\# branch.ab }"
+                ahead="${ab%% *}"; ahead="${ahead#+}"
+                behind="${ab##* }"; behind="${behind#-}"
+                ;;
+            "1 "*)  # changed entry
+                [[ "${line:2:1}" != "." ]] && (( staged++ ))
+                [[ "${line:3:1}" != "." ]] && (( unstaged++ ))
+                ;;
+            "2 "*)  # renamed/copied
+                [[ "${line:2:1}" != "." ]] && (( staged++ ))
+                [[ "${line:3:1}" != "." ]] && (( unstaged++ ))
+                ;;
+            "? "*)  # untracked
+                (( untracked++ ))
+                ;;
+            "u "*)  # unmerged
+                (( staged++ ))
+                ;;
+        esac
+    done < <(git status --porcelain=v2 --branch 2>/dev/null)
+    
     [[ -z "$branch" ]] && return
     
     local info="${_pc[grey]}(${branch})${_pc[reset]}"
-    
-    # Status: staged, unstaged, untracked
-    local staged=0 unstaged=0 untracked=0
-    local status_line
-    while IFS= read -r status_line; do
-        case "${status_line:0:2}" in
-            \?\?) (( untracked++ )) ;;
-            ?[MDAUR]) (( unstaged++ )) ;;
-        esac
-        case "${status_line:0:1}" in
-            [MDAUR]) (( staged++ )) ;;
-        esac
-    done < <(git status --porcelain 2>/dev/null)
     
     local dirty=""
     (( staged ))    && dirty+="${_pc[teal]}+${staged}${_pc[reset]}"
@@ -146,22 +156,10 @@ _dots_git_info_sync() {
     (( untracked )) && dirty+="${_pc[grey]}?${untracked}${_pc[reset]}"
     [[ -n "$dirty" ]] && info+=" ${dirty}"
     
-    # Ahead/behind
-    local upstream
-    upstream="$(git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
-    if [[ -n "$upstream" ]]; then
-        local ahead=0 behind=0
-        local ab
-        ab="$(git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)"
-        if [[ -n "$ab" ]]; then
-            ahead="${ab%%$'\t'*}"
-            behind="${ab##*$'\t'}"
-            local arrows=""
-            (( ahead ))  && arrows+="${_pc[teal]}↑${ahead}${_pc[reset]}"
-            (( behind )) && arrows+="${_pc[orange]}↓${behind}${_pc[reset]}"
-            [[ -n "$arrows" ]] && info+=" ${arrows}"
-        fi
-    fi
+    local arrows=""
+    (( ahead ))  && arrows+="${_pc[teal]}↑${ahead}${_pc[reset]}"
+    (( behind )) && arrows+="${_pc[orange]}↓${behind}${_pc[reset]}"
+    [[ -n "$arrows" ]] && info+=" ${arrows}"
     
     print -r -- "$info"
 }
@@ -174,7 +172,9 @@ typeset -g _git_async_fd=""
 _dots_git_async_callback() {
     local fd=$1
     _git_info_result=""
-    if [[ -n "$fd" ]] && { IFS= read -r -u "$fd" _git_info_result; }; then
+    # Use sysread for efficient non-blocking read from fd
+    if [[ -n "$fd" ]] && sysread -i "$fd" _git_info_result 2>/dev/null; then
+        _git_info_result="${_git_info_result%$'\n'}"  # trim trailing newline
         _dots_build_prompt_base
         PROMPT="$_prompt_base"
         zle && zle reset-prompt
@@ -286,6 +286,7 @@ TRAPINT() {
 _dots_prompt_init() {
     zmodload zsh/datetime 2>/dev/null
     zmodload zsh/zselect 2>/dev/null
+    zmodload zsh/system 2>/dev/null
     _dots_init_colors
     _dots_build_prompt_base
     
