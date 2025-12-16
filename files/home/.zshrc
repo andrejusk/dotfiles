@@ -110,14 +110,70 @@ _dots_session() {
     [[ -f /.dockerenv ]] && { print -r -- "${DEVCONTAINER_ID:-$(</etc/hostname)}"; return }
 }
 
-_dots_build_prompt_cache() {
-    local path="$(_dots_abbrev_path)"
-    local session="$(_dots_session)"
+_dots_git_info() {
+    local git_dir
+    git_dir="$(git rev-parse --git-dir 2>/dev/null)" || return
+    
+    local branch=""
+    if [[ -f "$git_dir/HEAD" ]]; then
+        local head=$(<"$git_dir/HEAD")
+        if [[ "$head" == ref:* ]]; then
+            branch="${head#ref: refs/heads/}"
+        else
+            branch="${head:0:7}"
+        fi
+    fi
+    [[ -z "$branch" ]] && return
+    
+    local info="${_pc[grey]}${branch}${_pc[reset]}"
+    
+    # Status: staged, unstaged, untracked
+    local staged=0 unstaged=0 untracked=0
+    local status_line
+    while IFS= read -r status_line; do
+        case "${status_line:0:2}" in
+            \?\?) (( untracked++ )) ;;
+            ?[MDAUR]) (( unstaged++ )) ;;
+        esac
+        case "${status_line:0:1}" in
+            [MDAUR]) (( staged++ )) ;;
+        esac
+    done < <(git status --porcelain 2>/dev/null)
+    
+    local dirty=""
+    (( staged ))    && dirty+="${_pc[teal]}+${staged}${_pc[reset]}"
+    (( unstaged ))  && dirty+="${_pc[orange]}~${unstaged}${_pc[reset]}"
+    (( untracked )) && dirty+="${_pc[grey]}?${untracked}${_pc[reset]}"
+    [[ -n "$dirty" ]] && info+=" ${dirty}"
+    
+    # Ahead/behind
+    local upstream
+    upstream="$(git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
+    if [[ -n "$upstream" ]]; then
+        local ahead=0 behind=0
+        local ab
+        ab="$(git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)"
+        if [[ -n "$ab" ]]; then
+            ahead="${ab%%$'\t'*}"
+            behind="${ab##*$'\t'}"
+            local arrows=""
+            (( ahead ))  && arrows+="${_pc[teal]}↑${ahead}${_pc[reset]}"
+            (( behind )) && arrows+="${_pc[orange]}↓${behind}${_pc[reset]}"
+            [[ -n "$arrows" ]] && info+=" ${arrows}"
+        fi
+    fi
+    
+    print -r -- "$info"
+}
+
+_dots_build_prompt_base() {
+    local dir_path="$(_dots_abbrev_path)"
     local symbol="${_pc[grey]}>${_pc[reset]}"
     (( EUID == 0 )) && symbol="${_pc[orange]}${_pc[bold]}#${_pc[reset]}"
     
-    local line1="${_pc[teal]}${path}${_pc[reset]}"
-    [[ -n "$session" ]] && line1+="  ${_pc[orange]}${session}${_pc[reset]}"
+    local line1="${_pc[teal]}${dir_path}${_pc[reset]}"
+    local git_info="$(_dots_git_info)"
+    [[ -n "$git_info" ]] && line1+="  ${git_info}"
     
     _prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
 }
@@ -134,20 +190,27 @@ _dots_precmd() {
     _prompt_cmd_ran=0
     # First prompt should never show error from shell init
     [[ -z "$_dots_first_prompt" ]] && { _dots_first_prompt=1; e=0; }
-    RPROMPT=""
     
-    (( e )) && RPROMPT="${_pc[red]}[${e}]${_pc[reset]}"
+    # Build RPROMPT: time, error, host
+    local rp_parts=()
     
     if (( _prompt_cmd_start )); then
         d=$(( EPOCHSECONDS - _prompt_cmd_start ))
         _prompt_cmd_start=0
         if (( d >= PROMPT_MIN_DURATION )); then
-            [[ -n "$RPROMPT" ]] && RPROMPT+=" "
-            (( d >= 60 )) && RPROMPT+="${_pc[grey]}($(( d/60 ))m $(( d%60 ))s)${_pc[reset]}" \
-                         || RPROMPT+="${_pc[grey]}(${d}s)${_pc[reset]}"
+            (( d >= 60 )) && rp_parts+=("${_pc[grey]}$(( d/60 ))m $(( d%60 ))s${_pc[reset]}") \
+                         || rp_parts+=("${_pc[grey]}${d}s${_pc[reset]}")
         fi
     fi
     
+    (( e )) && rp_parts+=("${_pc[red]}${e}${_pc[reset]}")
+    
+    local session="$(_dots_session)"
+    [[ -n "$session" ]] && rp_parts+=("${_pc[orange]}${session}${_pc[reset]}")
+    
+    RPROMPT="${(j: :)rp_parts}"
+    
+    _dots_build_prompt_base
     PROMPT="$_prompt_base"
 }
 
@@ -159,7 +222,10 @@ TRAPINT() {
         if [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
             # Empty buffer: flash the prompt symbol
             _prompt_flashing=1
-            local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
+            local git_info="$(_dots_git_info)"
+            local git_part=""
+            [[ -n "$git_info" ]] && git_part="  ${git_info}"
+            local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
             PROMPT="$flash_prompt"
             zle reset-prompt
             zselect -t $PROMPT_FLASH_DELAY
@@ -179,13 +245,13 @@ _dots_prompt_init() {
     zmodload zsh/datetime 2>/dev/null
     zmodload zsh/zselect 2>/dev/null
     _dots_init_colors
-    _dots_build_prompt_cache
+    _dots_build_prompt_base
     
     setopt PROMPT_SUBST EXTENDED_HISTORY INC_APPEND_HISTORY_TIME
     autoload -Uz add-zsh-hook
     add-zsh-hook preexec _dots_preexec
     add-zsh-hook precmd _dots_precmd
-    add-zsh-hook chpwd _dots_build_prompt_cache
+    add-zsh-hook chpwd _dots_build_prompt_base
     
     PROMPT="$_prompt_base" RPROMPT=""
 }
