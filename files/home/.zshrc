@@ -53,9 +53,11 @@ _dots_load_omz() {
 _dots_load_omz
 
 # Prompt
-(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2   # show duration after N seconds
+(( ${+PROMPT_MIN_DURATION} ))  || typeset -gi PROMPT_MIN_DURATION=2    # show duration after N seconds
+(( ${+PROMPT_FLASH_DELAY} ))   || typeset -gi PROMPT_FLASH_DELAY=4     # flash prompt for N centiseconds
 
 typeset -gi _prompt_cmd_start=0
+typeset -gi _prompt_flashing=0
 typeset -g  _prompt_base=""
 typeset -gA _pc
 
@@ -123,12 +125,13 @@ _dots_preexec() { _prompt_cmd_start=$EPOCHSECONDS }
 
 _dots_precmd() {
     local e=$? d=0
+    [[ -n "$_dots_last_status" ]] && e=$_dots_last_status
+    unset _dots_last_status
+    # First prompt should never show error from shell init
     if [[ -z "$_dots_first_prompt" ]]; then
         _dots_first_prompt=1
         e=0
     fi
-    [[ -n "$_dots_last_status" ]] && e=$_dots_last_status
-    unset _dots_last_status
     RPROMPT=""
     
     (( e )) && RPROMPT="${_pc[red]}[${e}]${_pc[reset]}"
@@ -148,8 +151,27 @@ _dots_precmd() {
 
 
 
+TRAPINT() {
+    if [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
+        _prompt_flashing=1
+        # Flash orange background, black foreground on the prompt symbol
+        local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
+        PROMPT="$flash_prompt"
+        zle reset-prompt
+        # Blocking 100ms flash then restore
+        zselect -t $PROMPT_FLASH_DELAY
+        _prompt_flashing=0
+        PROMPT="$_prompt_base"
+        zle reset-prompt
+        return 0
+    fi
+    # Default behavior: show ^C and new prompt
+    return $((128 + 2))
+}
+
 _dots_prompt_init() {
     zmodload zsh/datetime 2>/dev/null
+    zmodload zsh/zselect 2>/dev/null
     _dots_init_colors
     _dots_build_prompt_cache
     
