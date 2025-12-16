@@ -113,7 +113,7 @@ _dots_session() {
 _dots_build_prompt_cache() {
     local path="$(_dots_abbrev_path)"
     local session="$(_dots_session)"
-    local symbol=">"
+    local symbol="${_pc[grey]}>${_pc[reset]}"
     (( EUID == 0 )) && symbol="${_pc[orange]}${_pc[bold]}#${_pc[reset]}"
     
     local line1="${_pc[teal]}${path}${_pc[reset]}"
