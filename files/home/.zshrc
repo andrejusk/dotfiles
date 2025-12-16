@@ -46,7 +46,7 @@ _dots_cache_ls_colours
 # -----------------------------------------------------------------------------
 _dots_load_omz() {
     export DISABLE_AUTO_UPDATE="true"
-    export DISABLE_LS_COLORS="true"  # We handle ls colors above
+    export DISABLE_LS_COLORS="true"  # We handle ls colours above
     export ZSH="$HOME/.oh-my-zsh"
     export ZSH_THEME=""  # Disable theme, we build our own prompt
     plugins=(
@@ -55,12 +55,13 @@ _dots_load_omz() {
         zsh-syntax-highlighting
     )
     
-    # Cache compinit daily
-    autoload -Uz compinit
-    if [[ -f ~/.zcompdump && $(date +'%j') == $(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null) ]]; then
-        compinit -C
+    # Daily security check: skip compaudit if already checked today
+    local marker="$_dots_cache_dir/.compaudit_checked"
+    local today=$(date +'%Y-%j')
+    if [[ -f "$marker" ]] && [[ "$(cat "$marker" 2>/dev/null)" == "$today" ]]; then
+        export ZSH_DISABLE_COMPFIX="true"
     else
-        compinit
+        echo "$today" > "$marker"
     fi
     
     source "$ZSH/oh-my-zsh.sh"
