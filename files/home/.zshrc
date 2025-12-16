@@ -110,7 +110,7 @@ _dots_session() {
     [[ -f /.dockerenv ]] && { print -r -- "${DEVCONTAINER_ID:-$(</etc/hostname)}"; return }
 }
 
-_dots_git_info() {
+_dots_git_info_sync() {
     local git_dir
     git_dir="$(git rev-parse --git-dir 2>/dev/null)" || return
     
@@ -166,14 +166,53 @@ _dots_git_info() {
     print -r -- "$info"
 }
 
+# Async git info
+typeset -g _git_info_result=""
+typeset -g _git_info_pwd=""
+typeset -g _git_async_fd=""
+
+_dots_git_async_callback() {
+    local fd=$1
+    _git_info_result=""
+    if [[ -n "$fd" ]] && { IFS= read -r -u "$fd" _git_info_result; }; then
+        _dots_build_prompt_base
+        PROMPT="$_prompt_base"
+        zle && zle reset-prompt
+    fi
+    # Clean up
+    exec {fd}<&-
+    zle -F "$fd" 2>/dev/null
+    _git_async_fd=""
+}
+
+_dots_git_async_start() {
+    # Cancel any pending async job
+    if [[ -n "$_git_async_fd" ]]; then
+        exec {_git_async_fd}<&- 2>/dev/null
+        zle -F "$_git_async_fd" 2>/dev/null
+        _git_async_fd=""
+    fi
+    
+    # Clear result on directory change
+    if [[ "$PWD" != "$_git_info_pwd" ]]; then
+        _git_info_result=""
+        _git_info_pwd="$PWD"
+    fi
+    
+    # Start background job
+    exec {_git_async_fd}< <(
+        _dots_git_info_sync
+    )
+    zle -F "$_git_async_fd" _dots_git_async_callback
+}
+
 _dots_build_prompt_base() {
     local dir_path="$(_dots_abbrev_path)"
     local symbol="${_pc[grey]}>${_pc[reset]}"
     (( EUID == 0 )) && symbol="${_pc[orange]}${_pc[bold]}#${_pc[reset]}"
     
     local line1="${_pc[teal]}${dir_path}${_pc[reset]}"
-    local git_info="$(_dots_git_info)"
-    [[ -n "$git_info" ]] && line1+=" ${git_info}"
+    [[ -n "$_git_info_result" ]] && line1+=" ${_git_info_result}"
     
     _prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
 }
@@ -210,7 +249,11 @@ _dots_precmd() {
     
     RPROMPT="${(j: :)rp_parts}"
     
+    # Clear git info on directory change before building prompt
+    [[ "$PWD" != "$_git_info_pwd" ]] && _git_info_result=""
+    
     _dots_build_prompt_base
+    _dots_git_async_start
     PROMPT="$_prompt_base"
 }
 
@@ -222,9 +265,8 @@ TRAPINT() {
         if [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
             # Empty buffer: flash the prompt symbol
             _prompt_flashing=1
-            local git_info="$(_dots_git_info)"
             local git_part=""
-            [[ -n "$git_info" ]] && git_part="  ${git_info}"
+            [[ -n "$_git_info_result" ]] && git_part=" ${_git_info_result}"
             local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
             PROMPT="$flash_prompt"
             zle reset-prompt
