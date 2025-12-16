@@ -54,10 +54,9 @@ _dots_load_omz
 
 # Prompt
 (( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2   # show duration after N seconds
-(( ${+PROMPT_FLASH_DELAY} ))  || typeset -gi PROMPT_FLASH_DELAY=50   # CTRL+C flash in centiseconds
 
 typeset -gi _prompt_cmd_start=0
-typeset -g  _prompt_base="" _prompt_flash=""
+typeset -g  _prompt_base=""
 typeset -gA _pc
 
 _dots_init_colors() {
@@ -67,8 +66,6 @@ _dots_init_colors() {
             orange    $'%{\e[38;2;248;140;20m%}'
             red       $'%{\e[38;2;244;4;4m%}'
             grey      $'%{\e[38;2;114;144;184m%}'
-            flash_bg  $'\e[48;2;248;140;20m'
-            flash_fg  $'\e[38;2;0;0;0m'
         )
     elif [[ "$TERM" == *256color* ]]; then
         _pc=(
@@ -76,8 +73,6 @@ _dots_init_colors() {
             orange    $'%{\e[38;5;208m%}'
             red       $'%{\e[38;5;196m%}'
             grey      $'%{\e[38;5;103m%}'
-            flash_bg  $'\e[48;5;208m'
-            flash_fg  $'\e[38;5;0m'
         )
     else
         _pc=(
@@ -85,8 +80,6 @@ _dots_init_colors() {
             orange    $'%{\e[33m%}'
             red       $'%{\e[31m%}'
             grey      $'%{\e[34m%}'
-            flash_bg  $'\e[43m'
-            flash_fg  $'\e[30m'
         )
     fi
     _pc[reset]=$'%{\e[0m%}'
@@ -117,20 +110,25 @@ _dots_session() {
 _dots_build_prompt_cache() {
     local path="$(_dots_abbrev_path)"
     local session="$(_dots_session)"
-    local symbol=">" flash_sym=">" reset=$'\e[0m'
-    (( EUID == 0 )) && symbol="${_pc[orange]}${_pc[bold]}#${_pc[reset]}" flash_sym="#"
+    local symbol=">"
+    (( EUID == 0 )) && symbol="${_pc[orange]}${_pc[bold]}#${_pc[reset]}"
     
     local line1="${_pc[teal]}${path}${_pc[reset]}"
     [[ -n "$session" ]] && line1+="  ${_pc[orange]}${session}${_pc[reset]}"
     
     _prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
-    _prompt_flash=$'\n'"${line1}"$'\n'"%{${_pc[flash_bg]}${_pc[flash_fg]}%}${flash_sym}%{${reset}%} "
 }
 
 _dots_preexec() { _prompt_cmd_start=$EPOCHSECONDS }
 
 _dots_precmd() {
     local e=$? d=0
+    if [[ -z "$_dots_first_prompt" ]]; then
+        _dots_first_prompt=1
+        e=0
+    fi
+    [[ -n "$_dots_last_status" ]] && e=$_dots_last_status
+    unset _dots_last_status
     RPROMPT=""
     
     (( e )) && RPROMPT="${_pc[red]}[${e}]${_pc[reset]}"
@@ -148,24 +146,10 @@ _dots_precmd() {
     PROMPT="$_prompt_base"
 }
 
-_dots_ctrl_c() {
-    BUFFER=""
-    (( ${+functions[_zsh_autosuggest_clear]} )) && _zsh_autosuggest_clear
-    PROMPT="$_prompt_flash" RPROMPT=""
-    zle reset-prompt
-    zselect -t "$PROMPT_FLASH_DELAY" 2>/dev/null || :
-    PROMPT="$_prompt_base"
-    zle reset-prompt
-}
-zle -N _dots_ctrl_c
 
-TRAPINT() {
-    [[ -n "$ZLE_STATE" ]] && { zle _dots_ctrl_c; return 0 }
-    return 130
-}
 
 _dots_prompt_init() {
-    zmodload zsh/datetime zsh/zselect 2>/dev/null
+    zmodload zsh/datetime 2>/dev/null
     _dots_init_colors
     _dots_build_prompt_cache
     
