@@ -57,6 +57,7 @@ _dots_load_omz
 (( ${+PROMPT_FLASH_DELAY} ))   || typeset -gi PROMPT_FLASH_DELAY=4     # flash prompt for N centiseconds
 
 typeset -gi _prompt_cmd_start=0
+typeset -gi _prompt_cmd_ran=0
 typeset -gi _prompt_flashing=0
 typeset -g  _prompt_base=""
 typeset -gA _pc
@@ -121,17 +122,18 @@ _dots_build_prompt_cache() {
     _prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
 }
 
-_dots_preexec() { _prompt_cmd_start=$EPOCHSECONDS }
+_dots_preexec() {
+    _prompt_cmd_start=$EPOCHSECONDS
+    _prompt_cmd_ran=1
+}
 
 _dots_precmd() {
     local e=$? d=0
-    [[ -n "$_dots_last_status" ]] && e=$_dots_last_status
-    unset _dots_last_status
+    # Only show exit code if a command actually ran
+    (( _prompt_cmd_ran )) || e=0
+    _prompt_cmd_ran=0
     # First prompt should never show error from shell init
-    if [[ -z "$_dots_first_prompt" ]]; then
-        _dots_first_prompt=1
-        e=0
-    fi
+    [[ -z "$_dots_first_prompt" ]] && { _dots_first_prompt=1; e=0; }
     RPROMPT=""
     
     (( e )) && RPROMPT="${_pc[red]}[${e}]${_pc[reset]}"
@@ -152,20 +154,20 @@ _dots_precmd() {
 
 
 TRAPINT() {
-    if [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
+    # Only handle flash when ZLE is active (at prompt, not during command)
+    if [[ -o zle ]] && (( ${+WIDGET} )) && [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
         _prompt_flashing=1
         # Flash orange background, black foreground on the prompt symbol
         local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
         PROMPT="$flash_prompt"
         zle reset-prompt
-        # Blocking 100ms flash then restore
         zselect -t $PROMPT_FLASH_DELAY
         _prompt_flashing=0
         PROMPT="$_prompt_base"
         zle reset-prompt
         return 0
     fi
-    # Default behavior: show ^C and new prompt
+    # Default behavior
     return $((128 + 2))
 }
 
