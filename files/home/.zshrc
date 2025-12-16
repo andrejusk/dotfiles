@@ -154,20 +154,24 @@ _dots_precmd() {
 
 
 TRAPINT() {
-    # Only handle flash when ZLE is active (at prompt, not during command)
-    if [[ -o zle ]] && (( ${+WIDGET} )) && [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
-        _prompt_flashing=1
-        # Flash orange background, black foreground on the prompt symbol
-        local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
-        PROMPT="$flash_prompt"
-        zle reset-prompt
-        zselect -t $PROMPT_FLASH_DELAY
-        _prompt_flashing=0
-        PROMPT="$_prompt_base"
-        zle reset-prompt
-        return 0
+    # Only customize when ZLE is active (at prompt, not during command)
+    if [[ -o zle ]] && (( ${+WIDGET} )); then
+        if [[ -z "$BUFFER" ]] && (( ! _prompt_flashing )); then
+            # Empty buffer: flash the prompt symbol
+            _prompt_flashing=1
+            local flash_prompt=$'\n'"${_pc[teal]}$(_dots_abbrev_path)${_pc[reset]}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
+            PROMPT="$flash_prompt"
+            zle reset-prompt
+            zselect -t $PROMPT_FLASH_DELAY
+            _prompt_flashing=0
+            PROMPT="$_prompt_base"
+            zle reset-prompt
+            return 0
+        elif [[ -n "$BUFFER" ]]; then
+            # Buffer has content: clear autosuggest, then default behavior
+            zle autosuggest-clear 2>/dev/null
+        fi
     fi
-    # Default behavior
     return $((128 + 2))
 }
 
