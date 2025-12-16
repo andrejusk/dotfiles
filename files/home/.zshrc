@@ -72,8 +72,8 @@ _dots_load_omz
 # -----------------------------------------------------------------------------
 
 # Constants (configurable)
-(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2
-(( ${+PROMPT_FLASH_DELAY} )) || typeset -gi PROMPT_FLASH_DELAY=5
+(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2  # seconds before showing duration
+(( ${+PROMPT_FLASH_DELAY} )) || typeset -gi PROMPT_FLASH_DELAY=50  # centiseconds (50 = 0.5s) for CTRL+C flash
 
 # State
 typeset -gi _prompt_cmd_start=0
@@ -139,7 +139,7 @@ _dots_session() {
 }
 
 # Build and cache prompt strings (called on chpwd + init)
-_dots_build_cache() {
+_dots_build_prompt_cache() {
     local path="$(_dots_abbrev_path)"
     local session="$(_dots_session)"
     local symbol=">" flash_sym=">" reset=$'\e[0m'
@@ -195,13 +195,13 @@ TRAPINT() {
 _dots_prompt_init() {
     zmodload zsh/datetime zsh/zselect 2>/dev/null
     _dots_init_colours
-    _dots_build_cache
+    _dots_build_prompt_cache
     
     setopt PROMPT_SUBST EXTENDED_HISTORY INC_APPEND_HISTORY_TIME
     autoload -Uz add-zsh-hook
     add-zsh-hook preexec _dots_preexec
     add-zsh-hook precmd _dots_precmd
-    add-zsh-hook chpwd _dots_build_cache
+    add-zsh-hook chpwd _dots_build_prompt_cache
     
     PROMPT="$_prompt_base" RPROMPT=""
 }
