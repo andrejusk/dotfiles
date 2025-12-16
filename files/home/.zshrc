@@ -1,29 +1,17 @@
-# Prefix all functions with "_dots" for easier profiling
-# -----------------------------------------------------------------------------
-if [[ -n "$ZSH_BENCH" ]]; then
-    zmodload zsh/zprof
-fi
+# Profiling: ZSH_BENCH=1 zsh
+[[ -n "$ZSH_BENCH" ]] && zmodload zsh/zprof
 
-# Cache directory
 _dots_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/dots"
 
-# Load profile
-# -----------------------------------------------------------------------------
-_dots_load_profile() {
-    source "$HOME/.profile"
-}
+_dots_load_profile() { source "$HOME/.profile" }
 _dots_load_profile
 
-# Create directories (interactive only)
-# -----------------------------------------------------------------------------
 _dots_setup_dirs() {
     mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$NVM_DIR" "$_dots_cache_dir"
 }
 _dots_setup_dirs
 
-# Cache ls colour support detection
-# -----------------------------------------------------------------------------
-_dots_cache_ls_colours() {
+_dots_cache_ls_colors() {
     local cache_file="$_dots_cache_dir/ls-colours"
     if [[ -f "$cache_file" ]]; then
         source "$cache_file"
@@ -36,19 +24,15 @@ _dots_cache_ls_colours() {
         [[ -f "$cache_file" ]] && source "$cache_file"
     fi
 }
-_dots_cache_ls_colours
+_dots_cache_ls_colors
 
-# Load aliases
-# -----------------------------------------------------------------------------
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-# Load oh-my-zsh
-# -----------------------------------------------------------------------------
 _dots_load_omz() {
     export DISABLE_AUTO_UPDATE="true"
-    export DISABLE_LS_COLORS="true"  # We handle ls colours above
+    export DISABLE_LS_COLORS="true"
     export ZSH="$HOME/.oh-my-zsh"
-    export ZSH_THEME=""  # Disable theme, we build our own prompt
+    export ZSH_THEME=""
     plugins=(
         z
         zsh-autosuggestions
@@ -68,21 +52,15 @@ _dots_load_omz() {
 }
 _dots_load_omz
 
-# Build shell prompt
-# -----------------------------------------------------------------------------
+# Prompt
+(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2   # show duration after N seconds
+(( ${+PROMPT_FLASH_DELAY} ))  || typeset -gi PROMPT_FLASH_DELAY=50   # CTRL+C flash in centiseconds
 
-# Constants (configurable)
-(( ${+PROMPT_MIN_DURATION} )) || typeset -gi PROMPT_MIN_DURATION=2  # seconds before showing duration
-(( ${+PROMPT_FLASH_DELAY} )) || typeset -gi PROMPT_FLASH_DELAY=50  # centiseconds (50 = 0.5s) for CTRL+C flash
-
-# State
 typeset -gi _prompt_cmd_start=0
-typeset -g  _prompt_base=""
-typeset -g  _prompt_flash=""
-
-# Colours (set once)
+typeset -g  _prompt_base="" _prompt_flash=""
 typeset -gA _pc
-_dots_init_colours() {
+
+_dots_init_colors() {
     if [[ "$COLORTERM" == (truecolor|24bit) ]]; then
         _pc=(
             teal      $'%{\e[38;2;44;180;148m%}'
@@ -115,7 +93,6 @@ _dots_init_colours() {
     _pc[bold]=$'%{\e[1m%}'
 }
 
-# Abbreviate path: first char for ancestors, keep last 3 full
 _dots_abbrev_path() {
     local dir="${PWD/#$HOME/~}"
     local -a parts=( "${(@s:/:)dir}" )
@@ -131,14 +108,12 @@ _dots_abbrev_path() {
     print -r -- "${result}${parts[-3]}/${parts[-2]}/${parts[-1]}"
 }
 
-# Session identifier (SSH/container/codespace, empty for local)
 _dots_session() {
     [[ -n "$CODESPACE_NAME" ]] && { print -r -- "$CODESPACE_NAME"; return }
     [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && { print -r -- "%n@%m"; return }
     [[ -f /.dockerenv ]] && { print -r -- "${DEVCONTAINER_ID:-$(</etc/hostname)}"; return }
 }
 
-# Build and cache prompt strings (called on chpwd + init)
 _dots_build_prompt_cache() {
     local path="$(_dots_abbrev_path)"
     local session="$(_dots_session)"
@@ -152,7 +127,6 @@ _dots_build_prompt_cache() {
     _prompt_flash=$'\n'"${line1}"$'\n'"%{${_pc[flash_bg]}${_pc[flash_fg]}%}${flash_sym}%{${reset}%} "
 }
 
-# Hooks
 _dots_preexec() { _prompt_cmd_start=$EPOCHSECONDS }
 
 _dots_precmd() {
@@ -174,7 +148,6 @@ _dots_precmd() {
     PROMPT="$_prompt_base"
 }
 
-# CTRL+C widget
 _dots_ctrl_c() {
     BUFFER=""
     (( ${+functions[_zsh_autosuggest_clear]} )) && _zsh_autosuggest_clear
@@ -191,10 +164,9 @@ TRAPINT() {
     return 130
 }
 
-# Init
 _dots_prompt_init() {
     zmodload zsh/datetime zsh/zselect 2>/dev/null
-    _dots_init_colours
+    _dots_init_colors
     _dots_build_prompt_cache
     
     setopt PROMPT_SUBST EXTENDED_HISTORY INC_APPEND_HISTORY_TIME
@@ -207,10 +179,7 @@ _dots_prompt_init() {
 }
 _dots_prompt_init
 
-# Lazy Loading
-# -----------------------------------------------------------------------------
-
-# NVM lazy loading
+# Lazy loading
 _dots_init_nvm() {
     unfunction nvm node npm npx yarn pnpm corepack 2>/dev/null
     [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
@@ -224,7 +193,6 @@ _dots_load_nvm_lazy() {
     done
 }
 
-# Pyenv lazy loading
 _dots_init_pyenv() {
     unfunction pyenv python python3 pip pip3 poetry pipx 2>/dev/null
     if command -v pyenv &>/dev/null; then
@@ -240,7 +208,6 @@ _dots_load_pyenv_lazy() {
     done
 }
 
-# Lazy completions
 _dots_setup_lazy_completions() {
     compdef '_dots_init_nvm; _npm' npm 2>/dev/null
     compdef '_dots_init_nvm; _node' node 2>/dev/null
@@ -248,7 +215,6 @@ _dots_setup_lazy_completions() {
     compdef '_dots_init_pyenv; _python' python 2>/dev/null
 }
 
-# Initialize lazy loading
 _dots_lazy_init() {
     _dots_load_nvm_lazy
     _dots_load_pyenv_lazy
@@ -256,8 +222,4 @@ _dots_lazy_init() {
 }
 _dots_lazy_init
 
-# Finish bench profiling
-# -----------------------------------------------------------------------------
-if [[ -n "$ZSH_BENCH" ]]; then
-    zprof
-fi
+[[ -n "$ZSH_BENCH" ]] && zprof
