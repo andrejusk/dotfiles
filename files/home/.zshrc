@@ -261,7 +261,7 @@ _dots_precmd() {
 
 TRAPINT() {
     # Only customize when ZLE is active (at prompt, not during command)
-    if [[ -o zle ]] && (( ${+WIDGET} )); then
+    if [[ -o zle ]] && [[ -o interactive ]] && (( ${+WIDGET} )); then
         if [[ -z "$BUFFER" ]] && (( ! _dots_prompt_flashing )); then
             # Empty buffer: flash the prompt symbol
             _dots_prompt_flashing=1
@@ -280,7 +280,8 @@ TRAPINT() {
             zle autosuggest-clear 2>/dev/null
         fi
     fi
-    return $((128 + 2))
+    # Propagate signal: use special return code -1 to let zsh handle normally
+    return $((128 + ${1:-2}))
 }
 
 _dots_prompt_init() {
@@ -343,4 +344,4 @@ _dots_lazy_init() {
 }
 _dots_lazy_init
 
-[[ -n "$ZSH_BENCH" ]] && zprof
+[[ -n "$ZSH_BENCH" ]] && zprof || true
