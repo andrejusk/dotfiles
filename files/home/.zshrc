@@ -125,7 +125,7 @@ _dots_git_info() {
     fi
     [[ -z "$branch" ]] && return
     
-    local info="${_pc[grey]}${branch}${_pc[reset]}"
+    local info="${_pc[grey]}(${branch})${_pc[reset]}"
     
     # Status: staged, unstaged, untracked
     local staged=0 unstaged=0 untracked=0
@@ -173,7 +173,7 @@ _dots_build_prompt_base() {
     
     local line1="${_pc[teal]}${dir_path}${_pc[reset]}"
     local git_info="$(_dots_git_info)"
-    [[ -n "$git_info" ]] && line1+="  ${git_info}"
+    [[ -n "$git_info" ]] && line1+=" ${git_info}"
     
     _prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
 }
@@ -198,15 +198,15 @@ _dots_precmd() {
         d=$(( EPOCHSECONDS - _prompt_cmd_start ))
         _prompt_cmd_start=0
         if (( d >= PROMPT_MIN_DURATION )); then
-            (( d >= 60 )) && rp_parts+=("${_pc[grey]}$(( d/60 ))m $(( d%60 ))s${_pc[reset]}") \
-                         || rp_parts+=("${_pc[grey]}${d}s${_pc[reset]}")
+            (( d >= 60 )) && rp_parts+=("${_pc[grey]}($(( d/60 ))m$(( d%60 ))s)${_pc[reset]}") \
+                         || rp_parts+=("${_pc[grey]}(${d}s)${_pc[reset]}")
         fi
     fi
     
-    (( e )) && rp_parts+=("${_pc[red]}${e}${_pc[reset]}")
+    (( e )) && rp_parts+=("${_pc[red]}[${e}]${_pc[reset]}")
     
     local session="$(_dots_session)"
-    [[ -n "$session" ]] && rp_parts+=("${_pc[orange]}${session}${_pc[reset]}")
+    [[ -n "$session" ]] && rp_parts+=("${_pc[orange]}[${session}]${_pc[reset]}")
     
     RPROMPT="${(j: :)rp_parts}"
     
