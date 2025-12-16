@@ -23,8 +23,8 @@ _dots_setup_dirs
 
 # Cache ls colour support detection
 # -----------------------------------------------------------------------------
-_dots_cache_ls_colors() {
-    local cache_file="$_dots_cache_dir/ls-colors"
+_dots_cache_ls_colours() {
+    local cache_file="$_dots_cache_dir/ls-colours"
     if [[ -f "$cache_file" ]]; then
         source "$cache_file"
     else
@@ -36,7 +36,7 @@ _dots_cache_ls_colors() {
         [[ -f "$cache_file" ]] && source "$cache_file"
     fi
 }
-_dots_cache_ls_colors
+_dots_cache_ls_colours
 
 # Load aliases
 # -----------------------------------------------------------------------------
