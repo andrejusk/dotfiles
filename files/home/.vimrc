@@ -69,7 +69,7 @@ highlight CursorLineNr guifg=#FCFC38 guibg=NONE gui=bold
 highlight StatusLine guifg=#CCE0D0 guibg=#000080 gui=bold
 highlight StatusLineNC guifg=#808080 guibg=#000080 gui=NONE
 highlight VertSplit guifg=#808080 guibg=NONE
-highlight ColorColumn guibg=#703014
+highlight ColorColumn guibg=#2A1A0A
 
 highlight Comment guifg=#808080 gui=italic
 highlight Constant guifg=#F88C14
@@ -88,10 +88,10 @@ highlight Todo guifg=#FCFC38 guibg=NONE gui=bold
 highlight Search guifg=#3C3C3C guibg=#FCFC38
 highlight IncSearch guifg=#3C3C3C guibg=#F88C14
 
-highlight DiffAdd guifg=NONE guibg=#2CB494
-highlight DiffDelete guifg=NONE guibg=#F40404
-highlight DiffChange guifg=NONE guibg=#0C48CC
-highlight DiffText guifg=NONE guibg=#88409C gui=bold
+highlight DiffAdd guifg=#2CB494 guibg=#0A2A1A gui=NONE
+highlight DiffDelete guifg=#F40404 guibg=#2A0A0A gui=NONE
+highlight DiffChange guifg=#4068D4 guibg=#0A1A2A gui=NONE
+highlight DiffText guifg=#CCE0D0 guibg=#1A2A3A gui=bold
 
 highlight diffAdded guifg=#2CB494 gui=bold
 highlight diffRemoved guifg=#F40404 gui=bold
@@ -104,12 +104,15 @@ highlight SpellBad guifg=#F40404 gui=undercurl guisp=#F40404
 highlight SpellCap guifg=#FCFC38 gui=undercurl guisp=#FCFC38
 highlight SpellRare guifg=#88409C gui=undercurl guisp=#88409C
 
-highlight Visual guibg=#4068D4
+highlight Visual guibg=#1A3050
 
 highlight Pmenu guifg=#CCE0D0 guibg=#000080
 highlight PmenuSel guifg=#3C3C3C guibg=#2CB494 gui=bold
 
-highlight QuickFixLine guibg=#4068D4 gui=bold
+highlight Folded guifg=#808080 guibg=#1A1A1A gui=NONE
+highlight FoldColumn guifg=#808080 guibg=NONE
+
+highlight QuickFixLine guibg=#1A3050 gui=bold
 
 function! GitRoot()
   let l:root = systemlist('git rev-parse --show-toplevel')[0]

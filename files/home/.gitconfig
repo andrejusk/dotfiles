@@ -3,91 +3,69 @@
   email = git@andrejus.uk
 
 [github]
-user = andrejusk
+  user = andrejusk
+
+[credential]
+  helper =
+
 [credential "https://github.com"]
-    helper = 
-    helper = !/usr/bin/gh auth git-credential
+  helper = !/usr/bin/env gh auth git-credential
+
 [credential "https://gist.github.com"]
-    helper = 
-    helper = !/usr/bin/gh auth git-credential
+  helper = !/usr/bin/env gh auth git-credential
+
+[init]
+  defaultBranch = master
+
+[core]
+  autocrlf = input
+  editor = vim
+  pager = less -FRX
+
+[color]
+  ui = auto
+
+[color "status"]
+  added = 42
+  changed = 226
+  untracked = 196
+  branch = 45
+[color "diff"]
+  meta = 91
+  frag = 45
+  old = 196
+  new = 42
+  context = 252
+[color "branch"]
+  current = 45
+  local = 252
+  remote = 27
+[color "decorate"]
+  branch = 45
+  remoteBranch = 27
+  tag = 226
+  stash = 201
 
 [alias]
-# List aliases
-la = "!git config -l | grep alias | cut -c 7-"
+  l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
+  ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+  ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
+  le = log --oneline --decorate
+  lg = log --graph --decorate --oneline
+  d = diff
+  ds = diff --stat
+  dc = diff --cached
+  s = status -s
+  b = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
+  a = add
+  ap = add -p
+  c = commit --verbose
+  ca = commit -a --verbose
+  cm = commit -m
+  cam = commit -a -m
+  m = commit --amend --verbose
+  st = stash
+  sa = stash apply
+  stl = stash list
 
-# Logging aliases
-l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
-ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
-lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
-lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
-le = log --oneline --decorate
-
-# Repo aliases
-filelog = log -u
-fl = log -u
-dl = "!git ll -1"
-dlc = diff --cached HEAD^
-dr = "!f() { git diff "$1"^.."$1"; }; f"
-lc = "!f() { git ll "$1"^.."$1"; }; f"
-diffr = "!f() { git diff "$1"^.."$1"; }; f"
-
-d = dif
-ds = diff --stat
-dc = diff --cached
-f = "!git ls-files | grep -i"
-
-grep = grep -Ii
-gr = grep -Ii
-gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
-
-rl = ref log
-
-cl = clone
-rao = remote add origin
-pushitgood = push -u origin --all
-
-r = reset
-r1 = reset HEAD^
-r2 = reset HEAD^^
-rh = reset --hard
-rh1 = reset HEAD^ --hard
-rh2 = reset HEAD^^ --hard
-
-lasttag = describe --tags --abbrev=0
-lt = describe --tags --abbrev=0
-
-# Branch aliases
-s = status -s
-co = checkout
-cob = checkout -b
-com = checkout master
-# list branches sorted by last modified
-b = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
-
-# File aliases
-a = add
-ap = add -p
-
-c = commit --verbose
-ca = commit -a --verbose
-cm = commit -m
-cam = commit -a -m
-m = commit --amend --verbose
-
-ac = !git add . && git commit -am
-ours = "!f() { git co --ours $@ && git add $@; }; f"
-theirs = "!f() { git co --theirs $@ && git add $@; }; f"
-
-# Ignore files
-assume = update-index --assume-unchanged
-unassume = update-index --no-assume-unchanged
-assumed = "!git ls-files -v | grep ^h | cut -c 3-"
-unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
-assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
-
-# Stash aliases
-st = stash
-sa = stash apply
-stl = stash list
