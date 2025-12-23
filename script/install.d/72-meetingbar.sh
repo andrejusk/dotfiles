@@ -5,12 +5,11 @@
 #   (macOS only) Install MeetingBar.
 #
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! brew list --cask meetingbar &> /dev/null; then
-        brew install --cask meetingbar
-    else
-        echo "MeetingBar is already installed."
-    fi
+# macOS only
+[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+
+if ! brew list --cask meetingbar &> /dev/null; then
+    brew install --cask meetingbar
 else
-    log_warn "Skipping: Not macOS"
+    echo "MeetingBar is already installed."
 fi

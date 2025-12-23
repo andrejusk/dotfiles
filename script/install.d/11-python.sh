@@ -41,17 +41,20 @@ mkdir -p ~/.local/bin
 unset local_bin_path
 
 if ! command -v pipx &>/dev/null; then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command -v apt-get >/dev/null 2>&1; then
+    case "$DOTS_PKG" in
+        apt)
             sudo apt-get install -qq pipx
-        elif command -v pacman >/dev/null 2>&1; then
+            ;;
+        pacman)
             sudo pacman -S --noconfirm python-pipx
-        else
-            log_warn "Skipping pipx install: no apt-get or pacman found"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install pipx
-    fi
+            ;;
+        brew)
+            brew install pipx
+            ;;
+        *)
+            log_warn "Skipping pipx install: no supported package manager found"
+            ;;
+    esac
 fi
 
 echo "pipx $(pipx --version)"

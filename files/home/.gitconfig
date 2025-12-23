@@ -19,8 +19,6 @@
 
 [core]
   autocrlf = input
-  editor = vim
-  pager = less -FRX
 
 [color]
   ui = auto

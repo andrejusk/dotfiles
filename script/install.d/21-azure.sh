@@ -6,18 +6,21 @@
 #
 
 if ! command -v az &>/dev/null; then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command -v apt-get >/dev/null 2>&1; then
+    case "$DOTS_PKG" in
+        apt)
             # https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
             curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-        elif command -v pacman >/dev/null 2>&1; then
+            ;;
+        pacman)
             sudo pacman -S --noconfirm azure-cli &>/dev/null
-        else
+            ;;
+        brew)
+            brew install azure-cli
+            ;;
+        *)
             log_warn "Skipping Azure CLI install: no supported package manager found"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install azure-cli
-    fi
+            ;;
+    esac
 fi
 
 az --version

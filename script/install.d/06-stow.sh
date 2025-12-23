@@ -6,17 +6,21 @@
 #
 
 if ! command -v stow &> /dev/null; then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command -v apt-get >/dev/null 2>&1; then
+    case "$DOTS_PKG" in
+        apt)
             sudo apt-get install -qq stow
-        elif command -v pacman >/dev/null 2>&1; then
+            ;;
+        pacman)
             sudo pacman -S --noconfirm stow
-        else
+            ;;
+        brew)
+            brew install stow
+            ;;
+        *)
             log_warn "Skipping stow install: no supported package manager found"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install stow
-    fi
+            return 0
+            ;;
+    esac
 fi
 
 stow --version

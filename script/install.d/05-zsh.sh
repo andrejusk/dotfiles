@@ -7,17 +7,21 @@
 
 # install zsh
 if ! command -v zsh &> /dev/null; then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command -v apt-get >/dev/null 2>&1; then
+    case "$DOTS_PKG" in
+        apt)
             sudo apt-get install -qq zsh
-        elif command -v pacman >/dev/null 2>&1; then
+            ;;
+        pacman)
             sudo pacman -S --noconfirm zsh
-        else
+            ;;
+        brew)
+            brew install zsh
+            ;;
+        *)
             log_warn "Skipping zsh install: no supported package manager found"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install zsh
-    fi
+            return 0
+            ;;
+    esac
 fi
 
 zsh --version

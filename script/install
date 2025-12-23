@@ -26,52 +26,24 @@ else
 fi
 
 # Log functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $*"
-}
+log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
+log_pass() { echo -e "${GREEN}[PASS]${NC} $*"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+log_error() { echo -e "${RED}[FAIL]${NC} $*"; }
+log_debug() { echo -e "${CYAN}$*${NC}"; }
 
-log_pass() {
-    echo -e "${GREEN}[PASS]${NC} $*"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $*"
-}
-
-log_error() {
-    echo -e "${RED}[FAIL]${NC} $*"
-}
-
-log_debug() {
-    echo -e "${CYAN}$*${NC}"
-}
-
-# Export log functions so they're available in sourced scripts
-export -f log_info
-export -f log_pass
-export -f log_warn
-export -f log_error
-export -f log_debug
+# Export log functions
+export -f log_info log_pass log_warn log_error log_debug
 
 printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"
 
 # High-resolution time helpers
-# now_ns prints current time in nanoseconds using GNU date if available.
-# On systems where %N isn't supported (e.g., BSD date), it falls back to
-# seconds precision multiplied to nanoseconds. This avoids external deps like bc.
-now_ns() {
-    local ns
-    ns=$(date +%s%N 2>/dev/null || true)
-    if [[ "$ns" =~ ^[0-9]+$ ]]; then
-        echo "$ns"
-    else
-        # Fallback: seconds precision
-        local s
-        s=$(date +%s)
-        echo $(( s * 1000000000 ))
-    fi
-}
+if date +%s%N 2>/dev/null | grep -qE '^[0-9]+$'; then
+    now_ns() { date +%s%N; }
+else
+    now_ns() { echo $(( $(date +%s) * 1000000000 )); }
+fi
 
 # Prevent running as root
 if [[ $EUID -eq 0 && -z "$SKIP_SUDO_CHECK" ]]; then
@@ -84,6 +56,27 @@ if [[ -z "$SKIP_SUDO_CHECK" ]]; then
     echo -e "${YELLOW}Checking sudo credentials...${NC}"
     sudo -v
 fi
+
+# Set up environment
+export DOTS_OS=""
+export DOTS_PKG=""
+export DOTS_ENV=""
+if [[ -n "${CODESPACES:-}" ]]; then
+    DOTS_ENV="codespaces"
+fi
+case "$OSTYPE" in
+    darwin*)  DOTS_OS="macos"; DOTS_PKG="brew" ;;
+    linux*)
+        DOTS_OS="linux"
+        if command -v apt-get &>/dev/null; then
+            DOTS_PKG="apt"
+        elif command -v pacman &>/dev/null; then
+            DOTS_PKG="pacman"
+        elif command -v dnf &>/dev/null; then
+            DOTS_PKG="dnf"
+        fi
+        ;;
+esac
 
 # Set up directory variables
 if [ -L "$0" ]; then
@@ -128,7 +121,8 @@ run() {
         echo -e "Running all install targets"
     fi
 
-    for script in $install_dir/*.sh; do
+    scripts=("$install_dir"/*.sh)
+    for script in "${scripts[@]}"; do
         if [[ -n "$targets" ]]; then
             script_name=$(basename "$script" .sh)
             script_name=${script_name#*-}

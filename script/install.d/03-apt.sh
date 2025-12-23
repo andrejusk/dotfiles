@@ -5,21 +5,20 @@
 #   (distros with apt only) Install core apt packages.
 #
 
-if command -v apt-get &> /dev/null; then
-    apt_packages=(
-        ca-certificates
-        curl
-        gnupg
-        gnupg2
-        wget
-    )
+# apt only
+[[ "$DOTS_PKG" != "apt" ]] && { log_warn "Skipping: Not using apt"; return 0; }
 
-    sudo apt-get update -qq
-    sudo apt-get install -qq "${apt_packages[@]}"
+apt_packages=(
+    ca-certificates
+    curl
+    gnupg
+    gnupg2
+    wget
+)
 
-    unset apt_packages
+sudo apt-get update -qq
+sudo apt-get install -qq "${apt_packages[@]}"
 
-    apt --version
-else
-    log_warn "Skipping: apt-get not found"
-fi
+unset apt_packages
+
+apt --version

@@ -5,12 +5,11 @@
 #   (macOS only) Install dockutil.
 #
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! brew list dockutil &> /dev/null; then
-        brew install dockutil
-    else
-        echo "dockutil is already installed."
-    fi
+# macOS only
+[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+
+if ! brew list dockutil &> /dev/null; then
+    brew install dockutil
 else
-    log_warn "Skipping: Not macOS"
+    echo "dockutil is already installed."
 fi

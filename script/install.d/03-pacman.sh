@@ -5,21 +5,20 @@
 #   (distros with pacman only) Install core pacman packages.
 #
 
-if command -v pacman &> /dev/null; then
-    pacman_packages=(
-        ca-certificates
-        curl
-        gnupg
-        wget
-        base-devel
-    )
+# pacman only
+[[ "$DOTS_PKG" != "pacman" ]] && { log_warn "Skipping: Not using pacman"; return 0; }
 
-    sudo pacman -Sy --noconfirm
-    sudo pacman -S --noconfirm --needed "${pacman_packages[@]}"
+pacman_packages=(
+    ca-certificates
+    curl
+    gnupg
+    wget
+    base-devel
+)
 
-    unset pacman_packages
+sudo pacman -Sy --noconfirm
+sudo pacman -S --noconfirm --needed "${pacman_packages[@]}"
 
-    pacman --version
-else
-    log_warn "Skipping: pacman not found"
-fi
+unset pacman_packages
+
+pacman --version

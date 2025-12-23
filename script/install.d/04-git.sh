@@ -6,17 +6,21 @@
 #
 
 if ! command -v git &> /dev/null; then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command -v apt-get >/dev/null 2>&1; then
+    case "$DOTS_PKG" in
+        apt)
             sudo apt-get install -qq git
-        elif command -v pacman >/dev/null 2>&1; then
+            ;;
+        pacman)
             sudo pacman -S --noconfirm git
-        else
+            ;;
+        brew)
+            brew install git
+            ;;
+        *)
             log_warn "Skipping git install: no supported package manager found"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install git
-    fi
+            return 0
+            ;;
+    esac
 fi
 
 git --version

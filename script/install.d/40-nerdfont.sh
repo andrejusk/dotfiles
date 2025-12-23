@@ -5,20 +5,19 @@
 #   (macOS only) Install nerdfonts.
 #
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    fonts_list=(
-        font-fira-mono-nerd-font
-        font-fira-code-nerd-font
-    )
+# macOS only
+[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
 
-    if ! brew list "${fonts_list[@]}" &> /dev/null; then
-        brew tap homebrew/cask-fonts
-        for font in "${fonts_list[@]}"; do
-            brew install --cask "$font"
-        done
-    fi
+fonts_list=(
+    font-fira-mono-nerd-font
+    font-fira-code-nerd-font
+)
 
-    unset fonts_list
-else
-    log_warn "Skipping: Not macOS"
+if ! brew list "${fonts_list[@]}" &> /dev/null; then
+    brew tap homebrew/cask-fonts
+    for font in "${fonts_list[@]}"; do
+        brew install --cask "$font"
+    done
 fi
+
+unset fonts_list
