@@ -152,13 +152,13 @@ _dots_git_info_sync() {
     
     local dirty=""
     (( staged ))    && dirty+="${_dots_pc[teal]}+${staged}${_dots_pc[reset]}"
-    (( unstaged ))  && dirty+="${_dots_pc[orange]}~${unstaged}${_dots_pc[reset]}"
-    (( untracked )) && dirty+="${_dots_pc[grey]}?${untracked}${_dots_pc[reset]}"
+    (( unstaged ))  && dirty+=" ${_dots_pc[orange]}~${unstaged}${_dots_pc[reset]}"
+    (( untracked )) && dirty+=" ${_dots_pc[grey]}?${untracked}${_dots_pc[reset]}"
     [[ -n "$dirty" ]] && info+=" ${dirty}"
     
     local arrows=""
     (( ahead ))  && arrows+="${_dots_pc[teal]}↑${ahead}${_dots_pc[reset]}"
-    (( behind )) && arrows+="${_dots_pc[orange]}↓${behind}${_dots_pc[reset]}"
+    (( behind )) && arrows+=" ${_dots_pc[orange]}↓${behind}${_dots_pc[reset]}"
     [[ -n "$arrows" ]] && info+=" ${arrows}"
     
     print -r -- "$info"
