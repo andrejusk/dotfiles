@@ -12,4 +12,6 @@ alias gd='git d'
 alias gdc='git dc'
 alias gc='git c'
 alias gl='git ld'
+alias ga='git a'
+alias gr='git r'
 
