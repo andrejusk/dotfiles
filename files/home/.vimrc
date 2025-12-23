@@ -53,7 +53,7 @@ let g:netrw_browse_split = 4
 
 set background=dark
 
-if $COLORTERM ==# 'truecolor' || $COLORTERM ==# '24bit'
+if has('termguicolors') && ($COLORTERM ==# 'truecolor' || $COLORTERM ==# '24bit')
     set termguicolors
 endif
 
@@ -61,6 +61,7 @@ highlight clear
 if exists("syntax_on")
     syntax reset
 endif
+syntax enable
 
 highlight Normal guifg=#CCE0D0 guibg=NONE
 highlight LineNr guifg=#808080 guibg=NONE
