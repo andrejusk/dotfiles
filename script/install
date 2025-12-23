@@ -6,14 +6,14 @@ set -eo pipefail
 #
 
 if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
-    BLUE="\033[0;34m"
-    CYAN="\033[0;36m"
-    CYAN_BOLD="\033[1;36m"
-    RED="\033[1;31m"
-    GREEN="\033[1;32m"
-    YELLOW="\033[1;33m"
-    GREY="\033[1;30m"
-    NC="\033[0m"
+    BLUE=$'\033[38;2;12;72;204m'
+    CYAN=$'\033[38;2;0;228;252m'
+    CYAN_BOLD=$'\033[1;38;2;0;228;252m'
+    RED=$'\033[38;2;244;4;4m'
+    GREEN=$'\033[38;2;44;180;148m'
+    YELLOW=$'\033[38;2;252;252;56m'
+    GREY=$'\033[38;2;128;128;128m'
+    NC=$'\033[0m'
 else
     BLUE=""
     CYAN=""
@@ -77,6 +77,16 @@ case "$OSTYPE" in
         fi
         ;;
 esac
+
+# Set up Homebrew environment
+if [[ "$DOTS_PKG" == "brew" ]]; then
+    NONINTERACTIVE=1
+    HOMEBREW_NO_ANALYTICS=1
+    HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+    HOMEBREW_NO_ENV_HINTS=1
+    HOMEBREW_NO_AUTO_UPDATE=1
+    HOMEBREW_NO_INSTALL_CLEANUP=1
+fi
 
 # Set up directory variables
 if [ -L "$0" ]; then

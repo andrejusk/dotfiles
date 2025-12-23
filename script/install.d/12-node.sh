@@ -25,12 +25,10 @@ echo "npm $(npm --version)"
 
 npm_dependencies=(
     "firebase-tools"
-    # "neovim"
-    # "typescript-language-server"
-    # "typescript"
+    "@github/copilot"
 )
 
-npm_dependencies=($(comm -13 <(printf "%s\n" "${npm_dependencies[@]}" | sort) <(npm list -g --depth=0 --parseable | awk -F'/' '{print $NF}' | sort)))
+npm_dependencies=($(comm -23 <(printf "%s\n" "${npm_dependencies[@]}" | sort) <(npm list -g --depth=0 --parseable | awk -F'/' '{print $NF}' | sort)))
 
 if [ ${#npm_dependencies[@]} -gt 0 ]; then
     npm install -g "${npm_dependencies[@]}"
