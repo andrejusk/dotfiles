@@ -14,3 +14,7 @@ temp
 # setup files
 **/autoload
 **/pypoetry
+
+# darwin
+.DS_Store
+
