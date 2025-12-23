@@ -111,55 +111,85 @@ _dots_session() {
 }
 
 _dots_git_info_sync() {
-    local branch="" ahead=0 behind=0 staged=0 unstaged=0 untracked=0
-    local line
+    # Use git status --short with awk for better performance
+    # Avoids shell loops and uses compiled awk for parsing
+    local output
+    output=$(git status --short --branch --ignore-submodules=dirty 2>/dev/null) || return
     
-    while IFS= read -r line; do
-        case "$line" in
-            "# branch.head "*)
-                branch="${line#\# branch.head }"
-                [[ "$branch" == "(detached)" ]] && branch=""
-                ;;
-            "# branch.oid "*)
-                # Use short oid for detached HEAD
-                [[ -z "$branch" ]] && branch="${${line#\# branch.oid }:0:7}"
-                ;;
-            "# branch.ab "*)
-                local ab="${line#\# branch.ab }"
-                ahead="${ab%% *}"; ahead="${ahead#+}"
-                behind="${ab##* }"; behind="${behind#-}"
-                ;;
-            "1 "*)  # changed entry
-                [[ "${line:2:1}" != "." ]] && (( staged++ ))
-                [[ "${line:3:1}" != "." ]] && (( unstaged++ ))
-                ;;
-            "2 "*)  # renamed/copied
-                [[ "${line:2:1}" != "." ]] && (( staged++ ))
-                [[ "${line:3:1}" != "." ]] && (( unstaged++ ))
-                ;;
-            "? "*)  # untracked
-                (( untracked++ ))
-                ;;
-            "u "*)  # unmerged
-                (( staged++ ))
-                ;;
-        esac
-    done < <(git status --porcelain=v2 --branch 2>/dev/null)
+    local branch="" ahead=0 behind=0 staged=0 unstaged=0 untracked=0
+    
+    # Parse efficiently: branch info from first line, counts from rest
+    local first_line="${output%%$'\n'*}"
+    
+    # Extract branch from "## branch...remote [ahead N, behind M]"
+    if [[ "$first_line" == "## "* ]]; then
+        branch="${first_line#\#\# }"
+        # Handle detached HEAD
+        if [[ "$branch" == "HEAD (no branch)" || "$branch" == [0-9a-f]##* ]]; then
+            branch="${branch:0:7}"
+        else
+            # Remove tracking info
+            branch="${branch%%...*}"
+            branch="${branch%% *}"
+        fi
+        
+        # Extract ahead/behind
+        [[ "$first_line" =~ "ahead ([0-9]+)" ]] && ahead="${match[1]}"
+        [[ "$first_line" =~ "behind ([0-9]+)" ]] && behind="${match[1]}"
+    fi
     
     [[ -z "$branch" ]] && return
+    
+    # Count file status with awk (fast, no shell loops)
+    local -a counts
+    counts=( $(awk '
+        NR == 1 { next }  # Skip branch line
+        /^\?\?/ { untracked++; next }
+        {
+            x = substr($0, 1, 1)
+            y = substr($0, 2, 1)
+            if (x != " " && x != "?") staged++
+            if (y != " " && y != "?") unstaged++
+        }
+        END { print staged+0, unstaged+0, untracked+0 }
+    ' <<< "$output") )
+    
+    staged=${counts[1]:-0}
+    unstaged=${counts[2]:-0}
+    untracked=${counts[3]:-0}
     
     local info="${_dots_pc[grey]}(${branch})${_dots_pc[reset]}"
     
     local dirty=""
-    (( staged ))    && dirty+="${_dots_pc[teal]}+${staged}${_dots_pc[reset]}"
-    (( unstaged ))  && dirty+=" ${_dots_pc[orange]}~${unstaged}${_dots_pc[reset]}"
-    (( untracked )) && dirty+=" ${_dots_pc[grey]}?${untracked}${_dots_pc[reset]}"
-    [[ -n "$dirty" ]] && info+=" ${dirty}"
+    local sep=""
+    if (( staged )); then
+        dirty+="${_dots_pc[teal]}+${staged}${_dots_pc[reset]}"
+        sep=" "
+    fi
+    if (( unstaged )); then
+        dirty+="${sep}${_dots_pc[orange]}~${unstaged}${_dots_pc[reset]}"
+        sep=" "
+    fi
+    if (( untracked )); then
+        dirty+="${sep}${_dots_pc[grey]}?${untracked}${_dots_pc[reset]}"
+    fi
     
     local arrows=""
-    (( ahead ))  && arrows+="${_dots_pc[teal]}↑${ahead}${_dots_pc[reset]}"
-    (( behind )) && arrows+=" ${_dots_pc[orange]}↓${behind}${_dots_pc[reset]}"
-    [[ -n "$arrows" ]] && info+=" ${arrows}"
+    sep=""
+    if (( ahead )); then
+        arrows+="${_dots_pc[teal]}↑${ahead}${_dots_pc[reset]}"
+        sep=" "
+    fi
+    if (( behind )); then
+        arrows+="${sep}${_dots_pc[orange]}↓${behind}${_dots_pc[reset]}"
+    fi
+    
+    if [[ -n "$dirty" || -n "$arrows" ]]; then
+        info+=" "
+        [[ -n "$dirty" ]] && info+="$dirty"
+        [[ -n "$dirty" && -n "$arrows" ]] && info+=" "
+        [[ -n "$arrows" ]] && info+="$arrows"
+    fi
     
     print -r -- "$info"
 }
@@ -171,10 +201,11 @@ typeset -g _dots_git_async_fd=""
 
 _dots_git_async_callback() {
     local fd=$1
-    _dots_git_info_result=""
+    local result=""
     # Use sysread for efficient non-blocking read from fd
-    if [[ -n "$fd" ]] && sysread -i "$fd" _dots_git_info_result 2>/dev/null; then
-        _dots_git_info_result="${_dots_git_info_result%$'\n'}"  # trim trailing newline
+    if [[ -n "$fd" ]] && sysread -i "$fd" result 2>/dev/null; then
+        result="${result%$'\n'}"  # trim trailing newline
+        _dots_git_info_result="$result"
         _dots_build_dots_prompt_base
         PROMPT="$_dots_prompt_base"
         zle && zle reset-prompt
@@ -186,17 +217,15 @@ _dots_git_async_callback() {
 }
 
 _dots_git_async_start() {
-    # Cancel any pending async job
+    # Check if we're in a git repo
+    local git_dir
+    git_dir=$(git rev-parse --git-dir 2>/dev/null) || return
+    
+    # Cancel any pending async job (reuse single worker)
     if [[ -n "$_dots_git_async_fd" ]]; then
         exec {_dots_git_async_fd}<&- 2>/dev/null
         zle -F "$_dots_git_async_fd" 2>/dev/null
         _dots_git_async_fd=""
-    fi
-    
-    # Clear result on directory change
-    if [[ "$PWD" != "$_dots_git_info_pwd" ]]; then
-        _dots_git_info_result=""
-        _dots_git_info_pwd="$PWD"
     fi
     
     # Start background job
@@ -249,8 +278,11 @@ _dots_precmd() {
     
     RPROMPT="${(j: :)rp_parts}"
     
-    # Clear git info on directory change before building prompt
-    [[ "$PWD" != "$_dots_git_info_pwd" ]] && _dots_git_info_result=""
+    # On directory change, clear git info until async refreshes
+    if [[ "$PWD" != "$_dots_git_info_pwd" ]]; then
+        _dots_git_info_pwd="$PWD"
+        _dots_git_info_result=""
+    fi
     
     _dots_build_dots_prompt_base
     _dots_git_async_start
