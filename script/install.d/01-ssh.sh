@@ -5,7 +5,7 @@
 #   Print SSH key.
 #
 
-# Skip in Codespaces
+# Skip in Codespaces (managed by GitHub)
 [[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
 
 # Skip if explicitly disabled

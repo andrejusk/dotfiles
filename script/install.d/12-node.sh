@@ -5,6 +5,9 @@
 #   Configure Node.js.
 #
 
+# Skip in Codespaces (use pre-installed Node.js)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 NVM_DIR=${NVM_DIR:-"$HOME/.nvm"}
 [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 

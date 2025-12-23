@@ -5,6 +5,9 @@
 #   Install GitHub CLI.
 #
 
+# Skip in Codespaces (pre-installed in universal image)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 if ! command -v gh &>/dev/null; then
     case "$DOTS_PKG" in
         apt)

@@ -5,6 +5,9 @@
 #   Configure Python.
 #
 
+# Skip in Codespaces (use pre-installed Python)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
 local version="3.14.2"

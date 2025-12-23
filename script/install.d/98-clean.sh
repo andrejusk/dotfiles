@@ -5,6 +5,9 @@
 #   Clean up after installation.
 #
 
+# Skip in Codespaces (minimal benefit in ephemeral environment)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 case "$DOTS_PKG" in
     brew)
         brew cleanup

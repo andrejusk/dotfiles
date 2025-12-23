@@ -5,6 +5,9 @@
 #   Configure pyenv.
 #
 
+# Skip in Codespaces (use pre-installed Python)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 export PYENV_ROOT="$HOME/.pyenv"
 if ! echo "$PATH" | grep -q "$PYENV_ROOT"; then
     export PATH="$PYENV_ROOT/bin:$PATH"

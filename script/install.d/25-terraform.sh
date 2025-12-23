@@ -5,6 +5,9 @@
 #   Install terraform.
 #
 
+# Skip in Codespaces (project-specific tool)
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+
 if ! command -v terraform &>/dev/null; then
     case "$DOTS_PKG" in
         apt)
