@@ -16,7 +16,8 @@ apt_packages=(
     wget
 )
 
-sudo apt-get update -qq
+# Update is done in 10-apt-optimize.sh
+[[ -z "$APT_UPDATED" ]] && sudo apt-get update -qq
 sudo apt-get install -qq "${apt_packages[@]}"
 
 unset apt_packages

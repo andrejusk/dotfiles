@@ -22,7 +22,7 @@ if ! command -v mise &>/dev/null; then
                 sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null
             echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | \
                 sudo tee /etc/apt/sources.list.d/mise.list
-            sudo apt-get update -qq
+            [[ -z "$APT_UPDATED" ]] && sudo apt-get update -qq
             sudo apt-get install -qq mise
             ;;
         pacman)
