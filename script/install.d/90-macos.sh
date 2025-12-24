@@ -37,8 +37,6 @@ defaults write -globalDomain AppleInterfaceStyle -string "Dark"
 # #2CB494 -- Highlight color
 defaults write -globalDomain AppleHighlightColor -string "0.172549 0.705882 0.580392"
 
-killall SystemUIServer 2>/dev/null || true
-
 # Control Center
 # --------------
 # off -- Control Center: Show Bluetooth icon in menu bar
@@ -64,8 +62,6 @@ defaults write \
     ~/Library/Preferences/ByHost/com.apple.controlcenter.plist \
     Battery \
     -int 24
-
-killall ControlCenter 2>/dev/null || true
 
 # Finder
 # ------
@@ -121,14 +117,10 @@ defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/"
 # list -- Finder: Preferred view style
 defaults write com.apple.finder FXPreferredViewStyle -string "nlsv"
 
-killall Finder 2>/dev/null || true
-
 # Spotlight
 # ---------
 # on -- Spotlight: Hide menu bar icon
 defaults write com.apple.Spotlight MenuItemHidden -int 1
-
-killall Spotlight 2>/dev/null || true
 
 # Dock
 # ----
@@ -156,7 +148,7 @@ default_apps=(
     "Numbers"
     "Pages"
 )
-for default_app in default_apps; do
+for default_app in "${default_apps[@]}"; do
     dockutil --remove "$default_app" --no-restart 1>/dev/null 2>&1 || true
 done
 
@@ -169,20 +161,20 @@ dock_order=(
     "/System/Applications/Utilities/Activity Monitor.app"
     "/Applications/iTerm.app"
 )
-dock_state=$(defaults read com.apple.dock persistent-apps)
+dock_state=$(defaults read com.apple.dock persistent-apps 2>/dev/null || echo "")
 for i in "${!dock_order[@]}"; do
     if [[ $i -ne 0 ]]; then
         path="${dock_order[$i]}"
         name=$(basename "$path" | sed 's/\.app$//')
         if [[ $dock_state == *"$name"* ]]; then
-            dockutil --move "${path}" --position "$i" --no-restart
+            dockutil --move "${path}" --position "$i" --no-restart 2>/dev/null || true
         else
-            dockutil --add "${path}" --position "$i" --no-restart
+            dockutil --add "${path}" --position "$i" --no-restart 2>/dev/null || true
         fi
     fi
 done
 if [[ ! $dock_state == *"spacer"* ]]; then
-    dockutil --add '' --type spacer --section apps --position "${#dock_order[@]}" --no-restart
+    dockutil --add '' --type spacer --section apps --position "${#dock_order[@]}" --no-restart 2>/dev/null || true
 fi
 
-killall Dock 2>/dev/null || true
+log_info "macOS settings configured. Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"

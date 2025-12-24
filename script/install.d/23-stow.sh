@@ -41,3 +41,6 @@ mkdir -p "$HOME/.ssh"
 stow --dir="$root_dir/files" --target="$HOME" home
 stow --dir="$root_dir/files" --target="$HOME/.config" dot-config
 stow --dir="$root_dir/files" --target="$HOME/.ssh" dot-ssh
+
+# Bust PATH cache to force regeneration with new profile
+rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"

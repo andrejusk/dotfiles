@@ -31,3 +31,4 @@ if ! command -v gh &>/dev/null; then
 fi
 
 gh --version
+

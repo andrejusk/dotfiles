@@ -2,27 +2,27 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Install neofetch.
+#   Install fastfetch (fast system information tool).
 #
 
 # Skip in Codespaces (cosmetic tool)
 [[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
 
-if ! command -v neofetch &>/dev/null; then
+if ! command -v fastfetch &>/dev/null; then
     case "$DOTS_PKG" in
         apt)
-            sudo apt-get install -qq neofetch &>/dev/null
+            sudo apt-get install -qq fastfetch &>/dev/null
             ;;
         pacman)
-            yay -S --noconfirm neofetch &>/dev/null
+            yay -S --noconfirm fastfetch &>/dev/null
             ;;
         brew)
-            brew install neofetch
+            brew install fastfetch
             ;;
         *)
-            log_warn "Skipping neofetch install: no supported package manager found"
+            log_warn "Skipping fastfetch install: no supported package manager found"
             ;;
     esac
 fi
 
-echo "$(neofetch --version)"
+echo "fastfetch: $(fastfetch --version 2>&1 | head -1)"

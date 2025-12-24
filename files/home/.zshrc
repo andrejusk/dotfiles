@@ -7,7 +7,7 @@ _dots_load_profile() { source "$HOME/.profile" }
 _dots_load_profile
 
 _dots_setup_dirs() {
-    mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$NVM_DIR" "$_dots_cache_dir"
+    mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$_dots_cache_dir"
 }
 _dots_setup_dirs
 
@@ -333,47 +333,9 @@ _dots_prompt_init() {
 }
 _dots_prompt_init
 
-# Lazy loading
-_dots_init_nvm() {
-    unfunction nvm node npm npx yarn pnpm corepack 2>/dev/null
-    [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
-    [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+_dots_load_mise() {
+    command -v mise &>/dev/null && eval "$(mise activate zsh)"
 }
-
-_dots_load_nvm_lazy() {
-    local -a nvm_cmds=(nvm node npm npx yarn pnpm corepack)
-    for cmd in "${nvm_cmds[@]}"; do
-        eval "${cmd}() { _dots_init_nvm; ${cmd} \"\$@\" }"
-    done
-}
-
-_dots_init_pyenv() {
-    unfunction pyenv python python3 pip pip3 poetry pipx 2>/dev/null
-    if command -v pyenv &>/dev/null; then
-        eval "$(pyenv init -)"
-        eval "$(pyenv virtualenv-init -)" 2>/dev/null
-    fi
-}
-
-_dots_load_pyenv_lazy() {
-    local -a pyenv_cmds=(pyenv python python3 pip pip3 poetry pipx)
-    for cmd in "${pyenv_cmds[@]}"; do
-        eval "${cmd}() { _dots_init_pyenv; ${cmd} \"\$@\" }"
-    done
-}
-
-_dots_setup_lazy_completions() {
-    compdef '_dots_init_nvm; _npm' npm 2>/dev/null
-    compdef '_dots_init_nvm; _node' node 2>/dev/null
-    compdef '_dots_init_pyenv; _pip' pip 2>/dev/null
-    compdef '_dots_init_pyenv; _python' python 2>/dev/null
-}
-
-_dots_lazy_init() {
-    _dots_load_nvm_lazy
-    _dots_load_pyenv_lazy
-    _dots_setup_lazy_completions
-}
-_dots_lazy_init
+_dots_load_mise
 
 [[ -n "$ZSH_BENCH" ]] && zprof || true

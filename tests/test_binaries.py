@@ -46,18 +46,21 @@ binaries: List[Text] = [
     # tools
     "git",
     "gh",
+    "copilot",
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
+    "mise",
     "neofetch",
+    "cmatrix",
+    "az",
+    "firebase",
     "redis-cli",
     "redis-server",
     # language: python
-    "pyenv",
     "python",
     "python3",
     "pip",
     "pip3",
-    "pipx",
     "poetry",
     # langauge: js
     "node",

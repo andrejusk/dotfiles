@@ -8,7 +8,7 @@
 # macOS only
 [[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
 
-if ! brew list --cask meetingbar &> /dev/null; then
+if ! echo "$BREW_CASKS" | grep -q "^meetingbar$"; then
     brew install --cask meetingbar
 else
     echo "MeetingBar is already installed."

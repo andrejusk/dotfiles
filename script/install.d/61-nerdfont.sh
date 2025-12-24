@@ -13,11 +13,22 @@ fonts_list=(
     font-fira-code-nerd-font
 )
 
-if ! brew list "${fonts_list[@]}" &> /dev/null; then
+# Check if any fonts are missing
+fonts_missing=false
+for font in "${fonts_list[@]}"; do
+    if ! echo "$BREW_CASKS" | grep -q "^$font$"; then
+        fonts_missing=true
+        break
+    fi
+done
+
+if [[ "$fonts_missing" == "true" ]]; then
     brew tap homebrew/cask-fonts
     for font in "${fonts_list[@]}"; do
-        brew install --cask "$font"
+        if ! echo "$BREW_CASKS" | grep -q "^$font$"; then
+            brew install --cask "$font"
+        fi
     done
 fi
 
-unset fonts_list
+unset fonts_list fonts_missing
