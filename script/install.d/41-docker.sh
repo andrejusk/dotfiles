@@ -15,19 +15,25 @@ fi
 # skip if in Codespaces
 [[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
 
+# skip if in a container (Docker-in-Docker adds complexity)
+[[ -n "$DOTS_CONTAINER" ]] && { log_warn "Skipping: Running inside container"; return 0; }
+
 # skip on macOS
 [[ "$DOTS_OS" == "macos" ]] && { log_warn "Skipping: macOS"; return 0; }
 
 if ! command -v docker &> /dev/null; then
     case "$DOTS_PKG" in
         apt)
+            # Detect distribution (debian vs ubuntu)
+            . /etc/os-release
+            
             sudo install -m 0755 -d /etc/apt/keyrings
-            sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+            sudo curl -fsSL https://download.docker.com/linux/${ID}/gpg -o /etc/apt/keyrings/docker.asc
             sudo chmod a+r /etc/apt/keyrings/docker.asc
 
             echo \
-              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-              $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${ID} \
+              ${VERSION_CODENAME} stable" | \
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
             sudo apt-get update
 

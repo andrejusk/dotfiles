@@ -61,8 +61,13 @@ fi
 export DOTS_OS=""
 export DOTS_PKG=""
 export DOTS_ENV=""
+export DOTS_CONTAINER=""
 if [[ -n "${CODESPACES:-}" ]]; then
     DOTS_ENV="codespaces"
+fi
+# Detect container environment
+if [[ -f "/.dockerenv" ]] || grep -Eq 'docker|containerd' /proc/1/cgroup 2>/dev/null; then
+    DOTS_CONTAINER="docker"
 fi
 case "$OSTYPE" in
     darwin*)  DOTS_OS="macos"; DOTS_PKG="brew" ;;
