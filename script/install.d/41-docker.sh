@@ -25,15 +25,15 @@ if ! command -v docker &> /dev/null; then
     case "$DOTS_PKG" in
         apt)
             # Detect distribution (debian vs ubuntu)
-            DISTRO_ID=$(. /etc/os-release && echo "$ID")
+            . /etc/os-release
             
             sudo install -m 0755 -d /etc/apt/keyrings
-            sudo curl -fsSL https://download.docker.com/linux/${DISTRO_ID}/gpg -o /etc/apt/keyrings/docker.asc
+            sudo curl -fsSL https://download.docker.com/linux/${ID}/gpg -o /etc/apt/keyrings/docker.asc
             sudo chmod a+r /etc/apt/keyrings/docker.asc
 
             echo \
-              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${DISTRO_ID} \
-              $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${ID} \
+              ${VERSION_CODENAME} stable" | \
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
             sudo apt-get update
 
