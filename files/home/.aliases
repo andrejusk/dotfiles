@@ -1,6 +1,7 @@
 alias bench='ZSH_BENCH=1 exec zsh'
 alias dots='cd $DOTFILES'
 alias j='z'
+alias ji='zi'
 alias reload='source ~/.zshrc'
 alias reload-path='rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path" && exec zsh'
 alias reload-cache='rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dots" ~/.zcompdump* && exec zsh'

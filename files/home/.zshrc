@@ -37,7 +37,6 @@ _dots_load_omz() {
     export ZSH="$HOME/.oh-my-zsh"
     export ZSH_THEME=""
     plugins=(
-        z
         zsh-autosuggestions
         zsh-syntax-highlighting
     )
@@ -335,6 +334,32 @@ _dots_prompt_init() {
     PROMPT="$_dots_prompt_base" RPROMPT=""
 }
 _dots_prompt_init
+
+# Configure fzf to use ripgrep for file search
+if command -v rg &>/dev/null; then
+    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+_dots_load_fzf() {
+    if command -v fzf &>/dev/null; then
+        source <(fzf --zsh 2>/dev/null) || {
+            # Fallback for older fzf versions
+            local fzf_base="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/fzf/shell"
+            [[ -f "$fzf_base/key-bindings.zsh" ]] && source "$fzf_base/key-bindings.zsh"
+            [[ -f "$fzf_base/completion.zsh" ]] && source "$fzf_base/completion.zsh"
+            # Linux locations
+            [[ -f /usr/share/fzf/key-bindings.zsh ]] && source /usr/share/fzf/key-bindings.zsh
+            [[ -f /usr/share/fzf/completion.zsh ]] && source /usr/share/fzf/completion.zsh
+        }
+    fi
+}
+_dots_load_fzf
+
+_dots_load_zoxide() {
+    command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+}
+_dots_load_zoxide
 
 _dots_load_mise() {
     command -v mise &>/dev/null && eval "$(mise activate zsh)"

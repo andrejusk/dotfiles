@@ -56,6 +56,10 @@ binaries: List[Text] = [
     "firebase",
     "redis-cli",
     "redis-server",
+    # shell enhancements
+    "fzf",
+    "zoxide",
+    "rg",  # ripgrep
     # language: python
     "python",
     "python3",
