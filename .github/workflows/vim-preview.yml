@@ -220,59 +220,49 @@ jobs:
           node << 'EOF'
           const { chromium } = require('playwright');
           const fs = require('fs');
-          const path = require('path');
-          
+
           (async () => {
             fs.mkdirSync('/tmp/screenshots', { recursive: true });
             
             const browser = await chromium.launch();
             const page = await browser.newPage();
-            await page.setViewportSize({ width: 1200, height: 800 });
+            // Use tall viewport to ensure all elements render with correct bounding boxes
+            await page.setViewportSize({ width: 1200, height: 4000 });
             await page.goto('file:///tmp/preview.html');
             await page.waitForLoadState('networkidle');
             
-            const sections = [
-              { id: 'python', name: 'python' },
-              { id: 'typescript', name: 'typescript' },
-              { id: 'go', name: 'go' },
-              { id: 'ruby', name: 'ruby' },
-              { id: 'markdown', name: 'markdown' },
-              { id: 'diff', name: 'diff' },
-              { id: 'ui', name: 'ui-elements' }
-            ];
+            const sections = ['python', 'typescript', 'go', 'ruby', 'markdown', 'diff', 'ui'];
             
-            for (const section of sections) {
-              const heading = await page.$(`#${section.id}`);
-              const pre = await page.$(`#${section.id} + pre`);
-              if (!heading || !pre) continue;
+            for (const id of sections) {
+              const heading = await page.$(`#${id}`);
+              const pre = await page.$(`#${id} + pre`);
+              if (!heading || !pre) {
+                console.log(`Skipped: ${id} (not found)`);
+                continue;
+              }
               
+              // Create a wrapper div for combined screenshot
               const headingBox = await heading.boundingBox();
               const preBox = await pre.boundingBox();
               if (!headingBox || !preBox) continue;
               
-              const padding = 20;
-              await page.screenshot({
-                path: `/tmp/screenshots/${section.name}.png`,
-                clip: {
-                  x: Math.max(0, Math.min(headingBox.x, preBox.x) - padding),
-                  y: Math.max(0, headingBox.y - padding),
-                  width: Math.max(headingBox.width, preBox.width) + padding * 2,
-                  height: (preBox.y + preBox.height) - headingBox.y + padding * 2
-                }
-              });
-              console.log(`Captured: ${section.name}.png`);
+              const padding = 16;
+              const clip = {
+                x: Math.max(0, Math.min(headingBox.x, preBox.x) - padding),
+                y: Math.max(0, headingBox.y - padding),
+                width: Math.max(headingBox.width, preBox.width) + padding * 2,
+                height: (preBox.y + preBox.height) - headingBox.y + padding * 2
+              };
+              
+              await page.screenshot({ path: `/tmp/screenshots/${id}.png`, clip });
+              console.log(`Captured: ${id}.png`);
             }
             
+            // Palette screenshot
             const palette = await page.$('.palette');
             if (palette) {
-              const box = await palette.boundingBox();
-              if (box) {
-                await page.screenshot({
-                  path: '/tmp/screenshots/palette.png',
-                  clip: { x: Math.max(0, box.x - 20), y: Math.max(0, box.y - 40), width: box.width + 40, height: box.height + 60 }
-                });
-                console.log('Captured: palette.png');
-              }
+              await palette.screenshot({ path: '/tmp/screenshots/palette.png' });
+              console.log('Captured: palette.png');
             }
             
             await browser.close();
@@ -290,10 +280,10 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const files = fs.readdirSync('/tmp/screenshots').filter(f => f.endsWith('.png'));
             const { owner, repo } = context.repo;
             const runId = context.runId;
             
+            const files = fs.readdirSync('/tmp/screenshots').filter(f => f.endsWith('.png'));
             const sectionNames = {
               'palette': '🎨 Color Palette',
               'python': '🐍 Python',
@@ -302,13 +292,13 @@ jobs:
               'ruby': '💎 Ruby',
               'markdown': '📝 Markdown',
               'diff': '📊 Git Diff',
-              'ui-elements': '🖥️ UI Elements'
+              'ui': '🖥️ UI Elements'
             };
             
             let body = `## 🎨 Vim Theme Preview\n\n`;
             body += `Preview of color scheme changes in this PR.\n\n`;
-            body += `> Screenshots are available as [workflow artifacts](https://github.com/${owner}/${repo}/actions/runs/${runId}).\n\n`;
-            body += `### Captured Previews\n\n`;
+            body += `📸 **[Download screenshots](https://github.com/${owner}/${repo}/actions/runs/${runId})**\n\n`;
+            body += `### Captured Previews\n`;
             for (const file of files) {
               const name = file.replace('.png', '');
               body += `- ${sectionNames[name] || name}\n`;
