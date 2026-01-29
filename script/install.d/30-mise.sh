@@ -2,8 +2,8 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Install mise runtime manager (base installation only).
-#   Individual tools are installed in separate scripts (31-python, 32-node, etc.)
+#   Install mise runtime manager and all development tools.
+#   Consolidated installation of Python, Node.js, Terraform, Firebase, etc.
 #
 
 # Skip in Codespaces (use pre-installed versions)
@@ -39,3 +39,47 @@ if ! command -v mise &>/dev/null; then
 fi
 
 mise --version
+
+# Define all tools to install
+typeset -a MISE_TOOLS=(
+    "python@3"
+    "poetry@latest"
+    "node@lts"
+    "terraform@latest"
+    "firebase@latest"
+)
+
+# Install all tools in parallel
+log_info "Installing development tools in parallel..."
+mise install --jobs=4 "${MISE_TOOLS[@]}"
+
+# Set global versions
+log_info "Setting global versions..."
+mise use -g python@3
+mise use -g poetry@latest
+mise use -g node@lts
+mise use -g terraform@latest
+mise use -g firebase@latest
+
+# Activate mise environment for current session
+eval "$(mise activate bash)"
+export PATH="$HOME/.local/share/mise/shims:$PATH"
+
+# Setup Poetry ZSH completions
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+if [[ -d "$ZSH_CUSTOM/plugins" ]]; then
+    POETRY_PLUGIN="$ZSH_CUSTOM/plugins/poetry"
+    if [ ! -d "$POETRY_PLUGIN" ]; then
+        mkdir -p "$POETRY_PLUGIN"
+        mise exec -- poetry completions zsh > "$POETRY_PLUGIN/_poetry"
+    fi
+fi
+
+# Verify installations using mise exec
+log_info "Verifying installations..."
+mise exec -- python --version
+mise exec -- poetry --version
+echo "node $(mise exec -- node --version)"
+echo "npm $(mise exec -- npm --version)"
+mise exec -- terraform --version
+echo "firebase: $(mise exec -- firebase --version)"
