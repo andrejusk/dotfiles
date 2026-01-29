@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # Description:
 #   Install mise runtime manager and all development tools.
-#   Consolidated installation of Python, Node.js, Terraform, Firebase, etc.
+#   Consolidated installation of Python, Node.js, GitHub CLI, Terraform, Firebase, etc.
 #
 
 # Skip in Codespaces (use pre-installed versions)
@@ -45,6 +45,7 @@ typeset -a MISE_TOOLS=(
     "python@3"
     "poetry@latest"
     "node@lts"
+    "gh@latest"
     "terraform@latest"
     "firebase@latest"
 )
@@ -58,6 +59,7 @@ log_info "Setting global versions..."
 mise use -g python@3
 mise use -g poetry@latest
 mise use -g node@lts
+mise use -g gh@latest
 mise use -g terraform@latest
 mise use -g firebase@latest
 
@@ -81,5 +83,6 @@ mise exec -- python --version
 mise exec -- poetry --version
 echo "node $(mise exec -- node --version)"
 echo "npm $(mise exec -- npm --version)"
+mise exec -- gh --version
 mise exec -- terraform --version
 echo "firebase: $(mise exec -- firebase --version)"
