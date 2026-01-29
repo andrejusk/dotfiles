@@ -76,7 +76,7 @@ highlight Constant guifg=#F88C14
 highlight String guifg=#2CB494
 highlight Number guifg=#F88C14
 highlight Identifier guifg=NONE
-highlight Function guifg=#0C48CC gui=bold
+highlight Function guifg=#7290B8 gui=bold
 highlight Statement guifg=#4068D4
 highlight Keyword guifg=#4068D4
 highlight Type guifg=#2CB494
@@ -95,7 +95,7 @@ highlight DiffText guifg=#CCE0D0 guibg=#1A2A3A gui=bold
 
 highlight diffAdded guifg=#2CB494 gui=bold
 highlight diffRemoved guifg=#F40404 gui=bold
-highlight diffFile guifg=#0C48CC gui=bold
+highlight diffFile guifg=#7290B8 gui=bold
 highlight diffIndexLine guifg=#88409C
 highlight diffLine guifg=#00E4FC
 highlight diffSubname guifg=#F88C14
@@ -113,6 +113,75 @@ highlight Folded guifg=#808080 guibg=#1A1A1A gui=NONE
 highlight FoldColumn guifg=#808080 guibg=NONE
 
 highlight QuickFixLine guibg=#1A3050 gui=bold
+
+" UI Groups
+highlight Title guifg=#00E4FC gui=bold
+highlight Underlined guifg=#CCE0D0 gui=underline
+highlight Directory guifg=#7290B8
+highlight MatchParen guifg=#3C3C3C guibg=#2CB494
+highlight NonText guifg=#808080
+highlight SpecialKey guifg=#808080
+highlight EndOfBuffer guifg=#808080
+highlight Conceal guifg=#808080
+highlight CursorLine guibg=#0A2A1A gui=NONE
+highlight CursorColumn guibg=#0A2A1A
+highlight SignColumn guifg=#808080 guibg=NONE
+highlight WarningMsg guifg=#FCFC38
+highlight ErrorMsg guifg=#F40404 gui=bold
+highlight ModeMsg guifg=#CCE0D0 gui=bold
+highlight MoreMsg guifg=#2CB494
+highlight Question guifg=#2CB494
+highlight WildMenu guifg=#3C3C3C guibg=#FCFC38
+highlight TabLine guifg=#808080 guibg=#000080 gui=NONE
+highlight TabLineFill guibg=#000080
+highlight TabLineSel guifg=#CCE0D0 guibg=#000080 gui=bold
+highlight SpellLocal guifg=#00E4FC gui=undercurl guisp=#00E4FC
+
+" Syntax Groups
+highlight Boolean guifg=#F88C14
+highlight Float guifg=#F88C14
+highlight Character guifg=#2CB494
+highlight Conditional guifg=#4068D4
+highlight Repeat guifg=#4068D4
+highlight Label guifg=#88409C
+highlight Operator guifg=#CCE0D0
+highlight Exception guifg=#F40404
+highlight Include guifg=#F88C14
+highlight Define guifg=#F88C14
+highlight Macro guifg=#F88C14
+highlight PreCondit guifg=#F88C14
+highlight StorageClass guifg=#4068D4
+highlight Structure guifg=#4068D4
+highlight Typedef guifg=#4068D4
+highlight Delimiter guifg=#CCE0D0
+highlight SpecialChar guifg=#88409C
+highlight SpecialComment guifg=#FCFC38
+highlight Debug guifg=#F032E6
+highlight Tag guifg=#7290B8
+highlight Ignore guifg=#808080
+
+" HTML/Markdown Groups
+highlight htmlBold guifg=#CCE0D0 gui=bold
+highlight htmlItalic guifg=#CCE0D0 gui=italic
+highlight htmlTagName guifg=#4068D4
+highlight htmlLink guifg=#CCE0D0 gui=underline
+highlight htmlTag guifg=#808080
+highlight htmlEndTag guifg=#808080
+highlight markdownH1Delimiter guifg=#808080
+highlight markdownH2Delimiter guifg=#808080
+highlight markdownH3Delimiter guifg=#808080
+highlight markdownH4Delimiter guifg=#808080
+highlight markdownH5Delimiter guifg=#808080
+highlight markdownH6Delimiter guifg=#808080
+
+" Language-specific Groups
+highlight pythonBuiltinObj guifg=#F88C14
+highlight pythonDottedName guifg=#CCE0D0
+highlight rubyInterpolation guifg=#88409C
+highlight rubyInterpolationDelimiter guifg=#88409C
+highlight rubyBlockParameter guifg=#CCE0D0
+highlight rubyBlockArgument guifg=#CCE0D0
+highlight jsxCloseString guifg=#4068D4
 
 function! GitRoot()
   let l:root = systemlist('git rev-parse --show-toplevel')[0]

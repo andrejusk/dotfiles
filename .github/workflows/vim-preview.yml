@@ -1,0 +1,298 @@
+name: Vim Theme Preview
+
+on:
+  pull_request:
+    paths:
+      - 'files/home/.vimrc'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  preview:
+    name: Generate theme preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Generate HTML preview and take screenshots
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // === GENERATE HTML PREVIEW ===
+            const vimrc = fs.readFileSync('files/home/.vimrc', 'utf8');
+            
+            // Parse highlight definitions
+            const highlights = {};
+            const highlightRegex = /^highlight\s+(\w+)\s+(.+)$/gm;
+            let match;
+            while ((match = highlightRegex.exec(vimrc)) !== null) {
+              const [, group, attrs] = match;
+              const parsed = {};
+              const guifg = attrs.match(/guifg=(#?\w+)/);
+              const guibg = attrs.match(/guibg=(#?\w+)/);
+              const gui = attrs.match(/gui=(\S+)/);
+              if (guifg) parsed.fg = guifg[1];
+              if (guibg) parsed.bg = guibg[1];
+              if (gui) parsed.style = gui[1];
+              highlights[group] = parsed;
+            }
+            
+            function toStyle(group) {
+              const h = highlights[group] || {};
+              let style = '';
+              if (h.fg && h.fg !== 'NONE') style += `color:${h.fg};`;
+              if (h.bg && h.bg !== 'NONE') style += `background:${h.bg};`;
+              if (h.style) {
+                if (h.style.includes('bold')) style += 'font-weight:bold;';
+                if (h.style.includes('italic')) style += 'font-style:italic;';
+                if (h.style.includes('underline')) style += 'text-decoration:underline;';
+              }
+              return style;
+            }
+            
+            const html = `<!DOCTYPE html>
+            <html><head><title>Vim Color Scheme Preview</title>
+            <style>
+              body { background: #1a1a1a; color: ${highlights.Normal?.fg || '#CCE0D0'}; font-family: 'SF Mono', 'Menlo', monospace; font-size: 14px; padding: 2rem; line-height: 1.6; }
+              h1, h2 { border-bottom: 1px solid #444; padding-bottom: 8px; }
+              h2 { color: #7290B8; margin-top: 2rem; }
+              pre { background: #0d0d0d; padding: 1rem; border-radius: 4px; border: 1px solid #333; margin: 1rem 0; position: relative; }
+              .code-label { position: absolute; top: -10px; right: 10px; background: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px; color: #808080; }
+            </style></head><body>
+            <h1>Vim Color Scheme Preview</h1>
+            
+            <h2 id="python">Python</h2>
+            <pre><span class="code-label">Python</span>
+            <span style="${toStyle('Include')}">import</span> <span style="${toStyle('Normal')}">os</span>
+            <span style="${toStyle('Include')}">from</span> <span style="${toStyle('Normal')}">typing</span> <span style="${toStyle('Include')}">import</span> <span style="${toStyle('Type')}">Optional</span>
+
+            <span style="${toStyle('PreProc')}">@</span><span style="${toStyle('Function')}">dataclass</span>
+            <span style="${toStyle('Statement')}">class</span> <span style="${toStyle('Type')}">User</span><span style="${toStyle('Delimiter')}">:</span>
+                <span style="${toStyle('Comment')}"># User model</span>
+                <span style="${toStyle('Normal')}">name</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">str</span>
+                <span style="${toStyle('Normal')}">age</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">int</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Number')}">0</span>
+                <span style="${toStyle('Normal')}">active</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">bool</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Boolean')}">True</span>
+
+            <span style="${toStyle('Statement')}">def</span> <span style="${toStyle('Function')}">process</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Normal')}">data</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">Optional</span><span style="${toStyle('Delimiter')}">[</span><span style="${toStyle('Type')}">str</span><span style="${toStyle('Delimiter')}">])</span> <span style="${toStyle('Operator')}">→</span> <span style="${toStyle('Type')}">float</span><span style="${toStyle('Delimiter')}">:</span>
+                <span style="${toStyle('Conditional')}">if</span> <span style="${toStyle('Normal')}">data</span> <span style="${toStyle('Keyword')}">is</span> <span style="${toStyle('Boolean')}">None</span><span style="${toStyle('Delimiter')}">:</span>
+                    <span style="${toStyle('Exception')}">raise</span> <span style="${toStyle('Type')}">ValueError</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('String')}">"No data"</span><span style="${toStyle('Delimiter')}">)</span>
+                <span style="${toStyle('Statement')}">return</span> <span style="${toStyle('Float')}">3.14</span></pre>
+            
+            <h2 id="typescript">TypeScript</h2>
+            <pre><span class="code-label">TypeScript</span>
+            <span style="${toStyle('Include')}">import</span> <span style="${toStyle('Delimiter')}">{</span> <span style="${toStyle('Normal')}">useState</span> <span style="${toStyle('Delimiter')}">}</span> <span style="${toStyle('Include')}">from</span> <span style="${toStyle('String')}">'react'</span><span style="${toStyle('Delimiter')}">;</span>
+
+            <span style="${toStyle('Structure')}">interface</span> <span style="${toStyle('Type')}">Props</span> <span style="${toStyle('Delimiter')}">{</span>
+                <span style="${toStyle('Normal')}">name</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">string</span><span style="${toStyle('Delimiter')}">;</span>
+                <span style="${toStyle('Normal')}">count</span><span style="${toStyle('Delimiter')}">?:</span> <span style="${toStyle('Type')}">number</span><span style="${toStyle('Delimiter')}">;</span>
+            <span style="${toStyle('Delimiter')}">}</span>
+
+            <span style="${toStyle('StorageClass')}">const</span> <span style="${toStyle('Function')}">Button</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Delimiter')}">{</span> <span style="${toStyle('Normal')}">name</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Normal')}">count</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Number')}">0</span> <span style="${toStyle('Delimiter')}">}</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Type')}">Props</span><span style="${toStyle('Delimiter')}">)</span> <span style="${toStyle('Operator')}">=&gt;</span> <span style="${toStyle('Delimiter')}">{</span>
+                <span style="${toStyle('StorageClass')}">const</span> <span style="${toStyle('Delimiter')}">[</span><span style="${toStyle('Normal')}">active</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Normal')}">setActive</span><span style="${toStyle('Delimiter')}">]</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Function')}">useState</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Boolean')}">false</span><span style="${toStyle('Delimiter')}">);</span>
+                <span style="${toStyle('Statement')}">return</span> <span style="${toStyle('Delimiter')}">(</span>
+                    <span style="${toStyle('htmlTag')}">&lt;</span><span style="${toStyle('htmlTagName')}">button</span> <span style="${toStyle('Type')}">onClick</span><span style="${toStyle('Operator')}">=</span><span style="${toStyle('Delimiter')}">{</span><span style="${toStyle('Delimiter')}">()</span> <span style="${toStyle('Operator')}">=&gt;</span> <span style="${toStyle('Function')}">setActive</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Boolean')}">true</span><span style="${toStyle('Delimiter')}">)}</span><span style="${toStyle('htmlTag')}">&gt;</span>
+                        <span style="${toStyle('Delimiter')}">{</span><span style="${toStyle('Normal')}">name</span><span style="${toStyle('Delimiter')}">}</span>: <span style="${toStyle('Delimiter')}">{</span><span style="${toStyle('Normal')}">count</span><span style="${toStyle('Delimiter')}">}</span>
+                    <span style="${toStyle('htmlTag')}">&lt;/</span><span style="${toStyle('htmlTagName')}">button</span><span style="${toStyle('htmlTag')}">&gt;</span>
+                <span style="${toStyle('Delimiter')}">);</span>
+            <span style="${toStyle('Delimiter')}">};</span></pre>
+            
+            <h2 id="go">Go</h2>
+            <pre><span class="code-label">Go</span>
+            <span style="${toStyle('Statement')}">package</span> <span style="${toStyle('Normal')}">main</span>
+
+            <span style="${toStyle('Include')}">import</span> <span style="${toStyle('Delimiter')}">(</span>
+                <span style="${toStyle('String')}">"fmt"</span>
+                <span style="${toStyle('String')}">"errors"</span>
+            <span style="${toStyle('Delimiter')}">)</span>
+
+            <span style="${toStyle('Typedef')}">type</span> <span style="${toStyle('Type')}">User</span> <span style="${toStyle('Structure')}">struct</span> <span style="${toStyle('Delimiter')}">{</span>
+                <span style="${toStyle('Normal')}">Name</span>   <span style="${toStyle('Type')}">string</span>
+                <span style="${toStyle('Normal')}">Active</span> <span style="${toStyle('Type')}">bool</span>
+            <span style="${toStyle('Delimiter')}">}</span>
+
+            <span style="${toStyle('Statement')}">func</span> <span style="${toStyle('Function')}">process</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Normal')}">id</span> <span style="${toStyle('Type')}">int</span><span style="${toStyle('Delimiter')}">)</span> <span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Operator')}">*</span><span style="${toStyle('Type')}">User</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Type')}">error</span><span style="${toStyle('Delimiter')}">)</span> <span style="${toStyle('Delimiter')}">{</span>
+                <span style="${toStyle('Conditional')}">if</span> <span style="${toStyle('Normal')}">id</span> <span style="${toStyle('Operator')}">&lt;</span> <span style="${toStyle('Number')}">0</span> <span style="${toStyle('Delimiter')}">{</span>
+                    <span style="${toStyle('Statement')}">return</span> <span style="${toStyle('Boolean')}">nil</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Normal')}">errors</span><span style="${toStyle('Delimiter')}">.</span><span style="${toStyle('Function')}">New</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('String')}">"invalid"</span><span style="${toStyle('Delimiter')}">)</span>
+                <span style="${toStyle('Delimiter')}">}</span>
+                <span style="${toStyle('Statement')}">return</span> <span style="${toStyle('Operator')}">&amp;</span><span style="${toStyle('Type')}">User</span><span style="${toStyle('Delimiter')}">{</span><span style="${toStyle('Normal')}">Active</span><span style="${toStyle('Delimiter')}">:</span> <span style="${toStyle('Boolean')}">true</span><span style="${toStyle('Delimiter')}">},</span> <span style="${toStyle('Boolean')}">nil</span>
+            <span style="${toStyle('Delimiter')}">}</span></pre>
+            
+            <h2 id="ruby">Ruby</h2>
+            <pre><span class="code-label">Ruby</span>
+            <span style="${toStyle('Statement')}">require</span> <span style="${toStyle('String')}">'json'</span>
+
+            <span style="${toStyle('Statement')}">class</span> <span style="${toStyle('Type')}">User</span>
+              <span style="${toStyle('Statement')}">attr_accessor</span> <span style="${toStyle('Constant')}">:name</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Constant')}">:active</span>
+
+              <span style="${toStyle('Statement')}">def</span> <span style="${toStyle('Function')}">initialize</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('Normal')}">name</span><span style="${toStyle('Delimiter')}">)</span>
+                <span style="${toStyle('Constant')}">@name</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Normal')}">name</span>
+                <span style="${toStyle('Constant')}">@active</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Boolean')}">true</span>
+              <span style="${toStyle('Statement')}">end</span>
+
+              <span style="${toStyle('Statement')}">def</span> <span style="${toStyle('Function')}">greet</span>
+                <span style="${toStyle('String')}">"Hello, </span><span style="${toStyle('rubyInterpolation')}">#{</span><span style="${toStyle('Constant')}">@name</span><span style="${toStyle('rubyInterpolation')}">}</span><span style="${toStyle('String')}">!"</span>
+              <span style="${toStyle('Statement')}">end</span>
+            <span style="${toStyle('Statement')}">end</span>
+
+            <span style="${toStyle('Normal')}">users</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Delimiter')}">[</span><span style="${toStyle('Number')}">1</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Number')}">2</span><span style="${toStyle('Delimiter')}">,</span> <span style="${toStyle('Number')}">3</span><span style="${toStyle('Delimiter')}">].</span><span style="${toStyle('Function')}">map</span> <span style="${toStyle('Delimiter')}">{</span> <span style="${toStyle('Delimiter')}">|</span><span style="${toStyle('Normal')}">id</span><span style="${toStyle('Delimiter')}">|</span> <span style="${toStyle('Type')}">User</span><span style="${toStyle('Delimiter')}">.</span><span style="${toStyle('Function')}">new</span><span style="${toStyle('Delimiter')}">(</span><span style="${toStyle('String')}">"user_</span><span style="${toStyle('rubyInterpolation')}">#{</span><span style="${toStyle('Normal')}">id</span><span style="${toStyle('rubyInterpolation')}">}</span><span style="${toStyle('String')}">"</span><span style="${toStyle('Delimiter')}">)</span> <span style="${toStyle('Delimiter')}">}</span></pre>
+            
+            <h2 id="markdown">Markdown</h2>
+            <pre><span class="code-label">Markdown</span>
+            <span style="${toStyle('markdownH1Delimiter')}">#</span><span style="${toStyle('Title')}"> Main Heading</span>
+            <span style="${toStyle('markdownH2Delimiter')}">##</span><span style="${toStyle('Title')}"> Section Title</span>
+            <span style="${toStyle('markdownH3Delimiter')}">###</span><span style="${toStyle('Title')}"> Subsection</span>
+
+            <span style="${toStyle('Normal')}">Regular paragraph text with </span><span style="${toStyle('htmlBold')}">**bold**</span><span style="${toStyle('Normal')}"> and </span><span style="${toStyle('htmlItalic')}">*italic*</span><span style="${toStyle('Normal')}"> text.</span>
+
+            <span style="${toStyle('htmlTagName')}">-</span><span style="${toStyle('Normal')}"> List item one</span>
+            <span style="${toStyle('htmlTagName')}">-</span><span style="${toStyle('Normal')}"> List item two</span>
+
+            <span style="${toStyle('Normal')}">Here's a </span><span style="${toStyle('htmlLink')}">[link to docs]</span><span style="${toStyle('Float')}">(https://example.com)</span><span style="${toStyle('Normal')}"> in the text.</span>
+
+            <span style="${toStyle('Normal')}">Inline </span><span style="${toStyle('String')}">\`code\`</span><span style="${toStyle('Normal')}"> and a code block:</span>
+
+            <span style="${toStyle('Comment')}">\`\`\`javascript</span>
+            <span style="${toStyle('StorageClass')}">const</span> <span style="${toStyle('Normal')}">x</span> <span style="${toStyle('Operator')}">=</span> <span style="${toStyle('Number')}">42</span><span style="${toStyle('Delimiter')}">;</span>
+            <span style="${toStyle('Comment')}">\`\`\`</span></pre>
+            
+            <h2 id="diff">Git Diff</h2>
+            <pre><span class="code-label">Diff</span>
+            <span style="${toStyle('diffFile')}">diff --git a/file.txt b/file.txt</span>
+            <span style="${toStyle('diffIndexLine')}">index abc123..def456 100644</span>
+            <span style="${toStyle('diffLine')}">@@ -1,5 +1,5 @@</span>
+            <span style="${toStyle('Normal')}"> unchanged line</span>
+            <span style="${toStyle('diffRemoved')}">-removed line</span>
+            <span style="${toStyle('diffAdded')}">+added line</span>
+            <span style="${toStyle('Normal')}"> another unchanged</span></pre>
+            
+            <h2 id="ui">UI Elements</h2>
+            <pre><span class="code-label">Messages</span>
+            <span style="${toStyle('WarningMsg')}">Warning: File has been modified outside of Vim</span>
+            <span style="${toStyle('ErrorMsg')}">E488: Trailing characters: xyz</span>
+            <span style="${toStyle('MoreMsg')}">Press ENTER or type command to continue</span>
+            <span style="${toStyle('Question')}">Save changes? [Y]es, [N]o, [C]ancel:</span>
+            <span style="${toStyle('ModeMsg')}">-- INSERT --</span>
+            <span style="${toStyle('Todo')}">TODO: Fix this later</span></pre>
+            
+            </body></html>`;
+            
+            fs.writeFileSync('/tmp/preview.html', html);
+            console.log('Generated /tmp/preview.html');
+
+      - name: Take screenshots
+        run: |
+          node << 'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+
+          (async () => {
+            fs.mkdirSync('/tmp/screenshots', { recursive: true });
+            
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+            // Use tall viewport to ensure all elements render with correct bounding boxes
+            await page.setViewportSize({ width: 1200, height: 4000 });
+            await page.goto('file:///tmp/preview.html');
+            await page.waitForLoadState('networkidle');
+            
+            const sections = ['python', 'typescript', 'go', 'ruby', 'markdown', 'diff', 'ui'];
+            
+            for (const id of sections) {
+              const heading = await page.$(`#${id}`);
+              const pre = await page.$(`#${id} + pre`);
+              if (!heading || !pre) {
+                console.log(`Skipped: ${id} (not found)`);
+                continue;
+              }
+              
+              // Create a wrapper div for combined screenshot
+              const headingBox = await heading.boundingBox();
+              const preBox = await pre.boundingBox();
+              if (!headingBox || !preBox) continue;
+              
+              const padding = 16;
+              const clip = {
+                x: Math.max(0, Math.min(headingBox.x, preBox.x) - padding),
+                y: Math.max(0, headingBox.y - padding),
+                width: Math.max(headingBox.width, preBox.width) + padding * 2,
+                height: (preBox.y + preBox.height) - headingBox.y + padding * 2
+              };
+              
+              await page.screenshot({ path: `/tmp/screenshots/${id}.png`, clip });
+              console.log(`Captured: ${id}.png`);
+            }
+            
+            await browser.close();
+          })();
+          EOF
+
+      - name: Upload images and create PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+            
+            const files = fs.readdirSync('/tmp/screenshots').filter(f => f.endsWith('.png'));
+            const labels = {
+              python: 'Python', typescript: 'TypeScript',
+              go: 'Go', ruby: 'Ruby', markdown: 'Markdown', diff: 'Git Diff', ui: 'UI Elements'
+            };
+            
+            // Create release for this commit
+            const tag = `vim-preview-${sha}`;
+            const { data: release } = await github.rest.repos.createRelease({
+              owner, repo, tag_name: tag,
+              name: `Preview ${sha}`,
+              body: `PR #${prNumber}`,
+              prerelease: true
+            });
+            
+            // Upload images
+            const urls = {};
+            for (const file of files) {
+              const { data: asset } = await github.rest.repos.uploadReleaseAsset({
+                owner, repo, release_id: release.id, name: file,
+                data: fs.readFileSync(`/tmp/screenshots/${file}`)
+              });
+              urls[file.replace('.png', '')] = asset.browser_download_url;
+            }
+            
+            // Hide previous preview comments
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: prNumber
+            });
+            for (const c of comments) {
+              if (c.user.type === 'Bot' && c.body.includes('<!-- vim-preview -->')) {
+                await github.graphql(`mutation { minimizeComment(input: {subjectId: "${c.node_id}", classifier: OUTDATED}) { clientMutationId } }`);
+              }
+            }
+            
+            // Create new comment
+            const fullSha = context.payload.pull_request.head.sha;
+            const commitUrl = `https://github.com/${owner}/${repo}/commit/${fullSha}`;
+            const workflowUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            
+            let body = `<!-- vim-preview -->\n## Vim Theme Preview\n\nCommit: ${commitUrl}\n\n`;
+            for (const [name, url] of Object.entries(urls)) {
+              body += `<details><summary>${labels[name] || name}</summary>\n\n![${name}](${url})\n\n</details>\n\n`;
+            }
+            body += `---\n*Generated by [workflow](${workflowUrl})*`;
+            
+            await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
