@@ -1,6 +1,9 @@
 # Profiling: ZSH_BENCH=1 zsh
 [[ -n "$ZSH_BENCH" ]] && zmodload zsh/zprof
 
+# Assume truecolor support if terminal advertises 256color (covers SSH, tmux)
+[[ -z "$COLORTERM" && "$TERM" == *256color* ]] && export COLORTERM=truecolor
+
 _dots_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/dots"
 
 _dots_load_profile() { source "$HOME/.profile" }
