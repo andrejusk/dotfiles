@@ -6,6 +6,7 @@ alias reload-path='rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path" && exec zsh
 alias reload-cache='rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dots" ~/.zcompdump* && exec zsh'
 alias zen='curl -s https://api.github.com/zen && echo'
 alias la='ls -la'
+alias vi='vim'
 alias colby='copilot --allow-all-tools --allow-all-paths --banner'
 alias gs='git s'
 alias gd='git d'
