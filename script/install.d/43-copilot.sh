@@ -11,10 +11,10 @@ if ! command -v npm &>/dev/null; then
 fi
 
 # Install if not present
-if ! command -v github-copilot-cli &>/dev/null; then
+if ! command -v copilot &>/dev/null; then
     log_info "Installing GitHub Copilot CLI..."
-    npm install -g @githubnext/github-copilot-cli --silent
+    npm install -g @github/copilot --silent
 fi
 
 # Verify installation
-log_info "GitHub Copilot CLI: $(github-copilot-cli --version 2>&1 | head -1)"
+log_info "GitHub Copilot CLI: $(copilot --version 2>&1 | head -1)"

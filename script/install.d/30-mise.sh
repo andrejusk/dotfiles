@@ -51,7 +51,7 @@ typeset -a MISE_TOOLS=(
 
 # Install all tools in parallel
 log_info "Installing development tools in parallel..."
-mise install --jobs=4 "${MISE_TOOLS[@]}"
+mise install "${MISE_TOOLS[@]}"
 
 # Set global versions
 log_info "Setting global versions..."

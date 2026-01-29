@@ -46,7 +46,7 @@ binaries: List[Text] = [
     # tools
     "git",
     "gh",
-    "github-copilot-cli",
+    "copilot",
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "mise",
