@@ -26,7 +26,7 @@ if ! command -v mise &>/dev/null; then
             sudo apt-get install -qq mise
             ;;
         pacman)
-            yay -S --noconfirm mise
+            sudo pacman -S --noconfirm mise
             ;;
         *)
             # Fallback: curl install
