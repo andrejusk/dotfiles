@@ -39,7 +39,9 @@ if ! command -v zoxide &>/dev/null; then
     case "$DOTS_PKG" in
         apt)
             # For Debian/Ubuntu, use the curl installer as package may be outdated
-            curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+            # Add to PATH for current session
+            export PATH="$HOME/.local/bin:$PATH"
             ;;
         pacman)
             sudo pacman -S --noconfirm zoxide &>/dev/null

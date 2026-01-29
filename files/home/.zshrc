@@ -335,6 +335,12 @@ _dots_prompt_init() {
 }
 _dots_prompt_init
 
+# Configure fzf to use ripgrep for file search
+if command -v rg &>/dev/null; then
+    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
 _dots_load_fzf() {
     if command -v fzf &>/dev/null; then
         source <(fzf --zsh 2>/dev/null) || {
@@ -354,12 +360,6 @@ _dots_load_zoxide() {
     command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 }
 _dots_load_zoxide
-
-# Configure fzf to use ripgrep for file search
-if command -v rg &>/dev/null; then
-    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
-    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-fi
 
 _dots_load_mise() {
     command -v mise &>/dev/null && eval "$(mise activate zsh)"
