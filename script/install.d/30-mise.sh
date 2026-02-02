@@ -42,12 +42,12 @@ mise --version
 
 # Define all tools to install
 typeset -a MISE_TOOLS=(
-    "python@3"
-    "poetry@latest"
-    "node@lts"
-    "gh@latest"
-    "terraform@latest"
-    "firebase@latest"
+    "python@3.14.2"
+    "poetry@2.3.2"
+    "node@25.5.0"
+    "gh@2.86.0"
+    "terraform@1.14.4"
+    "firebase@15.5.1"
 )
 
 # Install all tools in parallel
@@ -56,12 +56,9 @@ mise install "${MISE_TOOLS[@]}"
 
 # Set global versions
 log_info "Setting global versions..."
-mise use -g python@3
-mise use -g poetry@latest
-mise use -g node@lts
-mise use -g gh@latest
-mise use -g terraform@latest
-mise use -g firebase@latest
+for tool in "${MISE_TOOLS[@]}"; do
+    mise use -g "$tool"
+done
 
 # Activate mise environment for current session
 eval "$(mise activate bash)"
