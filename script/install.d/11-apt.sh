@@ -9,6 +9,7 @@
 [[ "$DOTS_PKG" != "apt" ]] && { log_warn "Skipping: Not using apt"; return 0; }
 
 apt_packages=(
+    build-essential
     ca-certificates
     curl
     gnupg
