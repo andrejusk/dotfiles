@@ -6,6 +6,9 @@
 #   (Linux) Setup Docker.
 #
 
+# skip if SKIP_DOCKER_CONFIG is set
+[[ -n "$SKIP_DOCKER_CONFIG" ]] && { log_warn "Skipping: SKIP_DOCKER_CONFIG is set"; return 0; }
+
 # skip if in WSL
 if [[ -n "$WSL_DISTRO_NAME" ]]; then
     log_warn "Skipping: Running in WSL"

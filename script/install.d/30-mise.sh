@@ -40,11 +40,19 @@ fi
 
 mise --version
 
-# Define all tools to install
-typeset -a MISE_TOOLS=(
+typeset -a MISE_RUNTIMES=(
     "python@3.14.2"
-    "poetry@2.3.2"
     "node@25.5.0"
+)
+
+log_info "Installing runtimes..."
+mise install "${MISE_RUNTIMES[@]}"
+for tool in "${MISE_RUNTIMES[@]}"; do
+    mise use -g "$tool"
+done
+
+typeset -a MISE_APPS=(
+    "poetry@2.3.2"
     "gh@2.86.0"
     "terraform@1.14.4"
     "firebase@15.5.1"
@@ -53,13 +61,9 @@ typeset -a MISE_TOOLS=(
     "ripgrep@latest"
 )
 
-# Install all tools in parallel
-log_info "Installing development tools in parallel..."
-mise install "${MISE_TOOLS[@]}"
-
-# Set global versions
-log_info "Setting global versions..."
-for tool in "${MISE_TOOLS[@]}"; do
+log_info "Installing apps..."
+mise install "${MISE_APPS[@]}"
+for tool in "${MISE_APPS[@]}"; do
     mise use -g "$tool"
 done
 
