@@ -9,6 +9,7 @@ export PAGER=less
 
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_NO_ENV_HINTS=1
 
 # PATH setup with caching
 _dots_path_cache="${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
