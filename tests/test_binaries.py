@@ -65,6 +65,10 @@ binaries: List[Text] = [
     # langauge: js
     "node",
     "npm",
+    # search & navigation
+    "fzf",
+    "zoxide",
+    "rg",
 ]
 binaries = [binary for binary in binaries if binary is not None]
 

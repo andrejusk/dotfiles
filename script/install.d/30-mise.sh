@@ -48,6 +48,9 @@ typeset -a MISE_TOOLS=(
     "gh@2.86.0"
     "terraform@1.14.4"
     "firebase@15.5.1"
+    "fzf@latest"
+    "zoxide@latest"
+    "ripgrep@latest"
 )
 
 # Install all tools in parallel
@@ -64,14 +67,11 @@ done
 eval "$(mise activate bash)"
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
-# Setup Poetry ZSH completions
-ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-if [[ -d "$ZSH_CUSTOM/plugins" ]]; then
-    POETRY_PLUGIN="$ZSH_CUSTOM/plugins/poetry"
-    if [ ! -d "$POETRY_PLUGIN" ]; then
-        mkdir -p "$POETRY_PLUGIN"
-        mise exec -- poetry completions zsh > "$POETRY_PLUGIN/_poetry"
-    fi
+# Setup Poetry ZSH completions (XDG compliant)
+COMPLETIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
+mkdir -p "$COMPLETIONS_DIR"
+if [ ! -f "$COMPLETIONS_DIR/_poetry" ]; then
+    mise exec -- poetry completions zsh > "$COMPLETIONS_DIR/_poetry"
 fi
 
 # Verify installations using mise exec

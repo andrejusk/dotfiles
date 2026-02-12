@@ -31,29 +31,89 @@ _dots_cache_ls_colors
 
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-_dots_load_omz() {
-    export DISABLE_AUTO_UPDATE="true"
-    export DISABLE_LS_COLORS="true"
-    export ZSH="$HOME/.oh-my-zsh"
-    export ZSH_THEME=""
-    plugins=(
-        z
-        zsh-autosuggestions
-        zsh-syntax-highlighting
-    )
-    
-    # Daily security check: skip compaudit if already checked today
-    local marker="$_dots_cache_dir/.compaudit_checked"
-    local today=$(date +'%Y-%j')
-    if [[ -f "$marker" ]] && [[ "$(cat "$marker" 2>/dev/null)" == "$today" ]]; then
-        export ZSH_DISABLE_COMPFIX="true"
+_dots_init_completion() {
+    # Add custom completions to fpath
+    local comp_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
+    [[ -d "$comp_dir" ]] && fpath=("$comp_dir" $fpath)
+
+    autoload -Uz compinit
+    # Rebuild zcompdump at most once per day
+    local dump="$HOME/.zcompdump"
+    if [[ -f "$dump" && $(date +'%j') == $(stat -f '%Sm' -t '%j' "$dump" 2>/dev/null || date -r "$dump" +'%j' 2>/dev/null) ]]; then
+        compinit -C
     else
-        echo "$today" > "$marker"
+        compinit
     fi
-    
-    source "$ZSH/oh-my-zsh.sh"
 }
-_dots_load_omz
+_dots_init_completion
+
+_dots_load_plugins() {
+    local plugin_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+    # autosuggestions first
+    local f="$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    [[ -f "$f" ]] && source "$f"
+    # syntax-highlighting must be last
+    f="$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+    [[ -f "$f" ]] && source "$f"
+}
+_dots_load_plugins
+
+_dots_load_history() {
+    HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
+    HISTSIZE=50000
+    SAVEHIST=50000
+    mkdir -p "$(dirname "$HISTFILE")"
+    setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY
+}
+_dots_load_history
+
+_dots_load_keybindings() {
+    bindkey -e
+
+    bindkey '^[[H' beginning-of-line
+    bindkey '^[[F' end-of-line
+
+    # Ctrl+J: interactive zoxide jump (zi)
+    _dots_zoxide_widget() {
+        local result
+        result="$(zoxide query -i -- 2>&1)" && cd "$result"
+        zle reset-prompt
+    }
+    zle -N _dots_zoxide_widget
+    bindkey '^J' _dots_zoxide_widget
+}
+_dots_load_keybindings
+
+_dots_load_fzf() {
+    command -v fzf &>/dev/null || return
+    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_DEFAULT_OPTS='--layout=reverse --height=40% --prompt="> " --info=inline-right --no-separator'
+    # Modern fzf (v0.48+) provides --zsh
+    if fzf --zsh &>/dev/null; then
+        source <(fzf --zsh)
+    else
+        # Fallback paths for shell integration
+        local -a fzf_paths=(
+            "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/fzf/shell"
+            "/usr/share/fzf"
+            "${XDG_DATA_HOME:-$HOME/.local/share}/fzf/shell"
+        )
+        for dir in "${fzf_paths[@]}"; do
+            [[ -f "$dir/key-bindings.zsh" ]] && source "$dir/key-bindings.zsh" && break
+        done
+        for dir in "${fzf_paths[@]}"; do
+            [[ -f "$dir/completion.zsh" ]] && source "$dir/completion.zsh" && break
+        done
+    fi
+}
+
+
+_dots_load_zoxide() {
+    command -v zoxide &>/dev/null || return
+    export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
+    eval "$(zoxide init zsh)"
+}
 
 # Prompt
 (( ${+PROMPT_MIN_DURATION} ))  || typeset -gi PROMPT_MIN_DURATION=2    # show duration after N seconds
@@ -340,5 +400,7 @@ _dots_load_mise() {
     command -v mise &>/dev/null && eval "$(mise activate zsh)"
 }
 _dots_load_mise
+_dots_load_fzf
+_dots_load_zoxide
 
 [[ -n "$ZSH_BENCH" ]] && zprof || true

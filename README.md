@@ -26,3 +26,4 @@ by invoking the `setup-new` script directly via `curl`:
 
     # Run
     curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | bash
+
