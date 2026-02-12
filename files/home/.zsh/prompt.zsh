@@ -5,6 +5,7 @@
 typeset -gi _dots_prompt_cmd_start=0
 typeset -gi _dots_prompt_cmd_ran=0
 typeset -gi _dots_prompt_flashing=0
+typeset -g  _dots_prompt_symbol="λ"
 typeset -g  _dots_prompt_base=""
 typeset -gA _dots_pc
 
@@ -183,7 +184,7 @@ _dots_git_async_start() {
 
 _dots_build_dots_prompt_base() {
     local dir_path="$(_dots_abbrev_path)"
-    local symbol="${_dots_pc[grey]}>${_dots_pc[reset]}"
+    local symbol="${_dots_pc[grey]}${_dots_prompt_symbol}${_dots_pc[reset]}"
     (( EUID == 0 )) && symbol="${_dots_pc[orange]}${_dots_pc[bold]}#${_dots_pc[reset]}"
     
     local line1="${_dots_pc[teal]}${dir_path}${_dots_pc[reset]}"
@@ -245,7 +246,7 @@ TRAPINT() {
             _dots_prompt_flashing=1
             local git_part=""
             [[ -n "$_dots_git_info_result" ]] && git_part=" ${_dots_git_info_result}"
-            local flash_prompt=$'\n'"${_dots_pc[teal]}$(_dots_abbrev_path)${_dots_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}> %{\e[0m%}'
+            local flash_prompt=$'\n'"${_dots_pc[teal]}$(_dots_abbrev_path)${_dots_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}'"${_dots_prompt_symbol}"$' %{\e[0m%}'
             PROMPT="$flash_prompt"
             zle reset-prompt
             zselect -t $PROMPT_FLASH_DELAY

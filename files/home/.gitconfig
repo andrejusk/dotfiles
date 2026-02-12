@@ -29,7 +29,14 @@
   side-by-side = false
   line-numbers = true
   paging = always
-  pager = less --mouse -RFX
+  pager = less --mouse -R -+X -+F
+  file-decoration-style = none
+  file-style = "#2CB494" bold
+  hunk-header-decoration-style = none
+  line-numbers-left-style = "#2CB494"
+  line-numbers-right-style = "#2CB494"
+  plus-style = syntax "#0c2a24"
+  plus-emph-style = syntax "#164a3c"
 
 [merge]
   conflictstyle = zdiff3
@@ -80,5 +87,4 @@
   m = commit --amend --verbose
   st = stash
   sa = stash apply
-  cc = copilot --continue
 

@@ -80,7 +80,7 @@ _dots_load_fzf() {
     command -v fzf &>/dev/null || return
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-    export FZF_DEFAULT_OPTS='--layout=reverse --height=40% --prompt="> " --info=inline-right --no-separator'
+    export FZF_DEFAULT_OPTS='--layout=reverse --height=40% --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0'
     # fzf --zsh requires v0.48+
     if fzf --zsh &>/dev/null; then
         source <(fzf --zsh)
@@ -103,6 +103,7 @@ _dots_load_fzf() {
 _dots_load_zoxide() {
     command -v zoxide &>/dev/null || return
     export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
+    export _ZO_ECHO=0
     eval "$(zoxide init zsh)"
 }
 
