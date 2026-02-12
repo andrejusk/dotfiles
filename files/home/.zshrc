@@ -107,6 +107,7 @@ _dots_load_keybindings() {
     bindkey '^E' _dots_edit_widget
 
     # Ctrl+G: remote connect
+    if [[ -z "${CODESPACES:-}" ]]; then
     _dots_ssh_hosts() {
         local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
         local cs_cache="$_dots_cache_dir/codespaces"
@@ -138,6 +139,7 @@ _dots_load_keybindings() {
     }
     zle -N _dots_ssh_widget
     bindkey '^G' _dots_ssh_widget
+    fi
 
     # Ctrl+F: find in files
     _dots_find_in_files_widget() {

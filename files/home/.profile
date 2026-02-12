@@ -2,7 +2,11 @@
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export WORKSPACE="${WORKSPACE:-$HOME/Workspace}"
-export DOTFILES="${DOTFILES:-$HOME/.dotfiles}"
+if [[ -n "${CODESPACES:-}" ]]; then
+    export DOTFILES="${DOTFILES:-/workspaces/.codespaces/.persistedshare/dotfiles}"
+else
+    export DOTFILES="${DOTFILES:-$HOME/.dotfiles}"
+fi
 export EDITOR=vim
 export VISUAL=vim
 export PAGER=less

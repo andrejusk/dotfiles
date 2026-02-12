@@ -160,7 +160,7 @@ run() {
         else
             time_color="$RED"
         fi
-        printf "\n${CYAN}>>> ${CYAN_BOLD}${script_name}, ${NC}"
+        printf "${CYAN}>>> ${CYAN_BOLD}${script_name}, ${NC}"
         printf "completed in ${time_color}${execution_ms_formatted}ms${NC}\n"
     done
 }

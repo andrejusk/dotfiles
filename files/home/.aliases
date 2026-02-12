@@ -9,6 +9,7 @@ alias zen='curl -s https://api.github.com/zen && echo'
 alias la='ls -la'
 alias vi='vim'
 alias copilot='gh copilot'
+if [[ -z "${CODESPACES:-}" ]]; then
 cs() {
     local codespace="${1:-}"
     if [[ -z "$codespace" ]]; then
@@ -27,6 +28,7 @@ cs() {
     fi
     return $rc
 }
+fi
 alias colby='copilot --allow-all-tools --allow-all-paths'
 alias gs='git s'
 alias gd='git d'
@@ -41,6 +43,7 @@ gb() { local b; b="$(git branch --all --sort=-committerdate --format='%(refname:
 glo() { git log --oneline --color --decorate | fzf --ansi --preview 'git show --color --stat {1}' --bind 'enter:become(echo {1})'; }
 f() { local f; f="$(fzf --preview 'head -100 {}')" && ${EDITOR:-vim} "$f"; }
 
+if [[ -z "${CODESPACES:-}" ]]; then
 ssh() {
     local ssh_target="${@: -1}"
     [[ -n "$TMUX" ]] && tmux rename-window "ssh:$ssh_target"
@@ -70,4 +73,5 @@ ssh() {
     return $rc
 }
 s() { local h; h="$(_dots_ssh_hosts | fzf)" && ssh "$h"; }
+fi
 
