@@ -6,7 +6,7 @@
 #
 
 # Skip in Codespaces (project-specific tool)
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
 if ! command -v az &>/dev/null; then
     case "$DOTS_PKG" in
@@ -27,3 +27,4 @@ if ! command -v az &>/dev/null; then
 fi
 
 az --version
+log_pass "Azure CLI installed"

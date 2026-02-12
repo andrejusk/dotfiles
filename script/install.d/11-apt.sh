@@ -6,7 +6,7 @@
 #
 
 # apt only
-[[ "$DOTS_PKG" != "apt" ]] && { log_warn "Skipping: Not using apt"; return 0; }
+[[ "$DOTS_PKG" != "apt" ]] && { log_skip "Not using apt"; return 0; }
 
 apt_packages=(
     build-essential
@@ -23,3 +23,4 @@ sudo apt-get install -qq "${apt_packages[@]}"
 unset apt_packages
 
 apt --version
+log_pass "apt packages installed"

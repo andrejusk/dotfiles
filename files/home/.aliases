@@ -9,7 +9,24 @@ alias zen='curl -s https://api.github.com/zen && echo'
 alias la='ls -la'
 alias vi='vim'
 alias copilot='gh copilot'
-alias cs='gh cs ssh'
+cs() {
+    local codespace="${1:-}"
+    if [[ -z "$codespace" ]]; then
+        codespace="$(gh cs list --json name -q '.[].name' | fzf)" || return
+    fi
+    [[ -n "$TMUX" ]] && tmux rename-window "cs:$codespace"
+    trap '[[ -n "$TMUX" ]] && tmux set automatic-rename on' EXIT INT TERM
+    gh cs ssh -c "$codespace"
+    local rc=$?
+    trap - EXIT INT TERM
+    [[ -n "$TMUX" ]] && tmux set automatic-rename on
+    if (( rc == 0 )); then
+        local log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
+        mkdir -p "$(dirname "$log")"
+        printf '%s cs:%s\n' "$(date +%s)" "$codespace" >> "$log"
+    fi
+    return $rc
+}
 alias colby='copilot --allow-all-tools --allow-all-paths'
 alias gs='git s'
 alias gd='git d'
@@ -26,12 +43,12 @@ f() { local f; f="$(fzf --preview 'head -100 {}')" && ${EDITOR:-vim} "$f"; }
 
 ssh() {
     local ssh_target="${@: -1}"
-    if [[ -n "$TMUX" ]]; then
-        tmux rename-window "ssh:$ssh_target"
-    fi
-
+    [[ -n "$TMUX" ]] && tmux rename-window "ssh:$ssh_target"
+    trap '[[ -n "$TMUX" ]] && tmux set automatic-rename on' EXIT INT TERM
     command ssh "$@"
     local rc=$?
+    trap - EXIT INT TERM
+    [[ -n "$TMUX" ]] && tmux set automatic-rename on
 
     if (( rc == 0 )); then
         local host="$ssh_target"
@@ -50,8 +67,6 @@ ssh() {
 
         printf '%s %s\n' "$(date +%s)" "$host" >> "$ssh_log"
     fi
-
-    [[ -n "$TMUX" ]] && tmux set automatic-rename on
     return $rc
 }
 s() { local h; h="$(_dots_ssh_hosts | fzf)" && ssh "$h"; }

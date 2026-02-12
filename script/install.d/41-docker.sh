@@ -7,19 +7,19 @@
 #
 
 # skip if SKIP_DOCKER_CONFIG is set
-[[ -n "$SKIP_DOCKER_CONFIG" ]] && { log_warn "Skipping: SKIP_DOCKER_CONFIG is set"; return 0; }
+[[ -n "$SKIP_DOCKER_CONFIG" ]] && { log_skip "SKIP_DOCKER_CONFIG is set"; return 0; }
 
 # skip if in WSL
 if [[ -n "$WSL_DISTRO_NAME" ]]; then
-    log_warn "Skipping: Running in WSL"
+    log_skip "Running in WSL"
     return 0
 fi
 
 # skip if in Codespaces
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
 # skip on macOS
-[[ "$DOTS_OS" == "macos" ]] && { log_warn "Skipping: macOS"; return 0; }
+[[ "$DOTS_OS" == "macos" ]] && { log_skip "macOS"; return 0; }
 
 if ! command -v docker &> /dev/null; then
     case "$DOTS_PKG" in
@@ -57,3 +57,4 @@ if ! groups "$USER" | grep -q "\b$docker_group\b"; then
 fi
 
 docker --version
+log_pass "Docker configured"

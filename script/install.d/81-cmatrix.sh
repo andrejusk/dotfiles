@@ -6,7 +6,7 @@
 #
 
 # skip if in Codespaces
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
 if ! command -v cmatrix &> /dev/null; then
     case "$DOTS_PKG" in
@@ -24,4 +24,4 @@ if ! command -v cmatrix &> /dev/null; then
             ;;
     esac
 fi
-log_pass "cmatrix installed successfully!"
+log_pass "cmatrix installed"

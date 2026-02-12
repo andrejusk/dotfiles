@@ -6,10 +6,10 @@
 #
 
 # Skip in Codespaces (managed by GitHub)
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
 # Skip if explicitly disabled
-[[ -n "$SKIP_SSH_CONFIG" ]] && { log_warn "Skipping SSH configuration"; return 0; }
+[[ -n "$SKIP_SSH_CONFIG" ]] && { log_skip "SKIP_SSH_CONFIG is set"; return 0; }
 
 ssh_method="ed25519"
 
@@ -26,3 +26,4 @@ fi
 cat "$ssh_pub"
 
 unset ssh_method ssh_target ssh_key ssh_pub
+log_pass "SSH key configured"

@@ -7,7 +7,7 @@
 #
 
 # Skip in Codespaces (use pre-installed versions)
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_pass "Skipping in Codespaces"; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
 # Install mise
 if ! command -v mise &>/dev/null; then
@@ -89,3 +89,4 @@ mise exec -- gh --version
 mise exec -- terraform --version | head -1
 echo "firebase: $(mise exec -- firebase --version)"
 echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+log_pass "mise tools installed"

@@ -6,7 +6,7 @@
 #
 
 # macOS only
-[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+[[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }
 
 # Keyboard
 # --------
@@ -177,4 +177,5 @@ if [[ ! $dock_state == *"spacer"* ]]; then
     dockutil --add '' --type spacer --section apps --position "${#dock_order[@]}" --no-restart 2>/dev/null || true
 fi
 
-log_info "macOS settings configured. Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
+log_info "Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
+log_pass "macOS defaults configured"

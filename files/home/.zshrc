@@ -106,21 +106,34 @@ _dots_load_keybindings() {
     zle -N _dots_edit_widget
     bindkey '^E' _dots_edit_widget
 
-    # Ctrl+G: SSH host picker
+    # Ctrl+G: remote connect
     _dots_ssh_hosts() {
         local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
+        local cs_cache="$_dots_cache_dir/codespaces"
+
+        # Refresh codespace cache in background if stale (>5 min)
+        if [[ ! -f "$cs_cache" ]] || [[ -n "$(find "$cs_cache" -mmin +5 2>/dev/null)" ]]; then
+            { gh cs list --json name -q '.[].name' 2>/dev/null | sed 's/^/cs:/' > "$cs_cache.tmp" && mv "$cs_cache.tmp" "$cs_cache"; } &!
+        fi
+
         {
             if [[ -f "$ssh_log" ]]; then
                 awk '{c[$2]++; t[$2]=$1} END {for(h in c) print c[h]*1000+t[h], h}' "$ssh_log" | sort -rn | awk '{print $2}'
             fi
             awk '/^Host / && !/\*/ {print $2}' ~/.ssh/config ~/.ssh/config.d/* 2>/dev/null
             awk '{print $1}' ~/.ssh/known_hosts 2>/dev/null | tr ',' '\n' | sed 's/\[//;s/\]:.*//'
+            [[ -f "$cs_cache" ]] && cat "$cs_cache"
         } | awk '!seen[$0]++'
     }
     _dots_ssh_widget() {
-        local host
-        host="$(_dots_ssh_hosts | fzf)" || { zle reset-prompt; return; }
-        BUFFER="ssh $host"
+        local target
+        target="$(_dots_ssh_hosts | fzf)" || { zle reset-prompt; return; }
+        if [[ "$target" == cs:* ]]; then
+            BUFFER="cs ${target#cs:}"
+        else
+            BUFFER="ssh $target"
+        fi
+        zle reset-prompt
         zle accept-line
     }
     zle -N _dots_ssh_widget

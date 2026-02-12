@@ -6,7 +6,7 @@
 #
 
 # macOS only
-[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+[[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }
 
 if ! command -v brew &> /dev/null; then
     echo "Installing Homebrew..."
@@ -16,3 +16,4 @@ else
     echo "Homebrew is already installed."
 fi
 brew --version
+log_pass "Homebrew installed"

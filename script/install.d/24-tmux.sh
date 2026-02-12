@@ -24,3 +24,4 @@ if ! command -v tmux &> /dev/null; then
 fi
 
 tmux -V
+log_pass "tmux installed"

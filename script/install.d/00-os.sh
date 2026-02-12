@@ -24,3 +24,5 @@ fi
 if [[ "$DOTS_ENV" == "codespaces" ]]; then
     log_info "Running in GitHub Codespaces"
 fi
+
+log_pass "OS detection complete"

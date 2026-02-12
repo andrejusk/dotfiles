@@ -6,7 +6,7 @@
 #
 
 # pacman only
-[[ "$DOTS_PKG" != "pacman" ]] && { log_warn "Skipping: Not using pacman"; return 0; }
+[[ "$DOTS_PKG" != "pacman" ]] && { log_skip "Not using pacman"; return 0; }
 
 pacman_packages=(
     ca-certificates
@@ -32,3 +32,4 @@ fi
 
 pacman --version
 yay --version
+log_pass "pacman packages installed"

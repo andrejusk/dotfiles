@@ -6,7 +6,7 @@
 #
 
 # macOS only
-[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+[[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }
 
 fonts_list=(
     font-fira-mono-nerd-font
@@ -32,3 +32,4 @@ if [[ "$fonts_missing" == "true" ]]; then
 fi
 
 unset fonts_list fonts_missing
+log_pass "Nerd Fonts installed"

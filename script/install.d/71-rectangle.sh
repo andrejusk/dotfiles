@@ -6,10 +6,11 @@
 #
 
 # macOS only
-[[ "$DOTS_OS" != "macos" ]] && { log_warn "Skipping: Not macOS"; return 0; }
+[[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }
 
 if ! echo "$BREW_CASKS" | grep -q "^rectangle$"; then
     brew install --cask rectangle
 else
     echo "Rectangle is already installed."
 fi
+log_pass "Rectangle installed"

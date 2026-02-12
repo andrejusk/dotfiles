@@ -28,12 +28,13 @@ fi
 # Log functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
 log_pass() { echo -e "${GREEN}[PASS]${NC} $*"; }
+log_skip() { echo -e "${GREY}[SKIP]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[FAIL]${NC} $*"; }
 log_debug() { echo -e "${CYAN}$*${NC}"; }
 
 # Export log functions
-export -f log_info log_pass log_warn log_error log_debug
+export -f log_info log_pass log_skip log_warn log_error log_debug
 
 printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"

@@ -44,19 +44,10 @@ if [ ! -d "$PLUGIN_DIR/zsh-syntax-highlighting" ]; then
         "$PLUGIN_DIR/zsh-syntax-highlighting"
 fi
 
-# warn about legacy oh-my-zsh directory
-if [ -d "$HOME/.oh-my-zsh" ]; then
-    log_warn "Legacy ~/.oh-my-zsh directory found. Remove with: rm -rf ~/.oh-my-zsh"
-fi
-
-# migrate zoxide database from z if available
-if command -v zoxide &>/dev/null && [ -f "$HOME/.z" ]; then
-    log_info "Importing z database into zoxide..."
-    zoxide import --from z "$HOME/.z" 2>/dev/null || true
-fi
-
 # change default shell to zsh
 if [[ "$SHELL" != *zsh ]]; then
     sudo chsh -s "$(command -v zsh)" "$(whoami)"
     sudo usermod -s "$(command -v zsh)" "$(whoami)"
 fi
+
+log_pass "zsh configured"
