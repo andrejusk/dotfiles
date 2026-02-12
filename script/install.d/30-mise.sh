@@ -86,6 +86,6 @@ mise exec -- poetry --version
 echo "node $(mise exec -- node --version)"
 echo "npm $(mise exec -- npm --version)"
 mise exec -- gh --version
-mise exec -- terraform --version
+mise exec -- terraform --version | head -1
 echo "firebase: $(mise exec -- firebase --version)"
 echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
