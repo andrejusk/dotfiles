@@ -4,6 +4,7 @@ set number relativenumber
 set ignorecase smartcase incsearch hlsearch
 set autoindent expandtab tabstop=4 shiftwidth=4 softtabstop=4
 set scrolloff=8 wildmenu showcmd laststatus=2
+set mouse=a
 set hidden
 set noswapfile nobackup undofile
 let s:undo_dir = expand('~/.vim/undodir')

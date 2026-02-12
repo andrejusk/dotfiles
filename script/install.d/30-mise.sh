@@ -59,6 +59,7 @@ typeset -a MISE_APPS=(
     "fzf@latest"
     "zoxide@latest"
     "ripgrep@latest"
+    "delta@latest"
 )
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
@@ -101,4 +102,5 @@ fi
 fzf --version
 zoxide --version
 rg --version | head -1
+delta --version | head -1
 log_pass "mise tools installed"
