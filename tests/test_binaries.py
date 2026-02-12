@@ -69,6 +69,7 @@ binaries: List[Text] = [
     "fzf",
     "zoxide",
     "rg",
+    "tmux",
 ]
 binaries = [binary for binary in binaries if binary is not None]
 

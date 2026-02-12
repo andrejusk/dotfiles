@@ -19,3 +19,40 @@ alias gl='git ld'
 alias ga='git a'
 alias gr='git r'
 
+# fzf workflows
+gb() { local b; b="$(git branch --all --sort=-committerdate --format='%(refname:short)' | fzf --preview 'git log --oneline --color -20 {}')" && git checkout "${b#origin/}"; }
+glo() { git log --oneline --color --decorate | fzf --ansi --preview 'git show --color --stat {1}' --bind 'enter:become(echo {1})'; }
+f() { local f; f="$(fzf --preview 'head -100 {}')" && ${EDITOR:-vim} "$f"; }
+
+ssh() {
+    local ssh_target="${@: -1}"
+    if [[ -n "$TMUX" ]]; then
+        tmux rename-window "ssh:$ssh_target"
+    fi
+
+    command ssh "$@"
+    local rc=$?
+
+    if (( rc == 0 )); then
+        local host="$ssh_target"
+        local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
+        mkdir -p "$(dirname "$ssh_log")"
+
+        if [[ "$ssh_target" == *@* ]]; then
+            local user="${ssh_target%%@*}"
+            host="${ssh_target#*@}"
+            local config_file="$HOME/.ssh/config.d/auto"
+            mkdir -p "$HOME/.ssh/config.d"
+            if ! grep -q "^Host $host$" "$config_file" 2>/dev/null; then
+                printf '\nHost %s\n    HostName %s\n    User %s\n' "$host" "$host" "$user" >> "$config_file"
+            fi
+        fi
+
+        printf '%s %s\n' "$(date +%s)" "$host" >> "$ssh_log"
+    fi
+
+    [[ -n "$TMUX" ]] && tmux set automatic-rename on
+    return $rc
+}
+s() { local h; h="$(_dots_ssh_hosts | fzf)" && ssh "$h"; }
+

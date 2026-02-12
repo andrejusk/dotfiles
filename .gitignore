@@ -10,6 +10,7 @@ temp
 # ssh env
 **/id_*
 **/known_hosts*
+**/config.d
 
 # setup files
 **/autoload

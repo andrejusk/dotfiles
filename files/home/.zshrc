@@ -32,15 +32,21 @@ _dots_cache_ls_colors
 [[ -f ~/.aliases ]] && source ~/.aliases
 
 _dots_init_completion() {
-    # Add custom completions to fpath
     local comp_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
     [[ -d "$comp_dir" ]] && fpath=("$comp_dir" $fpath)
 
     autoload -Uz compinit
-    # Rebuild zcompdump at most once per day
+    # Daily cache invalidation
     local dump="$HOME/.zcompdump"
-    if [[ -f "$dump" && $(date +'%j') == $(stat -f '%Sm' -t '%j' "$dump" 2>/dev/null || date -r "$dump" +'%j' 2>/dev/null) ]]; then
-        compinit -C
+    if [[ -f "$dump" ]]; then
+        zmodload -F zsh/stat b:zstat 2>/dev/null
+        local -a dump_stat
+        zstat -A dump_stat +mtime "$dump" 2>/dev/null
+        if (( dump_stat[1] > EPOCHSECONDS - 86400 )); then
+            compinit -C
+        else
+            compinit
+        fi
     else
         compinit
     fi
@@ -49,10 +55,9 @@ _dots_init_completion
 
 _dots_load_plugins() {
     local plugin_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
-    # autosuggestions first
     local f="$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     [[ -f "$f" ]] && source "$f"
-    # syntax-highlighting must be last
+    # syntax-highlighting must be sourced last
     f="$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
     [[ -f "$f" ]] && source "$f"
 }
@@ -62,7 +67,7 @@ _dots_load_history() {
     HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
     HISTSIZE=50000
     SAVEHIST=50000
-    mkdir -p "$(dirname "$HISTFILE")"
+    [[ -d "${HISTFILE:h}" ]] || mkdir -p "${HISTFILE:h}"
     setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY
 }
 _dots_load_history
@@ -70,10 +75,7 @@ _dots_load_history
 _dots_load_keybindings() {
     bindkey -e
 
-    bindkey '^[[H' beginning-of-line
-    bindkey '^[[F' end-of-line
-
-    # Ctrl+J: interactive zoxide jump (zi)
+    # Ctrl+J: zoxide jump
     _dots_zoxide_widget() {
         local result
         result="$(zoxide query -i -- 2>&1)" && cd "$result"
@@ -81,6 +83,104 @@ _dots_load_keybindings() {
     }
     zle -N _dots_zoxide_widget
     bindkey '^J' _dots_zoxide_widget
+
+    # Ctrl+B: git branch checkout
+    _dots_git_branch_widget() {
+        local branch
+        branch="$(git branch --all --sort=-committerdate --format='%(refname:short)' 2>/dev/null \
+            | fzf --preview 'git log --oneline --color -20 {}')" || { zle reset-prompt; return; }
+        branch="${branch#origin/}"
+        git checkout "$branch" 2>&1
+        zle reset-prompt
+    }
+    zle -N _dots_git_branch_widget
+    bindkey '^B' _dots_git_branch_widget
+
+    # Ctrl+E: edit file
+    _dots_edit_widget() {
+        local file
+        file="$(fzf --preview 'head -100 {}')" || { zle reset-prompt; return; }
+        ${EDITOR:-vim} "$file" </dev/tty
+        zle reset-prompt
+    }
+    zle -N _dots_edit_widget
+    bindkey '^E' _dots_edit_widget
+
+    # Ctrl+G: SSH host picker
+    _dots_ssh_hosts() {
+        local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
+        {
+            if [[ -f "$ssh_log" ]]; then
+                awk '{c[$2]++; t[$2]=$1} END {for(h in c) print c[h]*1000+t[h], h}' "$ssh_log" | sort -rn | awk '{print $2}'
+            fi
+            awk '/^Host / && !/\*/ {print $2}' ~/.ssh/config ~/.ssh/config.d/* 2>/dev/null
+            awk '{print $1}' ~/.ssh/known_hosts 2>/dev/null | tr ',' '\n' | sed 's/\[//;s/\]:.*//'
+        } | awk '!seen[$0]++'
+    }
+    _dots_ssh_widget() {
+        local host
+        host="$(_dots_ssh_hosts | fzf)" || { zle reset-prompt; return; }
+        BUFFER="ssh $host"
+        zle accept-line
+    }
+    zle -N _dots_ssh_widget
+    bindkey '^G' _dots_ssh_widget
+
+    # Ctrl+F: find in files
+    _dots_find_in_files_widget() {
+        local selection
+        selection="$(rg --color=always --line-number --no-heading '' 2>/dev/null \
+            | fzf --ansi --delimiter=: \
+                  --preview 'head -n $((({2}+30))) {1} | tail -n 60' \
+                  --preview-window='right:60%')" || { zle reset-prompt; return; }
+        local file="${selection%%:*}"
+        local line="${${selection#*:}%%:*}"
+        ${EDITOR:-vim} "+$line" "$file" </dev/tty
+        zle reset-prompt
+    }
+    zle -N _dots_find_in_files_widget
+    bindkey '^F' _dots_find_in_files_widget
+
+    # Ctrl+N: tmux session
+    _dots_tmux_widget() {
+        if [[ -z "$TMUX" ]]; then
+            tmux new-session </dev/tty
+        else
+            local session
+            session="$(tmux list-sessions -F '#{session_name}' 2>/dev/null \
+                | fzf --preview 'tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}"')" \
+                || { zle reset-prompt; return; }
+            tmux switch-client -t "$session"
+        fi
+        zle reset-prompt
+    }
+    zle -N _dots_tmux_widget
+    bindkey '^N' _dots_tmux_widget
+
+    # Ctrl+O: open in browser
+    _dots_open_widget() {
+        local choice
+        choice="$(printf 'repo\npr\nissues\nactions' | fzf)" || { zle reset-prompt; return; }
+        case "$choice" in
+            repo) gh browse 2>/dev/null ;;
+            pr) gh pr view --web 2>/dev/null ;;
+            issues) gh browse --issues 2>/dev/null ;;
+            actions) gh browse --actions 2>/dev/null ;;
+        esac
+        zle reset-prompt
+    }
+    zle -N _dots_open_widget
+    bindkey '^O' _dots_open_widget
+
+    # Ctrl+P: project switch
+    _dots_project_widget() {
+        local result
+        result="$(zoxide query -l 2>/dev/null | grep "${WORKSPACE:-$HOME/Workspace}" \
+            | fzf --preview 'ls -1 {}')" && cd "$result"
+        zle reset-prompt
+    }
+    zle -N _dots_project_widget
+    bindkey '^P' _dots_project_widget
 }
 _dots_load_keybindings
 
@@ -89,11 +189,10 @@ _dots_load_fzf() {
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_DEFAULT_OPTS='--layout=reverse --height=40% --prompt="> " --info=inline-right --no-separator'
-    # Modern fzf (v0.48+) provides --zsh
+    # fzf --zsh requires v0.48+
     if fzf --zsh &>/dev/null; then
         source <(fzf --zsh)
     else
-        # Fallback paths for shell integration
         local -a fzf_paths=(
             "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/fzf/shell"
             "/usr/share/fzf"
