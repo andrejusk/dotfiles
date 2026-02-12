@@ -6,9 +6,6 @@
 #   Consolidated installation of Python, Node.js, GitHub CLI, Terraform, Firebase, etc.
 #
 
-# Skip in Codespaces (use pre-installed versions)
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
-
 # Install mise
 if ! command -v mise &>/dev/null; then
     log_info "Installing mise..."
@@ -40,31 +37,39 @@ fi
 
 mise --version
 
-typeset -a MISE_RUNTIMES=(
-    "python@3.14.2"
-    "node@25.5.0"
-)
+# Skip runtimes in Codespaces (use pre-installed versions)
+if [[ "$DOTS_ENV" != "codespaces" ]]; then
+    typeset -a MISE_RUNTIMES=(
+        "python@3.14.2"
+        "node@25.5.0"
+    )
 
-log_info "Installing runtimes..."
-mise install "${MISE_RUNTIMES[@]}"
-for tool in "${MISE_RUNTIMES[@]}"; do
-    mise use -g "$tool"
-done
+    log_info "Installing runtimes..."
+    mise install "${MISE_RUNTIMES[@]}"
+    for tool in "${MISE_RUNTIMES[@]}"; do
+        mise use -g "$tool"
+    done
+fi
 
 # Activate mise shims so runtimes (e.g. python3) are available for app installers
 eval "$(mise activate bash)"
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 typeset -a MISE_APPS=(
-    "poetry@2.3.2"
-    "gh@2.86.0"
-    "terraform@1.14.4"
-    "firebase@15.5.1"
     "fzf@latest"
     "zoxide@latest"
     "ripgrep@latest"
-    "fastfetch@latest"
 )
+
+if [[ "$DOTS_ENV" != "codespaces" ]]; then
+    MISE_APPS+=(
+        "poetry@2.3.2"
+        "gh@2.86.0"
+        "terraform@1.14.4"
+        "firebase@15.5.1"
+        "fastfetch@latest"
+    )
+fi
 
 log_info "Installing apps..."
 mise install "${MISE_APPS[@]}"
@@ -72,21 +77,28 @@ for tool in "${MISE_APPS[@]}"; do
     mise use -g "$tool"
 done
 
-# Setup Poetry ZSH completions (XDG compliant)
-COMPLETIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
-mkdir -p "$COMPLETIONS_DIR"
-if [ ! -f "$COMPLETIONS_DIR/_poetry" ]; then
-    mise exec -- poetry completions zsh > "$COMPLETIONS_DIR/_poetry"
+if [[ "$DOTS_ENV" != "codespaces" ]]; then
+    # Setup Poetry ZSH completions (XDG compliant)
+    COMPLETIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
+    mkdir -p "$COMPLETIONS_DIR"
+    if [ ! -f "$COMPLETIONS_DIR/_poetry" ]; then
+        mise exec -- poetry completions zsh > "$COMPLETIONS_DIR/_poetry"
+    fi
 fi
 
-# Verify installations using mise exec
+# Verify installations
 log_info "Verifying installations..."
-mise exec -- python --version
-mise exec -- poetry --version
-echo "node $(mise exec -- node --version)"
-echo "npm $(mise exec -- npm --version)"
-mise exec -- gh --version
-mise exec -- terraform --version | head -1
-echo "firebase: $(mise exec -- firebase --version)"
-echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+if [[ "$DOTS_ENV" != "codespaces" ]]; then
+    mise exec -- python --version
+    mise exec -- poetry --version
+    echo "node $(mise exec -- node --version)"
+    echo "npm $(mise exec -- npm --version)"
+    mise exec -- gh --version
+    mise exec -- terraform --version | head -1
+    echo "firebase: $(mise exec -- firebase --version)"
+    echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+fi
+fzf --version
+zoxide --version
+rg --version | head -1
 log_pass "mise tools installed"
