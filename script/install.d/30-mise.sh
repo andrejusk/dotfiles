@@ -51,6 +51,10 @@ for tool in "${MISE_RUNTIMES[@]}"; do
     mise use -g "$tool"
 done
 
+# Activate mise shims so runtimes (e.g. python3) are available for app installers
+eval "$(mise activate bash)"
+export PATH="$HOME/.local/share/mise/shims:$PATH"
+
 typeset -a MISE_APPS=(
     "poetry@2.3.2"
     "gh@2.86.0"
@@ -59,6 +63,7 @@ typeset -a MISE_APPS=(
     "fzf@latest"
     "zoxide@latest"
     "ripgrep@latest"
+    "fastfetch@latest"
 )
 
 log_info "Installing apps..."
@@ -66,10 +71,6 @@ mise install "${MISE_APPS[@]}"
 for tool in "${MISE_APPS[@]}"; do
     mise use -g "$tool"
 done
-
-# Activate mise environment for current session
-eval "$(mise activate bash)"
-export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 # Setup Poetry ZSH completions (XDG compliant)
 COMPLETIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
@@ -87,3 +88,4 @@ echo "npm $(mise exec -- npm --version)"
 mise exec -- gh --version
 mise exec -- terraform --version
 echo "firebase: $(mise exec -- firebase --version)"
+echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"

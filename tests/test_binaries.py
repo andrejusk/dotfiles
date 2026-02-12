@@ -50,7 +50,7 @@ binaries: List[Text] = [
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "mise",
-    "neofetch",
+    "fastfetch",
     "cmatrix",
     "az",
     "firebase",
