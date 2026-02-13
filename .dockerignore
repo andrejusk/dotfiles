@@ -1,3 +1,8 @@
+.github
 .gitignore
 .dockerignore
+.vscode
 Dockerfile
+Dockerfile.arch
+README.md
+logs
