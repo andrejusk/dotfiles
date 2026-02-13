@@ -3,7 +3,7 @@ name: Vim Theme Preview
 on:
   pull_request:
     paths:
-      - 'files/home/.vimrc'
+      - 'home/.vimrc'
 
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
             const fs = require('fs');
             
             // === GENERATE HTML PREVIEW ===
-            const vimrc = fs.readFileSync('files/home/.vimrc', 'utf8');
+            const vimrc = fs.readFileSync('home/.vimrc', 'utf8');
             
             // Parse highlight definitions
             const highlights = {};
