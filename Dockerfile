@@ -30,7 +30,8 @@ ARG DOTFILES_DIR="/workdir/.dotfiles"
 RUN mkdir -p "$DOTFILES_DIR"
 RUN chown -R "test-user" "$DOTFILES_DIR"
 
-ADD --chown="test-user" files "$DOTFILES_DIR/files"
+ADD --chown="test-user" home "$DOTFILES_DIR/home"
+ADD --chown="test-user" install.d "$DOTFILES_DIR/install.d"
 ADD --chown="test-user" script "$DOTFILES_DIR/script"
 WORKDIR "$DOTFILES_DIR"
 

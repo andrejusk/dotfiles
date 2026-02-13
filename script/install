@@ -97,8 +97,8 @@ if [ -L "$0" ]; then
 else
     dir=$(dirname "$0")
 fi
-install_dir="$dir/install.d"
 export DOTFILES=$(dirname "$dir")
+install_dir="$DOTFILES/install.d"
 
 # Set up log destination
 if [[ -z "$LOG_TARGET" ]]; then
