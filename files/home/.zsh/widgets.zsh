@@ -91,18 +91,62 @@ _dots_load_keybindings() {
     zle -N _dots_find_in_files_widget
     bindkey '^F' _dots_find_in_files_widget
 
-    # Ctrl+N: tmux session
-    _dots_tmux_widget() {
-        if [[ -z "$TMUX" ]]; then
-            tmux new-session </dev/tty
+    # Ctrl+A: git log browser
+    _dots_git_log_widget() {
+        local commit
+        commit="$(git log --oneline --color --decorate -50 2>/dev/null \
+            | fzf --ansi --no-sort \
+                  --preview 'git show --color=always {1}' \
+                  --preview-window='right:60%')" || { zle reset-prompt; return; }
+        BUFFER="git show ${commit%% *}"
+        zle reset-prompt
+        zle accept-line
+    }
+    zle -N _dots_git_log_widget
+    bindkey '^A' _dots_git_log_widget
+
+    # Ctrl+K: command help lookup
+    _dots_help_widget() {
+        local cmd
+        cmd="$(print -l ${(ko)commands} | fzf --preview 'tldr {1} 2>/dev/null || man -P cat {1} 2>/dev/null | head -80')" \
+            || { zle reset-prompt; return; }
+        if command -v tldr &>/dev/null; then
+            BUFFER="tldr ${(q)cmd}"
         else
-            local session
-            session="$(tmux list-sessions -F '#{session_name}' 2>/dev/null \
-                | fzf --preview 'tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}"')" \
-                || { zle reset-prompt; return; }
-            tmux switch-client -t "$session"
+            BUFFER="man ${(q)cmd}"
         fi
         zle reset-prompt
+        zle accept-line
+    }
+    zle -N _dots_help_widget
+    bindkey '^K' _dots_help_widget
+
+    # Ctrl+N: tmux session
+    _dots_tmux_widget() {
+        [[ -n "${CODESPACES:-}" ]] && { zle reset-prompt; return; }
+        local sessions
+        sessions="$(tmux list-sessions -F '#{session_name}' 2>/dev/null)"
+        if [[ -z "$sessions" ]]; then
+            BUFFER="tmux new-session"
+        elif [[ -n "$TMUX" ]]; then
+            local session
+            session="$({ echo '+ new session'; echo "$sessions"; } \
+                | fzf --preview 'case {} in "+ new session") echo "Create a new tmux session";; *) tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}";; esac')" \
+                || { zle reset-prompt; return; }
+            if [[ "$session" == "+ new session" ]]; then
+                BUFFER="tmux new-session -d && tmux switch-client -n"
+            else
+                BUFFER="tmux switch-client -t ${(q)session}"
+            fi
+        else
+            local session
+            session="$(echo "$sessions" \
+                | fzf --preview 'tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}"')" \
+                || { zle reset-prompt; return; }
+            BUFFER="tmux attach -t ${(q)session}"
+        fi
+        zle reset-prompt
+        zle accept-line
     }
     zle -N _dots_tmux_widget
     bindkey '^N' _dots_tmux_widget
@@ -218,6 +262,20 @@ for line in sys.stdin:
     }
     zle -N _dots_copilot_session_widget
     bindkey '^S' _dots_copilot_session_widget
+
+    # Ctrl+X: process manager
+    _dots_process_widget() {
+        local proc
+        proc="$(ps -eo pid,user,%cpu,%mem,command 2>/dev/null \
+            | fzf --header-lines=1 --preview 'ps -p {1} -o pid,ppid,stat,start,time,command 2>/dev/null' \
+                  --preview-window='down:4:wrap')" || { zle reset-prompt; return; }
+        local pid="${${proc## #}%% *}"
+        BUFFER="kill $pid"
+        zle reset-prompt
+        zle accept-line
+    }
+    zle -N _dots_process_widget
+    bindkey '^X' _dots_process_widget
 
     # Ctrl+Y: git stash browser
     _dots_stash_widget() {
