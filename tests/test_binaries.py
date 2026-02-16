@@ -7,6 +7,7 @@ from typing import List, Text
 from subprocess import run
 import pytest
 import os
+import platform
 
 
 # --------------------------------------------------------------------------- #
@@ -55,6 +56,8 @@ binaries: List[Text] = [
     "firebase",
     "redis-cli",
     "redis-server",
+    "opensnitchd" if platform.system() == "Linux" else None,
+    "opensnitch-ui" if platform.system() == "Linux" else None,
     # language: python
     "python",
     "python3",
