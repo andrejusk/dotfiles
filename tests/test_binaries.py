@@ -46,6 +46,7 @@ binaries: List[Text] = [
     # tools
     "git",
     "gh",
+    "rg",
     "terraform",
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "mise",
