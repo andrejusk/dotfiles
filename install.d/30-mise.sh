@@ -88,6 +88,10 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 fi
 
 # Verify installations
+# Note: use `sed -n '1p'` instead of `head -1` to extract the first line of
+# multi-line version output. `head -1` exits after reading one line, which sends
+# SIGPIPE to the producer (e.g. terraform) — causing exit code 141 under
+# `set -eo pipefail`. `sed -n '1p'` reads all input before exiting, so no SIGPIPE.
 log_info "Verifying installations..."
 {
     if [[ "$DOTS_ENV" != "codespaces" ]]; then
