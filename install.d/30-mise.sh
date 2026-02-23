@@ -96,13 +96,13 @@ log_info "Verifying installations..."
         echo "node $(mise exec -- node --version)"
         echo "npm $(mise exec -- npm --version)"
         mise exec -- gh --version
-        mise exec -- terraform --version | head -1
+        mise exec -- terraform --version | sed -n '1p'
         echo "firebase: $(mise exec -- firebase --version)"
-        echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+        echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | sed -n '1p')"
     fi
     echo "fzf $(fzf --version)"
     zoxide --version
-    rg --version | head -1
-    delta --version | head -1
+    rg --version | sed -n '1p'
+    delta --version | sed -n '1p'
 } | log_quote
 log_pass "mise tools installed"
