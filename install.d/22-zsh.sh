@@ -24,7 +24,7 @@ if ! command -v zsh &> /dev/null; then
     esac
 fi
 
-zsh --version
+zsh --version | log_quote
 
 # plugin directory (XDG compliant)
 PLUGIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
@@ -50,4 +50,3 @@ if [[ "$SHELL" != *zsh ]]; then
     sudo usermod -s "$(command -v zsh)" "$(whoami)"
 fi
 
-log_pass "zsh configured"

@@ -23,5 +23,5 @@ if ! command -v tmux &> /dev/null; then
     esac
 fi
 
-tmux -V
-log_pass "tmux installed"
+tmux -V | log_quote
+

@@ -26,5 +26,5 @@ if ! command -v az &>/dev/null; then
     esac
 fi
 
-az --version
+az --version | log_quote
 log_pass "Azure CLI installed"

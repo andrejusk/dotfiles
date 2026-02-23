@@ -1,6 +1,9 @@
 # Profiling: ZSH_BENCH=1 zsh
 [[ -n "$ZSH_BENCH" ]] && zmodload zsh/zprof
 
+# Upgrade xterm-color to xterm-256color (gh cs ssh sets the weaker value)
+[[ "$TERM" == "xterm-color" ]] && export TERM=xterm-256color
+
 # Assume truecolor support if terminal advertises 256color (covers SSH, tmux)
 [[ -z "$COLORTERM" && "$TERM" == *256color* ]] && export COLORTERM=truecolor
 

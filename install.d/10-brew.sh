@@ -15,5 +15,5 @@ if ! command -v brew &> /dev/null; then
 else
     echo "Homebrew is already installed."
 fi
-brew --version
+brew --version | log_quote
 log_pass "Homebrew installed"

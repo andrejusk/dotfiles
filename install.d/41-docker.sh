@@ -56,5 +56,5 @@ if ! groups "$USER" | grep -q "\b$docker_group\b"; then
     sudo usermod -aG docker "$USER"
 fi
 
-docker --version
+docker --version | log_quote
 log_pass "Docker configured"

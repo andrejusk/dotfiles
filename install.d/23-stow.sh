@@ -23,7 +23,7 @@ if ! command -v stow &> /dev/null; then
     esac
 fi
 
-stow --version
+stow --version | log_quote
 
 root_dir=${DOTFILES:-$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")}
 
@@ -43,4 +43,3 @@ stow --dir="$root_dir" --target="$HOME" home
 # Bust PATH cache to force regeneration with new profile
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 
-log_pass "stow linked"

@@ -6,7 +6,7 @@
 #
 
 # Skip in Codespaces (pre-installed in universal image)
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; git --version; return 0; }
+[[ "$DOTS_ENV" == "codespaces" ]] && { git --version | log_quote; return 0; }
 
 if ! command -v git &> /dev/null; then
     case "$DOTS_PKG" in
@@ -26,5 +26,5 @@ if ! command -v git &> /dev/null; then
     esac
 fi
 
-git --version
+git --version | log_quote
 log_pass "git configured"

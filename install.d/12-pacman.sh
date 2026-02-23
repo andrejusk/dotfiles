@@ -30,6 +30,6 @@ if ! command -v yay &>/dev/null; then
     rm -rf /tmp/yay
 fi
 
-pacman --version
-yay --version
+pacman --version | log_quote
+yay --version | log_quote
 log_pass "pacman packages installed"
