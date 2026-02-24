@@ -16,3 +16,6 @@ temp
 **/autoload
 **/pypoetry
 
+# vim plugins (installed via install script)
+home/.vim/pack
+

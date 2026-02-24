@@ -91,7 +91,7 @@ _dots_load_keybindings() {
     zle -N _dots_find_in_files_widget
     bindkey '^F' _dots_find_in_files_widget
 
-    # Ctrl+A: git log browser
+    # Ctrl+Q: git log browser
     _dots_git_log_widget() {
         local commit
         commit="$(git log --oneline --color --decorate -50 2>/dev/null \
@@ -103,7 +103,7 @@ _dots_load_keybindings() {
         zle accept-line
     }
     zle -N _dots_git_log_widget
-    bindkey '^A' _dots_git_log_widget
+    bindkey '^Q' _dots_git_log_widget
 
     # Ctrl+K: command help lookup
     _dots_help_widget() {

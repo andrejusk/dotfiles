@@ -16,6 +16,7 @@ set undolevels=1000
 set undoreload=10000
 set belloff=all
 set noerrorbells
+set signcolumn=yes
 
 set lazyredraw
 set synmaxcol=500
@@ -127,6 +128,9 @@ highlight Conceal guifg=#808080
 highlight CursorLine guibg=#0A2A1A gui=NONE
 highlight CursorColumn guibg=#0A2A1A
 highlight SignColumn guifg=#808080 guibg=NONE
+highlight GitGutterAdd guifg=#2CB494 guibg=NONE
+highlight GitGutterChange guifg=#4068D4 guibg=NONE
+highlight GitGutterDelete guifg=#F40404 guibg=NONE
 highlight WarningMsg guifg=#FCFC38
 highlight ErrorMsg guifg=#F40404 gui=bold
 highlight ModeMsg guifg=#CCE0D0 gui=bold
