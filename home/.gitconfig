@@ -1,6 +1,5 @@
-[user]
-  name = Andrejus
-  email = git@andrejus.uk
+[include]
+  path = ~/.gitconfig.local
 
 [github]
   user = andrejusk
