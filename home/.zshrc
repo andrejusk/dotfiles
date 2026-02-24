@@ -22,13 +22,16 @@ _dots_cache_ls_colors() {
     if [[ -f "$cache_file" ]]; then
         source "$cache_file"
     else
-        if ls --color -d . &>/dev/null; then
+        if command -v gls &>/dev/null; then
+            echo 'alias ls="gls --color=auto"' > "$cache_file"
+        elif ls --color -d . &>/dev/null 2>&1; then
             echo 'alias ls="ls --color=auto"' > "$cache_file"
-        elif ls -G -d . &>/dev/null; then
+        elif ls -G -d . &>/dev/null 2>&1; then
             echo 'alias ls="ls -G"' > "$cache_file"
         fi
         [[ -f "$cache_file" ]] && source "$cache_file"
     fi
+    export LS_COLORS='di=38;2;44;180;148:ln=38;2;136;64;156:ex=38;2;248;140;20:fi=0:no=0:*.md=38;2;114;144;184:*.json=38;2;114;144;184:*.yml=38;2;114;144;184:*.yaml=38;2;114;144;184:*.toml=38;2;114;144;184'
 }
 _dots_cache_ls_colors
 
@@ -53,6 +56,14 @@ _dots_init_completion() {
     else
         compinit
     fi
+
+    # Completion styling
+    zstyle ':completion:*' menu select
+    zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+    zstyle ':completion:*' group-name ''
+    zstyle ':completion:*:descriptions' format $'\e[38;2;114;144;184m-- %d --\e[0m'
+    zstyle ':completion:*:warnings' format $'\e[38;2;244;4;4m-- no matches --\e[0m'
+    zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 }
 _dots_init_completion
 
@@ -60,9 +71,32 @@ _dots_load_plugins() {
     local plugin_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
     local f="$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     [[ -f "$f" ]] && source "$f"
+
+    # Autosuggestion ghost text colour
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#3c3c3c'
+
     # syntax-highlighting must be sourced last
     f="$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
     [[ -f "$f" ]] && source "$f"
+
+    # Syntax highlighting theme
+    typeset -gA ZSH_HIGHLIGHT_STYLES
+    ZSH_HIGHLIGHT_STYLES[command]='fg=#2cb494'
+    ZSH_HIGHLIGHT_STYLES[builtin]='fg=#2cb494'
+    ZSH_HIGHLIGHT_STYLES[alias]='fg=#2cb494'
+    ZSH_HIGHLIGHT_STYLES[function]='fg=#2cb494'
+    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#f40404'
+    ZSH_HIGHLIGHT_STYLES[path]='underline'
+    ZSH_HIGHLIGHT_STYLES[globbing]='fg=#f88c14'
+    ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#728cb8'
+    ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#728cb8'
+    ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#728cb8'
+    ZSH_HIGHLIGHT_STYLES[comment]='fg=#808080'
+    ZSH_HIGHLIGHT_STYLES[arg0]='fg=#2cb494'
+    ZSH_HIGHLIGHT_STYLES[default]='fg=#CCE0D0'
+    ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#808080'
+    ZSH_HIGHLIGHT_STYLES[redirection]='fg=#f88c14'
+    ZSH_HIGHLIGHT_STYLES[option]='fg=#7290b8'
 }
 _dots_load_plugins
 
@@ -83,7 +117,7 @@ _dots_load_fzf() {
     command -v fzf &>/dev/null || return
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-    export FZF_DEFAULT_OPTS='--layout=reverse --height=40% --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0'
+    export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#808080,fg+:#CCE0D0,bg:-1,bg+:#1a1a1a --color=hl:#2cb494,hl+:#2cb494,info:#808080,marker:#2cb494 --color=prompt:#2cb494,spinner:#88409C,pointer:#2cb494,header:#808080 --color=border:#3c3c3c,preview-border:#3c3c3c,gutter:#1a1a1a,preview-fg:#CCE0D0'
     # fzf --zsh requires v0.48+
     if fzf --zsh &>/dev/null; then
         source <(fzf --zsh)

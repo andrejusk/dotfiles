@@ -58,6 +58,9 @@ set background=dark
 if has('termguicolors') && ($COLORTERM ==# 'truecolor' || $COLORTERM ==# '24bit')
     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+    let &t_AU = "\<Esc>[58:2::%lu:%lu:%lum"
+    let &t_Cs = "\<Esc>[4:3m"
+    let &t_Ce = "\<Esc>[4:0m"
     set termguicolors
 endif
 
@@ -104,9 +107,9 @@ highlight diffIndexLine guifg=#88409C
 highlight diffLine guifg=#00E4FC
 highlight diffSubname guifg=#F88C14
 
-highlight SpellBad guifg=#F40404 gui=undercurl guisp=#F40404
-highlight SpellCap guifg=#FCFC38 gui=undercurl guisp=#FCFC38
-highlight SpellRare guifg=#88409C gui=undercurl guisp=#88409C
+highlight SpellBad guifg=NONE guibg=#2A1A0A gui=NONE cterm=NONE ctermfg=NONE ctermbg=NONE
+highlight SpellCap guifg=NONE guibg=#2A1A0A gui=NONE cterm=NONE ctermfg=NONE ctermbg=NONE
+highlight SpellRare guifg=NONE guibg=#2A1A0A gui=NONE cterm=NONE ctermfg=NONE ctermbg=NONE
 
 highlight Visual guibg=#1A3050
 
@@ -174,16 +177,66 @@ highlight htmlTagName guifg=#4068D4
 highlight htmlLink guifg=#CCE0D0 gui=underline
 highlight htmlTag guifg=#808080
 highlight htmlEndTag guifg=#808080
+highlight markdownH1 guifg=#7290B8 gui=bold
+highlight markdownH2 guifg=#7290B8 gui=bold
+highlight markdownH3 guifg=#7290B8 gui=bold
+highlight markdownH4 guifg=#7290B8 gui=bold
+highlight markdownH5 guifg=#7290B8 gui=bold
+highlight markdownH6 guifg=#7290B8 gui=bold
 highlight markdownH1Delimiter guifg=#808080
 highlight markdownH2Delimiter guifg=#808080
 highlight markdownH3Delimiter guifg=#808080
 highlight markdownH4Delimiter guifg=#808080
 highlight markdownH5Delimiter guifg=#808080
 highlight markdownH6Delimiter guifg=#808080
+highlight markdownCode guifg=#F88C14
+highlight markdownCodeBlock guifg=#F88C14
+highlight markdownCodeDelimiter guifg=#808080
+highlight markdownUrl guifg=#4068D4 gui=underline
+highlight markdownLinkText guifg=#2CB494
+highlight markdownListMarker guifg=#F88C14
+highlight markdownRule guifg=#808080
+highlight markdownBold guifg=#CCE0D0 gui=bold
+highlight markdownItalic guifg=#CCE0D0 gui=italic
+highlight markdownBoldItalic guifg=#CCE0D0 gui=bold,italic
+
+" YAML Groups
+highlight yamlKey guifg=#7290B8
+highlight yamlBlockMappingKey guifg=#7290B8
+highlight yamlFlowMappingKey guifg=#7290B8
+highlight yamlKeyValueDelimiter guifg=#808080
+highlight yamlBlockCollectionItemStart guifg=#808080
+highlight yamlBool guifg=#F88C14
+highlight yamlNull guifg=#F88C14
+highlight yamlInteger guifg=#F88C14
+highlight yamlFloat guifg=#F88C14
+highlight yamlAnchor guifg=#88409C
+highlight yamlAlias guifg=#88409C
+
+" Dockerfile Groups
+highlight dockerfileKeyword guifg=#4068D4
+highlight dockerfileFrom guifg=#4068D4 gui=bold
 
 " Language-specific Groups
 highlight pythonBuiltinObj guifg=#F88C14
+highlight pythonBuiltinFunc guifg=#7290B8 gui=bold
+highlight pythonBuiltinType guifg=#2CB494
 highlight pythonDottedName guifg=#CCE0D0
+highlight pythonDecorator guifg=#88409C
+highlight pythonDecoratorName guifg=#88409C
+
+highlight goBuiltins guifg=#7290B8 gui=bold
+highlight goFormatSpecifier guifg=#88409C
+
+highlight javaScriptFunction guifg=#4068D4
+highlight javaScriptMember guifg=#7290B8
+highlight typescriptBraces guifg=#CCE0D0
+highlight typescriptParens guifg=#CCE0D0
+
+highlight shVariable guifg=#CCE0D0
+highlight shDerefSimple guifg=#CCE0D0
+highlight shCommandSub guifg=#7290B8
+
 highlight rubyInterpolation guifg=#88409C
 highlight rubyInterpolationDelimiter guifg=#88409C
 highlight rubyBlockParameter guifg=#CCE0D0

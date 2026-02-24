@@ -30,7 +30,7 @@ _dots_load_keybindings() {
     _dots_edit_widget() {
         local file
         file="$(rg --files --hidden --glob '!.git' 2>/dev/null \
-            | fzf --preview 'head -100 {}')" || { zle reset-prompt; return; }
+            | fzf --preview 'bat --color=always --style=numbers --line-range=:100 {} || head -100 {}')" || { zle reset-prompt; return; }
         BUFFER="${EDITOR:-vim} ${(q)file}"
         zle reset-prompt
         zle accept-line
@@ -80,7 +80,7 @@ _dots_load_keybindings() {
         local selection
         selection="$(rg --color=always --line-number --no-heading --hidden --glob '!.git' '' 2>/dev/null \
             | fzf --ansi --delimiter=: \
-                  --preview 'head -n $((({2}+30))) {1} | tail -n 60' \
+                  --preview 'n={2}; n=${n:-1}; bat --color=always --style=numbers --highlight-line=$n --line-range=$((n>30?n-30:1)):$((n+30)) {1} 2>/dev/null || head -n $(( n + 30 )) {1} 2>/dev/null | tail -n 60' \
                   --preview-window='right:60%')" || { zle -I; zle reset-prompt; return; }
         local file="${selection%%:*}"
         local line="${${selection#*:}%%:*}"

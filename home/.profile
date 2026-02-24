@@ -10,6 +10,7 @@ fi
 export EDITOR=vim
 export VISUAL=vim
 export PAGER=less
+export BAT_THEME=dots
 
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1

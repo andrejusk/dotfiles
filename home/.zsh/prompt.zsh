@@ -13,23 +13,44 @@ _dots_init_colors() {
     if [[ "$COLORTERM" == (truecolor|24bit) ]]; then
         _dots_pc=(
             teal      $'%{\e[38;2;44;180;148m%}'
+            teal_bg   $'%{\e[48;2;44;180;148m%}'
             orange    $'%{\e[38;2;248;140;20m%}'
             red       $'%{\e[38;2;244;4;4m%}'
             grey      $'%{\e[38;2;114;144;184m%}'
+            grey_bg   $'%{\e[48;2;114;144;184m%}'
+            purple    $'%{\e[38;2;136;64;156m%}'
+            purple_bg $'%{\e[48;2;136;64;156m%}'
+            bright    $'%{\e[38;2;204;224;208m%}'
+            dark      $'%{\e[38;2;26;26;26m%}'
+            dark_bg   $'%{\e[48;2;26;26;26m%}'
         )
     elif [[ "$TERM" == *256color* ]]; then
         _dots_pc=(
             teal      $'%{\e[38;5;43m%}'
+            teal_bg   $'%{\e[48;5;43m%}'
             orange    $'%{\e[38;5;208m%}'
             red       $'%{\e[38;5;196m%}'
             grey      $'%{\e[38;5;103m%}'
+            grey_bg   $'%{\e[48;5;103m%}'
+            purple    $'%{\e[38;5;133m%}'
+            purple_bg $'%{\e[48;5;133m%}'
+            bright    $'%{\e[38;5;188m%}'
+            dark      $'%{\e[38;5;234m%}'
+            dark_bg   $'%{\e[48;5;234m%}'
         )
     else
         _dots_pc=(
             teal      $'%{\e[36m%}'
+            teal_bg   $'%{\e[46m%}'
             orange    $'%{\e[33m%}'
             red       $'%{\e[31m%}'
             grey      $'%{\e[34m%}'
+            grey_bg   $'%{\e[44m%}'
+            purple    $'%{\e[35m%}'
+            purple_bg $'%{\e[45m%}'
+            bright    $'%{\e[37m%}'
+            dark      $'%{\e[30m%}'
+            dark_bg   $'%{\e[40m%}'
         )
     fi
     _dots_pc[reset]=$'%{\e[0m%}'
@@ -64,6 +85,7 @@ _dots_git_info_sync() {
     output=$(git status --short --branch --ignore-submodules=dirty 2>/dev/null) || return
     
     local branch="" ahead=0 behind=0 staged=0 unstaged=0 untracked=0
+    local detached=0
     
     # Parse efficiently: branch info from first line, counts from rest
     local first_line="${output%%$'\n'*}"
@@ -72,8 +94,12 @@ _dots_git_info_sync() {
     if [[ "$first_line" == "## "* ]]; then
         branch="${first_line#\#\# }"
         # Handle detached HEAD
-        if [[ "$branch" == "HEAD (no branch)" || "$branch" == [0-9a-f]##* ]]; then
+        if [[ "$branch" == "HEAD (no branch)" ]]; then
+            branch=$(git rev-parse --short HEAD 2>/dev/null)
+            detached=1
+        elif [[ "$branch" == [0-9a-f]##* ]]; then
             branch="${branch:0:7}"
+            detached=1
         else
             # Remove tracking info
             branch="${branch%%...*}"
@@ -105,37 +131,47 @@ _dots_git_info_sync() {
     unstaged=${counts[2]:-0}
     untracked=${counts[3]:-0}
     
-    local info="${_dots_pc[grey]}(${branch})${_dots_pc[reset]}"
+    # Branch pill: grey for main/master, inverted teal for feature, amber for detached
+    local branch_pill
+    if (( detached )); then
+        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[orange]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+    elif [[ "$branch" == (main|master) ]]; then
+        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[grey]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+    else
+        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[purple]}${_dots_pc[bold]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+    fi
+    local info="$branch_pill"
     
     local dirty=""
     local sep=""
     if (( staged )); then
-        dirty+="${_dots_pc[teal]}+${staged}${_dots_pc[reset]}"
+        dirty+="${_dots_pc[teal]}+${staged}"
         sep=" "
     fi
     if (( unstaged )); then
-        dirty+="${sep}${_dots_pc[orange]}~${unstaged}${_dots_pc[reset]}"
+        dirty+="${sep}${_dots_pc[orange]}~${unstaged}"
         sep=" "
     fi
     if (( untracked )); then
-        dirty+="${sep}${_dots_pc[grey]}?${untracked}${_dots_pc[reset]}"
+        dirty+="${sep}${_dots_pc[grey]}?${untracked}"
     fi
     
     local arrows=""
     sep=""
     if (( ahead )); then
-        arrows+="${_dots_pc[teal]}↑${ahead}${_dots_pc[reset]}"
+        arrows+="${_dots_pc[teal]}↑${ahead}"
         sep=" "
     fi
     if (( behind )); then
-        arrows+="${sep}${_dots_pc[orange]}↓${behind}${_dots_pc[reset]}"
+        arrows+="${sep}${_dots_pc[orange]}↓${behind}"
     fi
     
     if [[ -n "$dirty" || -n "$arrows" ]]; then
-        info+=" "
-        [[ -n "$dirty" ]] && info+="$dirty"
-        [[ -n "$dirty" && -n "$arrows" ]] && info+=" "
-        [[ -n "$arrows" ]] && info+="$arrows"
+        local stats=""
+        [[ -n "$dirty" ]] && stats+="$dirty"
+        [[ -n "$dirty" && -n "$arrows" ]] && stats+=" "
+        [[ -n "$arrows" ]] && stats+="$arrows"
+        info+=" ${stats}"
     fi
     
     print -r -- "$info"
@@ -155,7 +191,10 @@ _dots_git_async_callback() {
         _dots_git_info_result="$result"
         _dots_build_dots_prompt_base
         PROMPT="$_dots_prompt_base"
-        zle && zle reset-prompt
+        # Only reset prompt if not in a special ZLE widget (e.g. fzf)
+        if zle && [[ "${WIDGET:-}" != _dots_* ]]; then
+            zle reset-prompt 2>/dev/null
+        fi
     fi
     # Clean up
     exec {fd}<&-
@@ -187,7 +226,7 @@ _dots_build_dots_prompt_base() {
     local symbol="${_dots_pc[grey]}${_dots_prompt_symbol}${_dots_pc[reset]}"
     (( EUID == 0 )) && symbol="${_dots_pc[orange]}${_dots_pc[bold]}#${_dots_pc[reset]}"
     
-    local line1="${_dots_pc[teal]}${dir_path}${_dots_pc[reset]}"
+    local line1="${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[teal]}${dir_path}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[reset]}"
     [[ -n "$_dots_git_info_result" ]] && line1+=" ${_dots_git_info_result}"
     
     _dots_prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
@@ -246,7 +285,7 @@ TRAPINT() {
             _dots_prompt_flashing=1
             local git_part=""
             [[ -n "$_dots_git_info_result" ]] && git_part=" ${_dots_git_info_result}"
-            local flash_prompt=$'\n'"${_dots_pc[teal]}$(_dots_abbrev_path)${_dots_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}'"${_dots_prompt_symbol}"$' %{\e[0m%}'
+            local flash_prompt=$'\n'"${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[teal]}$(_dots_abbrev_path)${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}'"${_dots_prompt_symbol}"$' %{\e[0m%}'
             PROMPT="$flash_prompt"
             zle reset-prompt
             zselect -t $PROMPT_FLASH_DELAY
