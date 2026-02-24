@@ -29,13 +29,18 @@
   line-numbers = true
   paging = always
   pager = less --mouse -R -+X -+F
+  syntax-theme = dots
   file-decoration-style = none
   file-style = "#2CB494" bold
   hunk-header-decoration-style = none
-  line-numbers-left-style = "#2CB494"
-  line-numbers-right-style = "#2CB494"
+  line-numbers-left-style = "#808080"
+  line-numbers-right-style = "#808080"
+  line-numbers-minus-style = "#F40404"
+  line-numbers-plus-style = "#2CB494"
   plus-style = syntax "#0c2a24"
   plus-emph-style = syntax "#164a3c"
+  minus-style = syntax "#2a0a0a"
+  minus-emph-style = syntax "#3a1a1a"
 
 [merge]
   conflictstyle = zdiff3
@@ -44,31 +49,35 @@
   ui = auto
 
 [color "status"]
-  added = 42
-  changed = 226
-  untracked = 196
-  branch = 45
+  added = "#2CB494"
+  changed = "#F88C14"
+  untracked = "#808080" italic
+  branch = "#2CB494"
+  header = "#CCE0D0"
 [color "diff"]
-  meta = 91
-  frag = 45
-  old = 196
-  new = 42
-  context = 252
+  meta = "#88409C"
+  frag = "#4068D4"
+  old = "#F40404"
+  new = "#2CB494"
+  context = "#808080"
+  commit = "#F88C14"
 [color "branch"]
-  current = 45
-  local = 252
-  remote = 27
+  current = "#2CB494" bold
+  local = "#CCE0D0"
+  remote = "#4068D4"
+  upstream = "#7290B8"
 [color "decorate"]
-  branch = 45
-  remoteBranch = 27
-  tag = 226
-  stash = 201
+  branch = "#2CB494"
+  remoteBranch = "#4068D4"
+  tag = "#F88C14"
+  stash = "#88409C"
+  HEAD = "#F88C14" bold
 
 [alias]
-  l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-  ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
-  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
-  ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
+  l = log --pretty=format:"%C(#F88C14)%h\\ %ad%C(#2CB494)%d\\ %Creset%s%C(#808080)\\ [%cn]" --decorate --date=short
+  ls = log --pretty=format:"%C(#F88C14)%h%C(#2CB494)%d\\ %Creset%s%C(#808080)\\ [%cn]" --decorate
+  ll = log --pretty=format:"%C(#F88C14)%h%C(#2CB494)%d\\ %Creset%s%C(#808080)\\ [%cn]" --decorate --numstat
+  ld = log --pretty=format:"%C(#F88C14)%h\\ %ad%C(#2CB494)%d\\ %Creset%s%C(#808080)\\ [%cn]" --decorate --date=relative
   le = log --oneline --decorate
   lg = log --graph --decorate --oneline
   d = diff

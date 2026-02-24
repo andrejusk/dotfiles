@@ -26,8 +26,16 @@ if [[ -n "$full" ]]; then
     echo "#[fg=#808080]󰚥 AC#[default]"
 elif [[ -n "$charging" ]]; then
     echo "#[fg=#808080]󰂄 ${pct}%#[default]"
+elif (( pct <= 10 )); then
+    echo "#[fg=#F40404,bold]󰂎 ${pct}%#[default]"
 elif (( pct <= 20 )); then
-    echo "#[fg=#f88c14,bold]󰂃 ${pct}%#[default]"
+    echo "#[fg=#f88c14,bold]󰁺 ${pct}%#[default]"
+elif (( pct <= 40 )); then
+    echo "#[fg=#808080]󰁼 ${pct}%#[default]"
+elif (( pct <= 60 )); then
+    echo "#[fg=#808080]󰁾 ${pct}%#[default]"
+elif (( pct <= 80 )); then
+    echo "#[fg=#808080]󰂀 ${pct}%#[default]"
 else
     echo "#[fg=#808080]󰁹 ${pct}%#[default]"
 fi

@@ -73,9 +73,16 @@ _dots_abbrev_path() {
 }
 
 _dots_session() {
-    [[ -n "$CODESPACE_NAME" ]] && { print -r -- "$CODESPACE_NAME"; return }
-    [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && { print -r -- "%n@%m"; return }
-    [[ -f /.dockerenv ]] && { print -r -- "${DEVCONTAINER_ID:-$(</etc/hostname)}"; return }
+    local name=""
+    if [[ -n "$CODESPACE_NAME" ]]; then
+        # Strip final random suffix (e.g. "redesigned-couscous-jp5676rpq5h5wrj" -> "redesigned-couscous")
+        name="${CODESPACE_NAME%-*}"
+    elif [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]]; then
+        name="%n@%m"
+    elif [[ -f /.dockerenv ]]; then
+        name="${DEVCONTAINER_ID:-$(</etc/hostname)}"
+    fi
+    [[ -n "$name" ]] && print -r -- "$name"
 }
 
 _dots_git_info_sync() {
@@ -260,7 +267,7 @@ _dots_precmd() {
     (( e )) && rp_parts+=("${_dots_pc[red]}[${e}]${_dots_pc[reset]}")
     
     local session="$(_dots_session)"
-    [[ -n "$session" ]] && rp_parts+=("${_dots_pc[orange]}[${session}]${_dots_pc[reset]}")
+    [[ -n "$session" ]] && rp_parts+=("${_dots_pc[dark_bg]}${_dots_pc[dark]}[${_dots_pc[orange]}${session}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}]${_dots_pc[reset]}")
     
     RPROMPT="${(j: :)rp_parts}"
     

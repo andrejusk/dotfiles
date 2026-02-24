@@ -26,11 +26,48 @@ _dots_load_keybindings() {
     zle -N _dots_git_branch_widget
     bindkey '^B' _dots_git_branch_widget
 
-    # Ctrl+E: edit file
+    # Ctrl+E: edit file (frecency + git status boost)
     _dots_edit_widget() {
-        local file
-        file="$(rg --files --hidden --glob '!.git' 2>/dev/null \
-            | fzf --preview 'bat --color=always --style=numbers --line-range=:100 {} || head -100 {}')" || { zle reset-prompt; return; }
+        local file edit_log="${XDG_DATA_HOME:-$HOME/.local/share}/edit/log"
+        file="$({
+            awk -v logfile="$edit_log" '
+            BEGIN {
+                while ((getline line < logfile) > 0) {
+                    idx = index(line, "\t")
+                    if (idx) { f = substr(line, idx+1); cnt[f]++; ts[f] = substr(line, 1, idx-1)+0 }
+                }
+                close(logfile)
+                cmd = "git status --porcelain 2>/dev/null"
+                while ((cmd | getline line) > 0) {
+                    st = substr(line, 1, 2); f = substr(line, 4)
+                    if ((i = index(f, " -> ")) > 0) f = substr(f, i+4)
+                    gsub(/^"|"$/, "", f)
+                    if (st !~ /D/) git[f] = st
+                }
+                close(cmd)
+                for (f in cnt) {
+                    s = cnt[f] * 1000 + ts[f]
+                    if (f in git) { s += 100000; printf "%d\t%s\t%s\n", s, clr(git[f]), f; delete git[f] }
+                    else printf "%d\t \t%s\n", s, f
+                }
+                for (f in git) printf "100000\t%s\t%s\n", clr(git[f]), f
+            }
+            function clr(st) {
+                if (st ~ /^\?\?/) return "\033[90m?\033[0m"
+                if (st ~ /^R/)    return "\033[36mR\033[0m"
+                if (st ~ /^A/)    return "\033[32mA\033[0m"
+                if (st ~ /M/)     return "\033[33mM\033[0m"
+                return "\033[90m~\033[0m"
+            }' /dev/null 2>/dev/null | sort -rn | cut -f2-
+            rg --files --hidden --glob '!.git' 2>/dev/null | awk '{print " \t" $0}'
+        } | awk -F'\t' '!seen[$2]++' \
+          | fzf --ansi --delimiter='\t' --nth=2 \
+                --preview 'bat --color=always --style=numbers --line-range=:100 {2} 2>/dev/null || head -100 {2}')" \
+          || { zle reset-prompt; return; }
+        file="$(printf '%s' "$file" | cut -f2)"
+        [[ -z "$file" ]] && { zle reset-prompt; return; }
+        mkdir -p "${edit_log:h}"
+        printf '%s\t%s\n' "$(date +%s)" "$file" >> "$edit_log"
         BUFFER="${EDITOR:-vim} ${(q)file}"
         zle reset-prompt
         zle accept-line
