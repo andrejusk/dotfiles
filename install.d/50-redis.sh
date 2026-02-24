@@ -31,5 +31,5 @@ if ! command -v redis-cli &>/dev/null; then
     esac
 fi
 
-redis-cli --version
+redis-cli --version | log_quote
 log_pass "Redis installed"

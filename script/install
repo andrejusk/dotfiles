@@ -32,9 +32,10 @@ log_skip() { echo -e "${GREY}[SKIP]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[FAIL]${NC} $*"; }
 log_debug() { echo -e "${CYAN}$*${NC}"; }
+log_quote() { sed "s/^/  ${GREY}│ /" | sed "s/$/${NC}/"; }
 
 # Export log functions
-export -f log_info log_pass log_skip log_warn log_error log_debug
+export -f log_info log_pass log_skip log_warn log_error log_debug log_quote
 
 printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"

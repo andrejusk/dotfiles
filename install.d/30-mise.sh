@@ -15,6 +15,7 @@ if ! command -v mise &>/dev/null; then
             ;;
         apt)
             # https://mise.jdx.dev/getting-started.html#apt-debian-ubuntu
+            sudo install -dm 755 /etc/apt/keyrings
             wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | \
                 sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null
             echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | \
@@ -35,7 +36,7 @@ if ! command -v mise &>/dev/null; then
     esac
 fi
 
-mise --version
+echo "mise $(mise --version)" | log_quote
 
 # Skip runtimes in Codespaces (use pre-installed versions)
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
@@ -73,7 +74,6 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 fi
 
 log_info "Installing apps..."
-mise install "${MISE_APPS[@]}"
 for tool in "${MISE_APPS[@]}"; do
     mise use -g "$tool"
 done
@@ -89,18 +89,20 @@ fi
 
 # Verify installations
 log_info "Verifying installations..."
-if [[ "$DOTS_ENV" != "codespaces" ]]; then
-    mise exec -- python --version
-    mise exec -- poetry --version
-    echo "node $(mise exec -- node --version)"
-    echo "npm $(mise exec -- npm --version)"
-    mise exec -- gh --version
-    mise exec -- terraform --version | head -1
-    echo "firebase: $(mise exec -- firebase --version)"
-    echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
-fi
-fzf --version
-zoxide --version
-rg --version | head -1
-delta --version | head -1
+{
+    if [[ "$DOTS_ENV" != "codespaces" ]]; then
+        mise exec -- python --version
+        mise exec -- poetry --version
+        echo "node $(mise exec -- node --version)"
+        echo "npm $(mise exec -- npm --version)"
+        mise exec -- gh --version
+        mise exec -- terraform --version | head -1
+        echo "firebase: $(mise exec -- firebase --version)"
+        echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+    fi
+    echo "fzf $(fzf --version)"
+    zoxide --version
+    rg --version | head -1
+    delta --version | head -1
+} | log_quote
 log_pass "mise tools installed"

@@ -8,10 +8,10 @@
 log_info "Environment: DOTS_OS=$DOTS_OS, DOTS_PKG=$DOTS_PKG, DOTS_ENV=$DOTS_ENV"
 
 if [[ "$DOTS_OS" == "macos" ]]; then
-    sw_vers
+    sw_vers 2>&1 | log_quote
 elif [[ "$DOTS_OS" == "linux" ]]; then
     if [[ -r /etc/os-release ]]; then
-        cat /etc/os-release
+        log_quote < /etc/os-release
     fi
     
     if [[ -z "$DOTS_PKG" ]]; then
