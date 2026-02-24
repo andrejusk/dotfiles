@@ -40,6 +40,6 @@ mkdir -p "$HOME/.ssh"
 
 stow --dir="$root_dir" --target="$HOME" home
 
-# Bust PATH cache to force regeneration with new profile
+# Bust PATH cache to force rebuild with new profile
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 

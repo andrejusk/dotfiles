@@ -15,16 +15,20 @@ export PAGER=less
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
 
-# PATH setup with caching
+# PATH setup with caching (invalidates when base PATH or .profile changes)
 _dots_path_cache="${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
+_dots_path_hit=false
 if [[ -f "$_dots_path_cache" && "$_dots_path_cache" -nt ~/.profile ]]; then
-    export PATH="$(cat "$_dots_path_cache")"
-else
+    { IFS= read -r _k; IFS= read -r _v; } < "$_dots_path_cache"
+    [[ "$_k" == "$PATH" ]] && { export PATH="$_v"; _dots_path_hit=true; }
+    unset _k _v
+fi
+if [[ "$_dots_path_hit" != true ]]; then
+    _dots_base_path="$PATH"
     [[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$HOME/.local/bin:$PATH"
     [[ -x "/opt/homebrew/bin/brew" && ":$PATH:" != *":/opt/homebrew/bin:"* ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-    
-    # Cache the result
     mkdir -p "$(dirname "$_dots_path_cache")"
-    echo "$PATH" > "$_dots_path_cache"
+    printf '%s\n%s\n' "$_dots_base_path" "$PATH" > "$_dots_path_cache"
+    unset _dots_base_path
 fi
-unset _dots_path_cache
+unset _dots_path_cache _dots_path_hit
