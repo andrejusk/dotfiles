@@ -219,7 +219,7 @@ _dots_load_keybindings() {
     # Ctrl+S: copilot sessions
     _dots_copilot_session_widget() {
         local session_dir="$HOME/.copilot/session-state"
-        [[ -d "$session_dir" ]] || { zle reset-prompt; return; }
+        [[ -d "$session_dir" ]] || { BUFFER="colby --continue"; zle reset-prompt; zle accept-line; return; }
         local session
         session="$(python3 -c "
 import os, json, glob
@@ -284,10 +284,19 @@ for line in sys.stdin:
         print(\">\", msg)
     except: pass
 " 2>/dev/null
-        '  --header 'enter=colby | ctrl-r=restricted' \
-           --expect=ctrl-r)" || { zle reset-prompt; return; }
+        '  --header 'enter=colby | ctrl-r=restricted | ctrl-s=continue latest' \
+           --expect=ctrl-r,ctrl-s)"
+        local fzf_rc=$?
+        [[ $fzf_rc -ne 0 && "$session" != ctrl-s* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
         local line=$(echo "$session" | tail -1)
+        # Ctrl+S again — continue latest
+        if [[ "$key" == "ctrl-s" ]]; then
+            BUFFER="colby --continue"
+            zle reset-prompt
+            zle accept-line
+            return
+        fi
         local id=$(echo "$line" | cut -d'|' -f2 | tr -d ' ')
         if [[ "$key" == "ctrl-r" ]]; then
             BUFFER="gh copilot --resume $id"
