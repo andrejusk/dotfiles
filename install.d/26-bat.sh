@@ -12,6 +12,10 @@ if ! command -v bat &> /dev/null; then
             ;;
         apt)
             sudo apt-get install -qq bat
+            # Debian installs binary as 'batcat'; symlink to 'bat'
+            if ! command -v bat &> /dev/null && command -v batcat &> /dev/null; then
+                sudo ln -sf "$(which batcat)" /usr/local/bin/bat
+            fi
             ;;
         pacman)
             sudo pacman -S --noconfirm bat
