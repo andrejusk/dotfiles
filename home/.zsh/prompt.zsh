@@ -145,7 +145,7 @@ _dots_git_info_sync() {
     elif [[ "$branch" == (main|master) ]]; then
         branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[grey]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
     else
-        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[purple]}${_dots_pc[bold]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[purple]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
     fi
     local info="$branch_pill"
     
@@ -156,11 +156,11 @@ _dots_git_info_sync() {
         sep=" "
     fi
     if (( unstaged )); then
-        dirty+="${sep}${_dots_pc[orange]}~${unstaged}"
+        dirty+="${sep}${_dots_pc[grey]}~${unstaged}"
         sep=" "
     fi
     if (( untracked )); then
-        dirty+="${sep}${_dots_pc[grey]}?${untracked}"
+        dirty+="${sep}${_dots_pc[orange]}?${untracked}"
     fi
     
     local arrows=""

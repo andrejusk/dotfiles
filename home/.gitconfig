@@ -50,8 +50,8 @@
 
 [color "status"]
   added = "#2CB494"
-  changed = "#F88C14"
-  untracked = "#808080" italic
+  changed = "#8787AF"
+  untracked = "#F88C14" italic
   branch = "#2CB494"
   header = "#CCE0D0"
 [color "diff"]

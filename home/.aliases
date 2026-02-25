@@ -37,6 +37,8 @@ alias gc='git c'
 alias gl='git ld'
 alias ga='git a'
 alias gr='git r'
+alias gw='git show'
+gdm() { local base="${1:-$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@refs/remotes/origin/@@' || echo main)}"; git diff "${base}...HEAD"; }
 
 # fzf workflows
 gb() { local b; b="$(git branch --all --sort=-committerdate --format='%(refname:short)' | fzf --preview 'git log --oneline --color -20 {}')" && git checkout "${b#origin/}"; }

@@ -53,10 +53,10 @@ _dots_load_keybindings() {
                 for (f in git) printf "100000\t%s\t%s\n", clr(git[f]), f
             }
             function clr(st) {
-                if (st ~ /^\?\?/) return "\033[90m?\033[0m"
+                if (st ~ /^\?\?/) return "\033[33m?\033[0m"
                 if (st ~ /^R/)    return "\033[36mR\033[0m"
                 if (st ~ /^A/)    return "\033[32mA\033[0m"
-                if (st ~ /M/)     return "\033[33mM\033[0m"
+                if (st ~ /M/)     return "\033[38;5;103mM\033[0m"
                 return "\033[90m~\033[0m"
             }' /dev/null 2>/dev/null | sort -rn | cut -f2-
             rg --files --hidden --glob '!.git' 2>/dev/null | awk '{print " \t" $0}'
