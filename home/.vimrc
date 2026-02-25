@@ -89,19 +89,19 @@ highlight Keyword guifg=#4068D4
 highlight Type guifg=#2CB494
 highlight Special guifg=#88409C
 highlight PreProc guifg=#F88C14
-highlight Error guifg=#F40404 guibg=NONE gui=bold,underline
+highlight Error guifg=#F88C14 guibg=NONE gui=bold,underline
 highlight Todo guifg=#FCFC38 guibg=NONE gui=bold
 
 highlight Search guifg=#3C3C3C guibg=#FCFC38
 highlight IncSearch guifg=#3C3C3C guibg=#F88C14
 
 highlight DiffAdd guifg=#2CB494 guibg=#0A2A1A gui=NONE
-highlight DiffDelete guifg=#F40404 guibg=#2A0A0A gui=NONE
+highlight DiffDelete guifg=#F88C14 guibg=#2A1A0A gui=NONE
 highlight DiffChange guifg=#4068D4 guibg=#0A1A2A gui=NONE
 highlight DiffText guifg=#CCE0D0 guibg=#1A2A3A gui=bold
 
 highlight diffAdded guifg=#2CB494 gui=bold
-highlight diffRemoved guifg=#F40404 gui=bold
+highlight diffRemoved guifg=#F88C14 gui=bold
 highlight diffFile guifg=#7290B8 gui=bold
 highlight diffIndexLine guifg=#88409C
 highlight diffLine guifg=#00E4FC
@@ -135,9 +135,9 @@ highlight CursorColumn guibg=#0A2A1A
 highlight SignColumn guifg=#808080 guibg=NONE
 highlight GitGutterAdd guifg=#2CB494 guibg=NONE
 highlight GitGutterChange guifg=#4068D4 guibg=NONE
-highlight GitGutterDelete guifg=#F40404 guibg=NONE
+highlight GitGutterDelete guifg=#F88C14 guibg=NONE
 highlight WarningMsg guifg=#FCFC38
-highlight ErrorMsg guifg=#F40404 gui=bold
+highlight ErrorMsg guifg=#F88C14 gui=bold
 highlight ModeMsg guifg=#CCE0D0 gui=bold
 highlight MoreMsg guifg=#2CB494
 highlight Question guifg=#2CB494
@@ -155,7 +155,7 @@ highlight Conditional guifg=#4068D4
 highlight Repeat guifg=#4068D4
 highlight Label guifg=#88409C
 highlight Operator guifg=#CCE0D0
-highlight Exception guifg=#F40404
+highlight Exception guifg=#F88C14
 highlight Include guifg=#F88C14
 highlight Define guifg=#F88C14
 highlight Macro guifg=#F88C14

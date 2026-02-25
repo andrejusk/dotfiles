@@ -38,6 +38,8 @@ alias gl='git ld'
 alias ga='git a'
 alias gr='git r'
 alias gw='git show'
+alias gf='git f'
+alias gp='git p'
 gdm() { local base="${1:-$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@refs/remotes/origin/@@' || echo main)}"; git diff "${base}...HEAD"; }
 
 # fzf workflows

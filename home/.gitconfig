@@ -35,12 +35,12 @@
   hunk-header-decoration-style = none
   line-numbers-left-style = "#808080"
   line-numbers-right-style = "#808080"
-  line-numbers-minus-style = "#F40404"
+  line-numbers-minus-style = "#F88C14"
   line-numbers-plus-style = "#2CB494"
-  plus-style = syntax "#0c2a24"
-  plus-emph-style = syntax "#164a3c"
-  minus-style = syntax "#2a0a0a"
-  minus-emph-style = syntax "#3a1a1a"
+  plus-style = syntax "#0C2A24"
+  plus-emph-style = syntax "#164A3C"
+  minus-style = syntax "#2A1A0A"
+  minus-emph-style = syntax "#3A2A1A"
 
 [merge]
   conflictstyle = zdiff3
@@ -50,14 +50,14 @@
 
 [color "status"]
   added = "#2CB494"
-  changed = "#8787AF"
+  changed = "#7290B8"
   untracked = "#F88C14" italic
   branch = "#2CB494"
   header = "#CCE0D0"
 [color "diff"]
   meta = "#88409C"
   frag = "#4068D4"
-  old = "#F40404"
+  old = "#F88C14"
   new = "#2CB494"
   context = "#808080"
   commit = "#F88C14"
@@ -93,6 +93,8 @@
   cm = commit -m
   cam = commit -a -m
   m = commit --amend --verbose
+  f = fetch
+  p = pull
   st = stash
   sa = stash apply
 

@@ -42,13 +42,13 @@ else
 fi
 
 if [[ -z "$ms" ]]; then
-    result="#[fg=#F40404]󰤭 --#[default]"
+    result="#[fg=#F88C14]󰤭 --#[default]"
 elif (( ms <= 50 )); then
     result="#[fg=#808080]${icon} ${ms}ms#[default]"
 elif (( ms <= 150 )); then
-    result="#[fg=#f88c14]${icon} ${ms}ms#[default]"
+    result="#[fg=#F88C14]${icon} ${ms}ms#[default]"
 else
-    result="#[fg=#F40404]${icon} ${ms}ms#[default]"
+    result="#[fg=#F88C14]${icon} ${ms}ms#[default]"
 fi
 
 echo "$result" | tee "$cache"

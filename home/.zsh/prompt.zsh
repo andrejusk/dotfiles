@@ -15,7 +15,6 @@ _dots_init_colors() {
             teal      $'%{\e[38;2;44;180;148m%}'
             teal_bg   $'%{\e[48;2;44;180;148m%}'
             orange    $'%{\e[38;2;248;140;20m%}'
-            red       $'%{\e[38;2;244;4;4m%}'
             grey      $'%{\e[38;2;114;144;184m%}'
             grey_bg   $'%{\e[48;2;114;144;184m%}'
             purple    $'%{\e[38;2;136;64;156m%}'
@@ -29,7 +28,6 @@ _dots_init_colors() {
             teal      $'%{\e[38;5;43m%}'
             teal_bg   $'%{\e[48;5;43m%}'
             orange    $'%{\e[38;5;208m%}'
-            red       $'%{\e[38;5;196m%}'
             grey      $'%{\e[38;5;103m%}'
             grey_bg   $'%{\e[48;5;103m%}'
             purple    $'%{\e[38;5;133m%}'
@@ -43,7 +41,6 @@ _dots_init_colors() {
             teal      $'%{\e[36m%}'
             teal_bg   $'%{\e[46m%}'
             orange    $'%{\e[33m%}'
-            red       $'%{\e[31m%}'
             grey      $'%{\e[34m%}'
             grey_bg   $'%{\e[44m%}'
             purple    $'%{\e[35m%}'
@@ -264,7 +261,7 @@ _dots_precmd() {
         fi
     fi
     
-    (( e )) && rp_parts+=("${_dots_pc[red]}[${e}]${_dots_pc[reset]}")
+    (( e )) && rp_parts+=("${_dots_pc[orange]}[${e}]${_dots_pc[reset]}")
     
     local session="$(_dots_session)"
     [[ -n "$session" ]] && rp_parts+=("${_dots_pc[dark_bg]}${_dots_pc[dark]}[${_dots_pc[orange]}${session}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}]${_dots_pc[reset]}")
