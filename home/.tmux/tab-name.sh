@@ -12,6 +12,16 @@ case "$cmd" in
     *) name="$cmd" ;;
 esac
 
+# In Codespaces, show friendly name without trailing random ID
+# Codespace names: "adjective-noun-id" where id is alphanumeric gibberish
+if [[ -n "$CODESPACE_NAME" ]]; then
+    friendly="${CODESPACE_NAME%-*}"
+    # If no hyphen was found, use full name
+    [[ "$friendly" == "$CODESPACE_NAME" ]] && friendly="$CODESPACE_NAME"
+    echo "cs:${friendly}"
+    exit 0
+fi
+
 if (( ${#name} > max )); then
     echo "${name:0:$max}…"
 else

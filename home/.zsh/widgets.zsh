@@ -284,12 +284,20 @@ for line in sys.stdin:
         print(\">\", msg)
     except: pass
 " 2>/dev/null
-        '  --header 'enter=colby | ctrl-r=restricted | ctrl-s=continue latest' \
-           --expect=ctrl-r,ctrl-s)"
+        ' --delimiter="|" --with-nth=1,3 \
+           --header 'enter=resume | ^r=restricted | ^s=latest | ^n=new' \
+           --expect=ctrl-r,ctrl-s,ctrl-n)"
         local fzf_rc=$?
-        [[ $fzf_rc -ne 0 && "$session" != ctrl-s* ]] && { zle reset-prompt; return; }
+        [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
         local line=$(echo "$session" | tail -1)
+        # Ctrl+N — new session
+        if [[ "$key" == "ctrl-n" ]]; then
+            BUFFER="colby"
+            zle reset-prompt
+            zle accept-line
+            return
+        fi
         # Ctrl+S again — continue latest
         if [[ "$key" == "ctrl-s" ]]; then
             BUFFER="colby --continue"
