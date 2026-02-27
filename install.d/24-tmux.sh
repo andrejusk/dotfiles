@@ -25,3 +25,9 @@ fi
 
 tmux -V | log_quote
 
+# Compile screensaver
+if command -v cc &> /dev/null && [ -f "$HOME/.tmux/donut.c" ]; then
+    cc -O2 -o "$HOME/.tmux/donut" "$HOME/.tmux/donut.c" -lm
+    log_pass "Compiled donut screensaver"
+fi
+
