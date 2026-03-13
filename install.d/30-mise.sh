@@ -57,6 +57,7 @@ eval "$(mise activate bash)"
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 typeset -a MISE_APPS=(
+    "bat@latest"
     "fzf@latest"
     "zoxide@latest"
     "ripgrep@latest"
@@ -77,6 +78,9 @@ log_info "Installing apps..."
 for tool in "${MISE_APPS[@]}"; do
     mise use -g "$tool"
 done
+
+# Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
+bat cache --build 2>/dev/null
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     # Setup Poetry ZSH completions (XDG compliant)
@@ -101,8 +105,9 @@ log_info "Verifying installations..."
         echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
     fi
     echo "fzf $(fzf --version)"
+    bat --version | head -1
     zoxide --version
     rg --version | head -1
-    delta --version | head -1
+    delta --version 2>/dev/null | head -1 || echo "delta: installed (version check failed)"
 } | log_quote
 log_pass "mise tools installed"
