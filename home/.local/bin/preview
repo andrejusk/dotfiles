@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# Universal file preview — used by fzf widgets and as a standalone command.
+# Usage: preview <file> [line]
+
+file="${1:?usage: preview <file> [line]}"
+line="${2:-}"
+
+if [[ ! -e "$file" ]]; then
+    echo "not found: $file"
+    exit 1
+fi
+
+# Directory preview
+if [[ -d "$file" ]]; then
+    if command -v eza &>/dev/null; then
+        eza --tree --level=2 --icons --color=always "$file"
+    else
+        ls -1A "$file"
+    fi
+    exit 0
+fi
+
+# Standalone mode: full terminal, can page output
+# fzf mode: constrained to preview pane dimensions
+is_fzf() { [[ -n "${FZF_PREVIEW_COLUMNS:-}" ]]; }
+
+preview_image() {
+    local w h
+    if is_fzf; then
+        w="$FZF_PREVIEW_COLUMNS"
+        h="$FZF_PREVIEW_LINES"
+        chafa --size="${w}x${h}" "$file"
+    else
+        w="$(tput cols)"
+        h="$(tput lines)"
+        printf '\033[?1049h'
+        chafa --size="${w}x${h}" "$file"
+        read -rsn1
+        printf '\033[?1049l'
+    fi
+}
+
+preview_pdf() {
+    if is_fzf; then
+        pdftotext -l 3 "$file" -
+    else
+        pdftotext "$file" - | bat --paging=always --style=plain --language=txt
+    fi
+}
+
+preview_markdown() {
+    if is_fzf; then
+        bat --color=always --style=numbers ${line:+--highlight-line="$line"} "$file"
+    elif command -v glow &>/dev/null; then
+        glow -p "$file"
+    else
+        bat --paging=always --color=always --style=numbers "$file"
+    fi
+}
+
+preview_archive() {
+    local lower_file
+    lower_file="$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')"
+    local output
+    case "$lower_file" in
+        *.tar|*.tar.gz|*.tgz|*.tar.bz2|*.tbz2|*.tar.xz|*.txz)
+            output="$(tar -tf "$file" | head -80)" ;;
+        *.zip|*.jar|*.war)
+            output="$(unzip -l "$file" | head -80)" ;;
+        *.gz)
+            output="$(gzip -l "$file")" ;;
+        *)
+            output="$(file "$file")" ;;
+    esac
+    if is_fzf; then
+        printf '%s\n' "$output"
+    else
+        printf '%s\n' "$output" | bat --paging=always --style=plain --language=txt
+    fi
+}
+
+preview_text() {
+    local bat_args=(--color=always --style=numbers)
+    if [[ -n "$line" ]]; then
+        bat_args+=(--highlight-line="$line")
+        if is_fzf; then
+            local start=$((line > 30 ? line - 30 : 1))
+            bat_args+=(--line-range="$start:$((line + 30))")
+        fi
+    elif is_fzf; then
+        bat_args+=(--line-range=:100)
+    fi
+    if ! is_fzf; then
+        bat_args+=(--paging=always)
+    fi
+    bat "${bat_args[@]}" "$file" 2>/dev/null || head -100 "$file"
+}
+
+preview_binary() {
+    local output
+    output="$(file "$file"; echo ""; hexdump -C "$file" | head -40)"
+    if is_fzf; then
+        printf '%s\n' "$output"
+    else
+        printf '%s\n' "$output" | bat --paging=always --style=plain --language=txt
+    fi
+}
+
+# Route by extension
+ext="${file##*.}"
+ext="$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')"
+
+case "$ext" in
+    png|jpg|jpeg|gif|webp|bmp|svg|ico|tiff|tif|avif)
+        if command -v chafa &>/dev/null; then
+            preview_image
+        else
+            file "$file"
+        fi
+        ;;
+    pdf)
+        if command -v pdftotext &>/dev/null; then
+            preview_pdf
+        else
+            file "$file"
+        fi
+        ;;
+    md|markdown|mdx)
+        preview_markdown
+        ;;
+    tar|gz|tgz|bz2|tbz2|xz|txz|zip|jar|war)
+        preview_archive
+        ;;
+    *)
+        # MIME fallback for extensionless or ambiguous files
+        mime="$(file --mime-type -b "$file" 2>/dev/null || echo "unknown")"
+        case "$mime" in
+            image/*)
+                if command -v chafa &>/dev/null; then
+                    preview_image
+                else
+                    file "$file"
+                fi
+                ;;
+            application/pdf)
+                if command -v pdftotext &>/dev/null; then
+                    preview_pdf
+                else
+                    file "$file"
+                fi
+                ;;
+            text/*|application/json|application/xml|application/javascript|*/x-shellscript)
+                preview_text
+                ;;
+            *)
+                preview_binary
+                ;;
+        esac
+        ;;
+esac
