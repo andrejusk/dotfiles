@@ -18,7 +18,7 @@
 
 [core]
   autocrlf = input
-  pager = delta
+  pager = "command -v delta >/dev/null 2>&1 && delta || less -R"
 
 [interactive]
   diffFilter = delta --color-only
