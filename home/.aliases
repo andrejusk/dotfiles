@@ -46,7 +46,7 @@ gdm() { local base="${1:-$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null
 # fzf workflows
 gb() { local b; b="$(git branch --all --sort=-committerdate --format='%(refname:short)' | fzf --preview 'git log --oneline --color -20 {}')" && git checkout "${b#origin/}"; }
 glo() { git log --oneline --color --decorate | fzf --ansi --preview 'git show --color --stat {1}' --bind 'enter:become(echo {1})'; }
-f() { local f; f="$(fzf --preview 'head -100 {}')" && ${EDITOR:-vim} "$f"; }
+f() { local f; f="$(fzf --preview 'preview {}')" && ${EDITOR:-vim} "$f"; }
 
 if [[ -z "${CODESPACES:-}" ]]; then
 ssh() {
