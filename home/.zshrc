@@ -69,11 +69,11 @@ _dots_init_completion
 
 _dots_load_plugins() {
     local plugin_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#3C3C3C'
+
     local f="$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     [[ -f "$f" ]] && source "$f"
-
-    # Autosuggestion ghost text colour
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#3C3C3C'
 
     # syntax-highlighting must be sourced last
     f="$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
@@ -86,7 +86,7 @@ _dots_load_plugins() {
     ZSH_HIGHLIGHT_STYLES[alias]='fg=#2CB494'
     ZSH_HIGHLIGHT_STYLES[function]='fg=#2CB494'
     ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#F88C14'
-    ZSH_HIGHLIGHT_STYLES[path]='underline'
+    ZSH_HIGHLIGHT_STYLES[path]='fg=#CCE0D0,underline'
     ZSH_HIGHLIGHT_STYLES[globbing]='fg=#F88C14'
     ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#7290B8'
     ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#7290B8'
