@@ -9,11 +9,7 @@
 #   Score capped at 100, floored at 0.
 #
 # Counter ticks while score > 0. Resets on tmux restart.
-#
-# Visual (pill with pressure bar):
-#   23m ▆  — teal time + teal bar (active, score > 0)
-#   5m     — gray time, no bar (paused, score = 0)
-#   10s ▃  — amber time + amber bar (returning from away)
+# Outputs a tmux fg color that fades from teal to gray with activity.
 
 SCORE_CAP=100
 
@@ -44,18 +40,16 @@ if [[ -f "$state" ]]; then
 fi
 
 # Score: check activity signals
-gaining=0
-
 if [[ -n "$prev_client" && "$client_act" != "$prev_client" ]]; then
-    (( score += 5 )); gaining=1
+    (( score += 5 ))
 fi
 
 if [[ -n "$prev_win" && "$win_act" != "$prev_win" ]]; then
-    (( score += 2 )); gaining=1
+    (( score += 2 ))
 fi
 
 if [[ "$in_mode" == "1" ]]; then
-    (( score += 2 )); gaining=1
+    (( score += 2 ))
 fi
 
 (( score-- ))
@@ -73,42 +67,18 @@ fi
 printf 'prev_client=%s\nprev_win=%s\nscore=%s\nactive_total=%s\nsrv_pid=%s\nreturn_at=%s\nreturn_show=%s\n' \
     "$client_act" "$win_act" "$score" "$active_total" "$tmux_pid" "$return_at" "$return_show" > "$state"
 
-# Format seconds to ≤3 chars
-fmt() {
-    local s=$1
-    if (( s < 60 )); then printf "%ds" "$s"
-    elif (( s < 3600 )); then printf "%dm" $(( s / 60 ))
-    elif (( s < 86400 )); then printf "%dh" $(( s / 3600 ))
-    else printf "%dd" $(( s / 86400 )); fi
+# Output: tmux color code that fades teal (#2CB494) → gray (#808080)
+# Interpolate RGB channels based on score (0-100)
+lerp() {
+    local from=$1 to=$2 pct=$3
+    echo $(( from + (to - from) * pct / 100 ))
 }
 
-# Pressure bar: block fill (8 levels)
-bar() {
-    local s=$1
-    if (( s >= 88 )); then printf '█'
-    elif (( s >= 75 )); then printf '▇'
-    elif (( s >= 63 )); then printf '▆'
-    elif (( s >= 50 )); then printf '▅'
-    elif (( s >= 38 )); then printf '▄'
-    elif (( s >= 25 )); then printf '▃'
-    elif (( s >= 13 )); then printf '▂'
-    elif (( s >= 1 )); then printf '▁'
-    else printf ' '; fi
-}
-
-# Render: pill with margin (space + bg pill + space)
-render() {
-    local bar_fg=$1 b=$2 time_fg=$3 txt=$4 len=${#4}
-    local rpad=""
-    (( len < 3 )) && printf -v rpad "%$(( 3 - len ))s" ""
-    printf " #[bg=#1A1A1A,fg=%s] %s%s #[fg=%s]%s#[default] " "$time_fg" "$txt" "$rpad" "$bar_fg" "$b"
-}
-
-b=$(bar $score)
 if [[ -n "$return_at" ]]; then
-    render "colour208" "$b" "colour208" "$(fmt $return_show)"
-elif (( score > 0 )); then
-    render "#2CB494" "$b" "#2CB494" "$(fmt $active_total)"
+    printf '#[fg=colour208]'
 else
-    render "#808080" " " "#808080" "$(fmt $active_total)"
+    r=$(lerp 128 44 "$score")
+    g=$(lerp 128 180 "$score")
+    b=$(lerp 128 148 "$score")
+    printf '#[fg=#%02X%02X%02X]' "$r" "$g" "$b"
 fi
