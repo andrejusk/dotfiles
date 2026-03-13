@@ -243,6 +243,7 @@ _dots_preexec() {
 
 _dots_precmd() {
     local e=$? d=0
+    printf '\e[?25h'
     # Only show exit code if a command actually ran
     (( _dots_prompt_cmd_ran )) || e=0
     _dots_prompt_cmd_ran=0
