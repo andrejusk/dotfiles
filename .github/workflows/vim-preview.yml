@@ -27,7 +27,7 @@ jobs:
           npx playwright install chromium --with-deps
 
       - name: Generate HTML preview and take screenshots
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -241,7 +241,7 @@ jobs:
           EOF
 
       - name: Upload images and create PR comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
