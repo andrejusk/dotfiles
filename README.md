@@ -1,5 +1,7 @@
 # andrejusk/dotfiles
 
+Hello, World!
+
 [![Dotfiles CI status badge](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/andrejusk/dotfiles/actions/workflows/ci.yml)
 
 A collection of dotfiles and install scripts
