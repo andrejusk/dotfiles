@@ -22,7 +22,7 @@ if ! command -v chafa &> /dev/null; then
             ;;
     esac
 fi
-command -v chafa &> /dev/null && chafa --version | head -1 | log_quote
+command -v chafa &> /dev/null && chafa --version | sed -n '1p' | log_quote
 
 # pdftotext — PDF text extraction (part of poppler)
 if ! command -v pdftotext &> /dev/null; then
@@ -41,6 +41,6 @@ if ! command -v pdftotext &> /dev/null; then
             ;;
     esac
 fi
-command -v pdftotext &> /dev/null && pdftotext -v 2>&1 | head -1 | log_quote
+command -v pdftotext &> /dev/null && pdftotext -v 2>&1 | sed -n '1p' | log_quote
 
 log_pass "preview dependencies"
