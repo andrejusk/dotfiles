@@ -49,3 +49,5 @@ fi
 # Bust PATH cache to force rebuild with new profile
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 
+log_pass "stow linked"
+

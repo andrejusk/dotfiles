@@ -6,18 +6,16 @@ set -eo pipefail
 #
 
 if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
-    BLUE=$'\033[38;2;12;72;204m'
-    CYAN=$'\033[38;2;0;228;252m'
-    CYAN_BOLD=$'\033[1;38;2;0;228;252m'
-    RED=$'\033[38;2;244;4;4m'
-    GREEN=$'\033[38;2;44;180;148m'
+    TEAL=$'\033[38;2;44;180;148m'
+    TEAL_BOLD=$'\033[1;38;2;44;180;148m'
+    RED=$'\033[38;2;248;140;20m'
+    GREEN=$'\033[38;2;114;144;184m'
     YELLOW=$'\033[38;2;252;252;56m'
     GREY=$'\033[38;2;128;128;128m'
     NC=$'\033[0m'
 else
-    BLUE=""
-    CYAN=""
-    CYAN_BOLD=""
+    TEAL=""
+    TEAL_BOLD=""
     RED=""
     GREEN=""
     YELLOW=""
@@ -26,18 +24,18 @@ else
 fi
 
 # Log functions
-log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
+log_info() { echo -e "${TEAL}[INFO]${NC} $*"; }
 log_pass() { echo -e "${GREEN}[PASS]${NC} $*"; }
 log_skip() { echo -e "${GREY}[SKIP]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[FAIL]${NC} $*"; }
-log_debug() { echo -e "${CYAN}$*${NC}"; }
+log_debug() { echo -e "${TEAL}$*${NC}"; }
 log_quote() { sed "s/^/  ${GREY}│ /" | sed "s/$/${NC}/"; }
 
 # Export log functions
 export -f log_info log_pass log_skip log_warn log_error log_debug log_quote
 
-printf "\n\t${CYAN} <<< ${CYAN_BOLD}dots${CYAN} >>> ${NC}\n"
+printf "\n\t${TEAL} <<< ${TEAL_BOLD}dots${TEAL} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"
 
 # High-resolution time helpers
@@ -55,8 +53,10 @@ fi
 
 # Ensure sudo credentials are cached
 if [[ -z "$SKIP_SUDO_CHECK" ]]; then
-    echo -e "${YELLOW}Checking sudo credentials...${NC}"
-    sudo -v
+    if ! sudo -n true 2>/dev/null; then
+        log_warn "Requesting sudo authentication..."
+        sudo -v
+    fi
 fi
 
 # Set up environment
@@ -127,13 +127,15 @@ targets=($@)
 
 # Run install scripts
 run() {
-    echo -e "Running \"$(basename "$0")\" at \"$(date)\""
-    echo -e "Running as \"$(whoami)\" on \"$(hostname)\""
-    if [[ -n "$targets" ]]; then
-        echo -e "Running ${YELLOW}${#targets[@]}${NC} install target(s): ${YELLOW}${targets[@]}${NC}"
-    else
-        echo -e "Running all install targets"
-    fi
+    {
+        echo "Running \"$(basename "$0")\" at \"$(date)\""
+        echo "Running as \"$(whoami)\" on \"$(hostname)\""
+        if [[ -n "$targets" ]]; then
+            echo "Running ${#targets[@]} install target(s): ${targets[*]}"
+        else
+            echo "Running all install targets"
+        fi
+    } | log_quote
 
     scripts=("$install_dir"/*.sh)
     for script in "${scripts[@]}"; do
@@ -147,7 +149,7 @@ run() {
 
         local script_name=$(basename "$script")
 
-        printf "\n\n${CYAN}<<< ${CYAN_BOLD}$script_name:${NC}\n"
+        printf "\n\n${TEAL}<<< ${TEAL_BOLD}$script_name:${NC}\n"
         local start_ns=$(now_ns)
         source "$script"
         local end_ns=$(now_ns)
@@ -161,11 +163,11 @@ run() {
         else
             time_color="$RED"
         fi
-        printf "${CYAN}>>> ${CYAN_BOLD}${script_name}, ${NC}"
+        printf "${TEAL}>>> ${TEAL_BOLD}${script_name}, ${NC}"
         printf "completed in ${time_color}${execution_ms_formatted}ms${NC}\n"
     done
 }
-echo -e "\ninstall: Logging to \"$log_abs_target\""
+echo -e "\n${GREY}Logging to \"$log_abs_target\"${NC}"
 total_start_ns=$(now_ns)
 run 2>&1 | tee "$log_abs_target"
 total_end_ns=$(now_ns)
@@ -173,5 +175,5 @@ total_end_ns=$(now_ns)
 total_ms=$(( (total_end_ns - total_start_ns) / 1000000 ))
 total_s=$(( total_ms / 1000 ))
 total_ms_rem=$(( total_ms % 1000 ))
-echo -e "\nThank you!"
+printf "\n${TEAL}Thank you!${NC}\n"
 printf "Total time: ${GREEN}%d.%03ds${NC}\n\n" "$total_s" "$total_ms_rem"

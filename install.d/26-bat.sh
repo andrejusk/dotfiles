@@ -29,5 +29,5 @@ fi
 
 bat --version | log_quote
 
-bat cache --build 2>/dev/null
+bat cache --build &>/dev/null
 log_pass "bat theme cache built"

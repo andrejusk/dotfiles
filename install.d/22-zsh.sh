@@ -50,3 +50,5 @@ if [[ "$SHELL" != *zsh ]]; then
     sudo usermod -s "$(command -v zsh)" "$(whoami)"
 fi
 
+log_pass "zsh configured"
+

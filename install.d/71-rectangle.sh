@@ -11,6 +11,6 @@
 if ! echo "$BREW_CASKS" | grep -q "^rectangle$"; then
     brew install --cask rectangle
 else
-    echo "Rectangle is already installed."
+    log_skip "Rectangle already installed"
 fi
 log_pass "Rectangle installed"

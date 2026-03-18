@@ -36,7 +36,7 @@ if ! command -v mise &>/dev/null; then
     esac
 fi
 
-echo "mise $(mise --version)" | log_quote
+echo "mise $(MISE_QUIET=1 mise --version)" | log_quote
 
 # Skip runtimes in Codespaces (use pre-installed versions)
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
@@ -46,9 +46,9 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
     )
 
     log_info "Installing runtimes..."
-    mise install "${MISE_RUNTIMES[@]}"
+    MISE_QUIET=1 mise install "${MISE_RUNTIMES[@]}" 2>&1 | log_quote
     for tool in "${MISE_RUNTIMES[@]}"; do
-        mise use -g "$tool"
+        MISE_QUIET=1 mise use -g "$tool" 2>&1 | log_quote
     done
 fi
 
@@ -76,11 +76,11 @@ fi
 
 log_info "Installing apps..."
 for tool in "${MISE_APPS[@]}"; do
-    mise use -g "$tool"
+    MISE_QUIET=1 mise use -g "$tool" 2>&1 | log_quote
 done
 
 # Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
-bat cache --build 2>/dev/null
+bat cache --build &>/dev/null
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     # Setup Poetry ZSH completions (XDG compliant)

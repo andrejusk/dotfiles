@@ -11,6 +11,6 @@
 if ! echo "$BREW_CASKS" | grep -q "^betterdisplay$"; then
     brew install --cask betterdisplay
 else
-    echo "BetterDisplay is already installed."
+    log_skip "BetterDisplay already installed"
 fi
 log_pass "BetterDisplay installed"

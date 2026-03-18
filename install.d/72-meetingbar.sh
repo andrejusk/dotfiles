@@ -11,6 +11,6 @@
 if ! echo "$BREW_CASKS" | grep -q "^meetingbar$"; then
     brew install --cask meetingbar
 else
-    echo "MeetingBar is already installed."
+    log_skip "MeetingBar already installed"
 fi
 log_pass "MeetingBar installed"

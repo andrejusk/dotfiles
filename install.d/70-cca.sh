@@ -11,6 +11,6 @@
 if ! echo "$BREW_CASKS" | grep -q "^colour-contrast-analyser$"; then
     brew install --cask colour-contrast-analyser
 else
-    echo "Colour Contrast Analyser (CCA) is already installed."
+    log_skip "CCA already installed"
 fi
 log_pass "CCA installed"
