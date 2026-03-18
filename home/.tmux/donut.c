@@ -296,11 +296,9 @@ int main(int argc, char **argv) {
     int drift_ox = 0, drift_oy = 0;
     int clk_dx = 0, clk_dy = 0;
     int drift_tick = 0;
-    float last_dim = 1.0f;
     struct timeval tv_prev;
     gettimeofday(&tv_prev, NULL);
     float dt_scale = 1.0f;
-    int frame_count = 0;
 
     while (running) {
         gettimeofday(&tv_start, NULL);
@@ -323,12 +321,6 @@ int main(int argc, char **argv) {
         float elapsed_s = (tv_start.tv_sec - tv_boot.tv_sec)
                         + (tv_start.tv_usec - tv_boot.tv_usec) / 1e6f;
 
-        float dim = 0.3f + 0.7f / (1.0f + elapsed_s / 900.0f);
-        if (fabsf(dim - last_dim) > 0.005f) {
-            init_palette(dim);
-            last_dim = dim;
-        }
-
         int new_tick = (int)(elapsed_s / 180.0f);
         if (new_tick != drift_tick) {
             drift_tick = new_tick;
@@ -350,12 +342,8 @@ int main(int argc, char **argv) {
 
         int sz = W * H;
 
-        /* Projection rate follows dim curve: bright=24fps → dim=6fps */
-        int proj_skip = (int)((1.0f - dim) * 4.0f) + 1;
-        if (proj_skip > 4) proj_skip = 4;
-
-        /* 3D projection at reduced rate — sbuf cached between updates */
-        if (frame_count % proj_skip == 0) {
+        /* 3D projection */
+        {
             float K2 = 5.0f;
             /* Cap projection to reference size — donut stays same size on any screen */
             int proj_w = W < 160 ? W : 160;
@@ -454,7 +442,6 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        frame_count++;
 
         /* Clock setup */
         time_t now = time(NULL);
@@ -642,11 +629,8 @@ int main(int argc, char **argv) {
         if (B > 6.2832f) B -= 6.2832f;
         if (B < 0.0f)    B += 6.2832f;
 
-        /* Fixed 24fps target — projection skip handles CPU curve */
+        /* Fixed 24fps target */
         float target_ms = 41.6f;
-
-        /* Deep sleep after 2hr — dim bottomed out, select() blocks until keypress */
-        if (elapsed_s > 7200.0f) target_ms = 1000.0f;  /* 1fps */
 
         /* Sleep until deadline or keypress via select() */
         gettimeofday(&tv_end, NULL);
