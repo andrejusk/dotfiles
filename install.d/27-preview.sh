@@ -2,7 +2,7 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Install preview dependencies: chafa (images), poppler (PDFs), glow (markdown).
+#   Install preview dependencies: chafa (images), poppler (PDFs).
 #
 
 # chafa — terminal image viewer
@@ -42,24 +42,5 @@ if ! command -v pdftotext &> /dev/null; then
     esac
 fi
 command -v pdftotext &> /dev/null && pdftotext -v 2>&1 | head -1 | log_quote
-
-# glow — rendered markdown in terminal
-if ! command -v glow &> /dev/null; then
-    case "$DOTS_PKG" in
-        brew)
-            brew install glow
-            ;;
-        apt)
-            sudo apt-get install -qq glow
-            ;;
-        pacman)
-            sudo pacman -S --noconfirm --needed glow
-            ;;
-        *)
-            log_warn "Skipping glow install: no supported package manager found"
-            ;;
-    esac
-fi
-command -v glow &> /dev/null && glow --version | head -1 | log_quote
 
 log_pass "preview dependencies"

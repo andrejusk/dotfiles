@@ -25,3 +25,4 @@ for url in "${vim_plugins[@]}"; do
         log_pass "$name installed"
     fi
 done
+log_pass "vim plugins configured"

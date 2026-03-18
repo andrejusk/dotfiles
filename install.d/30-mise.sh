@@ -71,12 +71,13 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
         "terraform@1.14.4"
         "firebase@15.5.1"
         "fastfetch@latest"
+        "glow@latest"
     )
 fi
 
 log_info "Installing apps..."
 for tool in "${MISE_APPS[@]}"; do
-    MISE_QUIET=1 mise use -g "$tool" 2>&1 | log_quote
+    MISE_QUIET=1 mise use -g "$tool" 2>&1 | tail -1 | log_quote
 done
 
 # Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
@@ -103,6 +104,7 @@ log_info "Verifying installations..."
         mise exec -- terraform --version | head -1
         echo "firebase: $(mise exec -- firebase --version)"
         echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | head -1)"
+        mise exec -- glow --version | head -1
     fi
     echo "fzf $(fzf --version)"
     bat --version | head -1
