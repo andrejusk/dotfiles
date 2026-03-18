@@ -17,13 +17,14 @@ apt_packages=(
     wget
 )
 
-# Skip if all packages already installed
+sudo apt-get update -qq
+
+# Skip install if all packages already installed
 if dpkg -s "${apt_packages[@]}" &>/dev/null; then
     apt --version | log_quote
     return 0
 fi
 
-sudo apt-get update -qq
 sudo apt-get install -qq "${apt_packages[@]}"
 
 unset apt_packages
