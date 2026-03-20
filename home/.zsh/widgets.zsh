@@ -83,9 +83,11 @@ _dots_load_keybindings() {
         local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
         local cs_cache="$_dots_cache_dir/codespaces"
 
-        # Refresh codespace cache in background if stale (>5 min)
-        if [[ ! -f "$cs_cache" ]] || [[ -n "$(find "$cs_cache" -mmin +5 2>/dev/null)" ]]; then
-            { gh cs list --json name -q '.[].name' 2>/dev/null | sed 's/^/cs:/' > "$cs_cache.tmp" && mv "$cs_cache.tmp" "$cs_cache"; } &!
+        # Background refresh if cache is stale (>5 min)
+        if [[ -f "$cs_cache" ]] && [[ -n "$(find "$cs_cache" -mmin +5 2>/dev/null)" ]]; then
+            { gh cs list --json name,repository,gitStatus \
+                -q '.[] | "cs:\(.name)\t\(.repository)\t\(.gitStatus.ref // "")"' \
+                2>/dev/null > "$cs_cache.tmp" && mv "$cs_cache.tmp" "$cs_cache"; } &!
         fi
 
         {
@@ -94,12 +96,46 @@ _dots_load_keybindings() {
             fi
             awk '/^Host / && !/\*/ {print $2}' ~/.ssh/config ~/.ssh/config.d/* 2>/dev/null
             awk '{print $1}' ~/.ssh/known_hosts 2>/dev/null | tr ',' '\n' | sed 's/\[//;s/\]:.*//'
-            [[ -f "$cs_cache" ]] && cat "$cs_cache"
-        } | awk '!seen[$0]++'
+            if [[ -f "$cs_cache" ]]; then
+                cat "$cs_cache"
+            else
+                gh cs list --json name,repository,gitStatus \
+                    -q '.[] | "cs:\(.name)\t\(.repository)\t\(.gitStatus.ref // "")"' \
+                    2>/dev/null | tee "$cs_cache"
+            fi
+        } | awk -F'\t' '
+            BEGIN {
+                teal  = "\033[38;2;44;180;148m"
+                white = "\033[97m"
+                amber = "\033[38;2;248;140;20m"
+                rst   = "\033[0m"
+            }
+            {
+                if ($1 ~ /^cs:/ && NF > 1) { repo[$1] = $2; br[$1] = $3 }
+                if (!seen[$1]++) { order[++n] = $1 }
+            }
+            END {
+                for (i = 1; i <= n; i++) {
+                    k = order[i]
+                    if (k ~ /^cs:/) {
+                        name = substr(k, 4)
+                        r = repo[k]; b = br[k]
+                        printf "%scs:%s%s%s%s", white, rst, teal, name, rst
+                        if (r != "") printf "  %s", r
+                        if (b != "" && b != "main" && b != "master")
+                            printf "  %s%s%s", amber, b, rst
+                        printf "\n"
+                    } else {
+                        printf "%s%s%s\n", teal, k, rst
+                    }
+                }
+            }
+        '
     }
     _dots_ssh_widget() {
         local target
-        target="$(_dots_ssh_hosts | fzf)" || { zle reset-prompt; return; }
+        target="$(_dots_ssh_hosts | fzf --ansi --no-preview)" || { zle reset-prompt; return; }
+        target="$(printf '%s' "$target" | sed $'s/\033\\[[0-9;]*m//g' | awk '{print $1}')"
         if [[ "$target" == cs:* ]]; then
             BUFFER="cs ${target#cs:}"
         else
