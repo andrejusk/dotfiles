@@ -43,6 +43,8 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
     typeset -a MISE_RUNTIMES=(
         "python@3.14.2"
         "node@25.5.0"
+        "bun@latest"
+        "rust@latest"
     )
 
     log_info "Installing runtimes..."
