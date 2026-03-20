@@ -8,19 +8,20 @@ alias reload-cache='rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dots" ~/.zcompdump* 
 alias zen='curl -s https://api.github.com/zen && echo'
 alias la='ls -la'
 alias vi='vim'
-alias copilot='gh copilot'
+copilot() { _copilot_tmux_wrap gh copilot "$@"; }
 if [[ -z "${CODESPACES:-}" ]]; then
 cs() {
     local codespace="${1:-}"
     if [[ -z "$codespace" ]]; then
-        codespace="$(gh cs list --json name -q '.[].name' | fzf)" || return
+        gh cs ssh
+        return
     fi
-    [[ -n "$TMUX" ]] && tmux rename-window "cs:$codespace"
-    trap '[[ -n "$TMUX" ]] && tmux set automatic-rename on' EXIT INT TERM
+    [[ -n "$TMUX" ]] && tmux rename-window "cs:${codespace%-*}"
+    trap '[[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
     gh cs ssh -c "$codespace"
     local rc=$?
     trap - EXIT INT TERM
-    [[ -n "$TMUX" ]] && tmux set automatic-rename on
+    [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
     if (( rc == 0 )); then
         local log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
         mkdir -p "$(dirname "$log")"
@@ -29,7 +30,28 @@ cs() {
     return $rc
 }
 fi
-alias colby='copilot --allow-all-tools --allow-all-paths'
+_copilot_tmux_wrap() {
+    local session_dir="$HOME/.copilot/session-state"
+    if [[ -n "$TMUX" ]]; then
+        local title="" id="" prev=""
+        for arg in "$@"; do
+            if [[ "$prev" == "--resume" ]]; then id="$arg"; break; fi
+            if [[ "$arg" == --resume=* ]]; then id="${arg#--resume=}"; break; fi
+            prev="$arg"
+        done
+        if [[ -n "$id" ]]; then
+            title=$(sed -n 's/^summary: //p' "$session_dir/$id/workspace.yaml" 2>/dev/null)
+        elif [[ " $* " == *"--continue"* ]]; then
+            title=$(sed -n 's/^summary: //p' "$(ls -t "$session_dir"/*/workspace.yaml 2>/dev/null | sed -n '1p')" 2>/dev/null)
+        fi
+        [[ -n "$title" ]] && tmux rename-window "co:$title"
+        trap '(tmux set automatic-rename on &)' EXIT INT TERM
+    fi
+    "$@"
+    trap - EXIT INT TERM
+    [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
+}
+colby() { _copilot_tmux_wrap gh copilot --allow-all-tools --allow-all-paths "$@"; }
 alias gs='git s'
 alias gd='git d'
 alias gdc='git dc'
@@ -52,11 +74,11 @@ if [[ -z "${CODESPACES:-}" ]]; then
 ssh() {
     local ssh_target="${@: -1}"
     [[ -n "$TMUX" ]] && tmux rename-window "ssh:$ssh_target"
-    trap '[[ -n "$TMUX" ]] && tmux set automatic-rename on' EXIT INT TERM
+    trap '[[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
     command ssh "$@"
     local rc=$?
     trap - EXIT INT TERM
-    [[ -n "$TMUX" ]] && tmux set automatic-rename on
+    [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
 
     if (( rc == 0 )); then
         local host="$ssh_target"
