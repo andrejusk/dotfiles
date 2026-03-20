@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # Universal file preview — used by fzf widgets and as a standalone command.
-# Usage: preview <file> [line]
+# Usage: preview [--zen] <file> [line]
 
-file="${1:?usage: preview <file> [line]}"
+zen=false
+if [[ "$1" == "--zen" ]]; then
+    zen=true
+    shift
+fi
+
+file="${1:?usage: preview [--zen] <file> [line]}"
 line="${2:-}"
 
 if [[ ! -e "$file" ]]; then
@@ -22,21 +28,47 @@ fi
 
 # Standalone mode: full terminal, can page output
 # fzf mode: constrained to preview pane dimensions
-is_fzf() { [[ -n "${FZF_PREVIEW_COLUMNS:-}" ]]; }
+# Check both the env var AND that stdout is not a TTY — execute() inherits
+# FZF_PREVIEW_COLUMNS but redirects stdout to /dev/tty.
+is_fzf() { [[ -n "${FZF_PREVIEW_COLUMNS:-}" && ! -t 1 ]]; }
 
 preview_image() {
     local w h
     if is_fzf; then
         w="$FZF_PREVIEW_COLUMNS"
         h="$FZF_PREVIEW_LINES"
-        chafa --size="${w}x${h}" "$file"
     else
         w="$(tput cols)"
         h="$(tput lines)"
-        printf '\033[?1049h'
-        chafa --size="${w}x${h}" "$file"
-        read -rsn1
-        printf '\033[?1049l'
+    fi
+    # iTerm2/WezTerm: use native inline image protocol (works through tmux passthrough)
+    if [[ "${LC_TERMINAL:-}${TERM_PROGRAM:-}" == *iTerm* || "${LC_TERMINAL:-}${TERM_PROGRAM:-}" == *WezTerm* ]]; then
+        local data
+        data="$(base64 < "$file")"
+        if [[ -n "${TMUX:-}" ]]; then
+            printf '\033Ptmux;\033\033]1337;File=inline=1;width=%s;height=%s;preserveAspectRatio=1:%s\a\033\\' \
+                "$w" "$h" "$data"
+        else
+            printf '\033]1337;File=inline=1;width=%s;height=%s;preserveAspectRatio=1:%s\a' \
+                "$w" "$h" "$data"
+        fi
+        if ! is_fzf; then
+            printf '\n[press any key]'
+            read -rsn1 </dev/tty
+        fi
+    else
+        # Fallback: chafa symbols
+        local fmt=symbols
+        if [[ -z "${TMUX:-}" ]]; then
+            case "${TERM_PROGRAM:-}" in
+                *kitty*) fmt=kitty ;;
+            esac
+        fi
+        chafa --format="$fmt" --work=9 --polite=off --symbols block+braille+half+quad --size="${w}x${h}" "$file"
+        if ! is_fzf; then
+            printf '\n[press any key]'
+            read -rsn1 </dev/tty
+        fi
     fi
 }
 
@@ -49,10 +81,51 @@ preview_pdf() {
 }
 
 preview_markdown() {
-    if is_fzf; then
+    local glow_style="${XDG_CONFIG_HOME:-$HOME/.config}/glow/preview.json"
+    if command -v glow &>/dev/null; then
+        local style_args=(-s dark)
+        [[ -f "$glow_style" ]] && style_args=(-s "$glow_style")
+        if is_fzf; then
+            script -q /dev/null bash -c \
+                'COLORTERM=truecolor glow "$@"' _ "${style_args[@]}" -w "${FZF_PREVIEW_COLUMNS:-80}" "$file" \
+                2>/dev/null | tr -d '\r'
+        else
+            local tmp term_w render_w
+            tmp=$(mktemp)
+            # Hide tmux chrome in zen mode
+            if [[ "$zen" == true && -n "${TMUX:-}" ]]; then
+                tmux set status off
+                tmux set pane-border-status off 2>/dev/null
+                trap 'tmux set status on; tmux set pane-border-status off 2>/dev/null; rm -f "$tmp"' EXIT
+            else
+                trap 'rm -f "$tmp"' EXIT
+            fi
+            term_w="$(tput cols)"
+            render_w="$term_w"
+            if [[ "$zen" == true ]] && (( term_w > 104 )); then
+                render_w=100
+            fi
+            local pad=$(( (term_w - render_w) / 2 ))
+            local glow_input="$file"
+            if [[ "$zen" == true ]]; then
+                # Pre-process: replace link URLs with dummy anchors (keeps link styling)
+                # and strip bare URLs
+                glow_input=$(mktemp).md
+                perl -pe '
+                    s/\[([^\]]+)\]\([^\)]+\)/[$1](#)/g;
+                    s/\s*<?https?:\/\/\S+>?//g;
+                ' "$file" > "$glow_input"
+            fi
+            script -q /dev/null bash -c \
+                'COLORTERM=truecolor glow "$@"' _ "${style_args[@]}" -w "$render_w" "$glow_input" 2>/dev/null \
+                | tr -d '\r' \
+                | if (( pad > 0 )); then sed "s/^/$(printf '%*s' "$pad" '')/"; else cat; fi \
+                > "$tmp"
+            [[ "$glow_input" != "$file" ]] && rm -f "$glow_input"
+            LESS='-R --mouse' less < "$tmp"
+        fi
+    elif is_fzf; then
         bat --color=always --style=numbers ${line:+--highlight-line="$line"} "$file"
-    elif command -v glow &>/dev/null; then
-        glow -p "$file"
     else
         bat --paging=always --color=always --style=numbers "$file"
     fi
