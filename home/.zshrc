@@ -1,19 +1,38 @@
 # Profiling: ZSH_BENCH=1 zsh
 [[ -n "$ZSH_BENCH" ]] && zmodload zsh/zprof
 
-# Upgrade xterm-color to xterm-256color (gh cs ssh sets the weaker value)
+# Terminal capabilities
 [[ "$TERM" == "xterm-color" ]] && export TERM=xterm-256color
-
-# Assume truecolor support if terminal advertises 256color (covers SSH, tmux)
 [[ -z "$COLORTERM" && "$TERM" == *256color* ]] && export COLORTERM=truecolor
 
 _dots_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/dots"
+
+# Cache eval output keyed on binary mtime — busts on brew upgrade / tool update
+_dots_cached_eval() {
+    local name="$1" bin="$2"; shift 2
+    local cache="$_dots_cache_dir/${name}.zsh"
+    if [[ -f "$cache" && "$cache" -nt "$bin" ]]; then
+        source "$cache"
+    else
+        "$@" > "$cache" 2>/dev/null
+        if [[ -s "$cache" ]]; then
+            zcompile "$cache" 2>/dev/null
+            source "$cache"
+        else
+            rm -f "$cache"; return 1
+        fi
+    fi
+}
+
+# --- Environment ---
 
 _dots_load_profile() { source "$HOME/.profile" }
 _dots_load_profile
 
 _dots_setup_dirs() {
-    mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$_dots_cache_dir"
+    local d; for d in "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$HOME/.local/bin" "$WORKSPACE" "$_dots_cache_dir"; do
+        [[ -d "$d" ]] || mkdir -p "$d"
+    done
 }
 _dots_setup_dirs
 
@@ -37,12 +56,13 @@ _dots_cache_ls_colors
 
 [[ -f ~/.aliases ]] && source ~/.aliases
 
+# --- Completion (lazy — deferred until first Tab press) ---
+
 _dots_init_completion() {
     local comp_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
     [[ -d "$comp_dir" ]] && fpath=("$comp_dir" $fpath)
 
     autoload -Uz compinit
-    # Daily cache invalidation
     local dump="$HOME/.zcompdump"
     if [[ -f "$dump" ]]; then
         zmodload -F zsh/stat b:zstat 2>/dev/null
@@ -57,7 +77,6 @@ _dots_init_completion() {
         compinit
     fi
 
-    # Completion styling
     zstyle ':completion:*' menu select
     zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
     zstyle ':completion:*' group-name ''
@@ -65,40 +84,22 @@ _dots_init_completion() {
     zstyle ':completion:*:warnings' format $'\e[38;2;248;140;20m-- no matches --\e[0m'
     zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 }
-_dots_init_completion
 
-_dots_load_plugins() {
-    local plugin_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
-
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#3C3C3C'
-
-    local f="$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
-    [[ -f "$f" ]] && source "$f"
-
-    # syntax-highlighting must be sourced last
-    f="$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-    [[ -f "$f" ]] && source "$f"
-
-    # Syntax highlighting theme
-    typeset -gA ZSH_HIGHLIGHT_STYLES
-    ZSH_HIGHLIGHT_STYLES[command]='fg=#2CB494'
-    ZSH_HIGHLIGHT_STYLES[builtin]='fg=#2CB494'
-    ZSH_HIGHLIGHT_STYLES[alias]='fg=#2CB494'
-    ZSH_HIGHLIGHT_STYLES[function]='fg=#2CB494'
-    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#F88C14'
-    ZSH_HIGHLIGHT_STYLES[path]='fg=#CCE0D0,underline'
-    ZSH_HIGHLIGHT_STYLES[globbing]='fg=#F88C14'
-    ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#7290B8'
-    ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#7290B8'
-    ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#7290B8'
-    ZSH_HIGHLIGHT_STYLES[comment]='fg=#808080'
-    ZSH_HIGHLIGHT_STYLES[arg0]='fg=#2CB494'
-    ZSH_HIGHLIGHT_STYLES[default]='fg=#CCE0D0'
-    ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#808080'
-    ZSH_HIGHLIGHT_STYLES[redirection]='fg=#F88C14'
-    ZSH_HIGHLIGHT_STYLES[option]='fg=#7290B8'
+# Stub that loads real completion on first Tab, then replays the keypress
+_dots_lazy_comp_widget() {
+    _dots_init_completion
+    zle -D _dots_lazy_comp_widget
+    # If fzf-completion exists (loaded via zle-line-init), use it; otherwise default
+    if (( ${+widgets[fzf-completion]} )); then
+        zle fzf-completion "$@"
+    else
+        zle expand-or-complete "$@"
+    fi
 }
-_dots_load_plugins
+zle -N _dots_lazy_comp_widget
+bindkey '^I' _dots_lazy_comp_widget
+
+# --- History & options ---
 
 _dots_load_history() {
     HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
@@ -111,22 +112,31 @@ _dots_load_history
 
 setopt IGNORE_EOF
 
-source "$HOME/.zsh/widgets.zsh"
+# --- Tool init (cached) ---
 
-_dots_load_fzf() {
-    command -v fzf &>/dev/null || return
+_dots_load_mise() {
+    local bin="${commands[mise]:-}"
+    [[ -n "$bin" ]] || return
+    _dots_cached_eval mise "$bin" mise activate --shims zsh
+}
+
+# fzf env vars (needed by widgets and zoxide before fzf init loads)
+if [[ -n "${commands[fzf]:-}" ]]; then
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#808080,fg+:#CCE0D0,bg:-1,bg+:#1A1A1A --color=hl:#2CB494,hl+:#2CB494,info:#808080,marker:#2CB494 --color=prompt:#2CB494,spinner:#88409C,pointer:#2CB494,header:#808080 --color=border:#3C3C3C,preview-border:#3C3C3C,gutter:#1A1A1A,preview-fg:#CCE0D0'
-    # fzf --zsh requires v0.48+
-    if fzf --zsh &>/dev/null; then
-        source <(fzf --zsh)
-    else
+fi
+
+_dots_load_fzf() {
+    local bin="${commands[fzf]:-}"
+    [[ -n "$bin" ]] || return
+    if ! _dots_cached_eval fzf "$bin" fzf --zsh; then
         local -a fzf_paths=(
             "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/fzf/shell"
             "/usr/share/fzf"
             "${XDG_DATA_HOME:-$HOME/.local/share}/fzf/shell"
         )
+        local dir
         for dir in "${fzf_paths[@]}"; do
             [[ -f "$dir/key-bindings.zsh" ]] && source "$dir/key-bindings.zsh" && break
         done
@@ -136,21 +146,28 @@ _dots_load_fzf() {
     fi
 }
 
-
 _dots_load_zoxide() {
-    command -v zoxide &>/dev/null || return
+    local bin="${commands[zoxide]:-}"
+    [[ -n "$bin" ]] || return
     export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
     export _ZO_ECHO=0
-    eval "$(zoxide init zsh)"
+    _dots_cached_eval zoxide "$bin" zoxide init zsh
 }
+
+_dots_load_mise
+_dots_load_zoxide
+
+# --- Interactive shell ---
 
 source "$HOME/.zsh/prompt.zsh"
 
-_dots_load_mise() {
-    command -v mise &>/dev/null && eval "$(mise activate zsh)"
+# Load fzf + widgets after first prompt renders (zle-line-init fires before first keystroke)
+autoload -Uz add-zle-hook-widget
+_dots_lazy_widgets() {
+    _dots_load_fzf
+    source "$HOME/.zsh/widgets.zsh"
+    add-zle-hook-widget -d zle-line-init _dots_lazy_widgets
 }
-_dots_load_mise
-_dots_load_fzf
-_dots_load_zoxide
+add-zle-hook-widget zle-line-init _dots_lazy_widgets
 
 [[ -n "$ZSH_BENCH" ]] && zprof || true

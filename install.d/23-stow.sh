@@ -23,8 +23,6 @@ if ! command -v stow &> /dev/null; then
     esac
 fi
 
-stow --version | log_quote
-
 root_dir=${DOTFILES:-$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")}
 
 rm -f "$HOME/.bash_profile"
@@ -49,5 +47,18 @@ fi
 # Bust PATH cache to force rebuild with new profile
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 
+# Compile zsh dotfiles for faster shell startup
+if command -v zsh &>/dev/null; then
+    zsh -c '
+        for f in ~/.zsh/*.zsh ~/.aliases ~/.profile(N); do
+            [[ $f.zwc -nt $f ]] || zcompile "$f" 2>/dev/null
+        done
+    '
+fi
+
+# Bust tool init caches so they regenerate with new PATH/tools
+rm -f "${XDG_CACHE_HOME:-$HOME/.cache}"/dots/{fzf,mise,zoxide}.zsh{,.zwc}
+
 log_pass "stow linked"
+stow --version | log_quote
 

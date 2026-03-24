@@ -1,12 +1,11 @@
 # Prompt
 (( ${+PROMPT_MIN_DURATION} ))  || typeset -gi PROMPT_MIN_DURATION=2    # show duration after N seconds
-(( ${+PROMPT_FLASH_DELAY} ))   || typeset -gi PROMPT_FLASH_DELAY=4     # flash prompt for N centiseconds
 
 typeset -gi _dots_prompt_cmd_start=0
 typeset -gi _dots_prompt_cmd_ran=0
-typeset -gi _dots_prompt_flashing=0
 typeset -g  _dots_prompt_symbol="λ"
 typeset -g  _dots_prompt_base=""
+typeset -g  _dots_session_cache=""
 typeset -gA _dots_pc
 
 _dots_init_colors() {
@@ -59,14 +58,17 @@ _dots_abbrev_path() {
     local -a parts=( "${(@s:/:)dir}" )
     local count=${#parts[@]}
     
-    (( count <= 3 )) && { print -r -- "$dir"; return }
+    if (( count <= 3 )); then
+        REPLY="$dir"
+        return
+    fi
     
     local result=""
     local i
     for (( i=1; i <= count-3; i++ )); do
         result+="${parts[i][1]}/"
     done
-    print -r -- "${result}${parts[-3]}/${parts[-2]}/${parts[-1]}"
+    REPLY="${result}${parts[-3]}/${parts[-2]}/${parts[-1]}"
 }
 
 _dots_session() {
@@ -189,18 +191,15 @@ typeset -g _dots_git_async_fd=""
 _dots_git_async_callback() {
     local fd=$1
     local result=""
-    # Use sysread for efficient non-blocking read from fd
     if [[ -n "$fd" ]] && sysread -i "$fd" result 2>/dev/null; then
-        result="${result%$'\n'}"  # trim trailing newline
+        result="${result%$'\n'}"
         _dots_git_info_result="$result"
         _dots_build_dots_prompt_base
         PROMPT="$_dots_prompt_base"
-        # Only reset prompt if not in a special ZLE widget (e.g. fzf)
         if zle && [[ "${WIDGET:-}" != _dots_* ]]; then
             zle reset-prompt 2>/dev/null
         fi
     fi
-    # Clean up
     exec {fd}<&-
     zle -F "$fd" 2>/dev/null
     _dots_git_async_fd=""
@@ -226,7 +225,8 @@ _dots_git_async_start() {
 }
 
 _dots_build_dots_prompt_base() {
-    local dir_path="$(_dots_abbrev_path)"
+    _dots_abbrev_path
+    local dir_path="$REPLY"
     local symbol="${_dots_pc[grey]}${_dots_prompt_symbol}${_dots_pc[reset]}"
     (( EUID == 0 )) && symbol="${_dots_pc[orange]}${_dots_pc[bold]}#${_dots_pc[reset]}"
     
@@ -264,7 +264,7 @@ _dots_precmd() {
     
     (( e )) && rp_parts+=("${_dots_pc[orange]}[${e}]${_dots_pc[reset]}")
     
-    local session="$(_dots_session)"
+    local session="$_dots_session_cache"
     [[ -n "$session" ]] && rp_parts+=("${_dots_pc[dark_bg]}${_dots_pc[dark]}[${_dots_pc[orange]}${session}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}]${_dots_pc[reset]}")
     
     RPROMPT="${(j: :)rp_parts}"
@@ -282,36 +282,11 @@ _dots_precmd() {
 
 
 
-TRAPINT() {
-    # Only customize when ZLE is active (at prompt, not during command)
-    if [[ -o zle ]] && [[ -o interactive ]] && (( ${+WIDGET} )); then
-        if [[ -z "$BUFFER" ]] && (( ! _dots_prompt_flashing )); then
-            # Empty buffer: flash the prompt symbol
-            _dots_prompt_flashing=1
-            local git_part=""
-            [[ -n "$_dots_git_info_result" ]] && git_part=" ${_dots_git_info_result}"
-            local flash_prompt=$'\n'"${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[teal]}$(_dots_abbrev_path)${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[reset]}${git_part}"$'\n'$'%{\e[48;2;248;140;20m\e[30m%}'"${_dots_prompt_symbol}"$' %{\e[0m%}'
-            PROMPT="$flash_prompt"
-            zle reset-prompt
-            zselect -t $PROMPT_FLASH_DELAY
-            _dots_prompt_flashing=0
-            PROMPT="$_dots_prompt_base"
-            zle reset-prompt
-            return 0
-        elif [[ -n "$BUFFER" ]]; then
-            # Buffer has content: clear autosuggest, then default behavior
-            zle autosuggest-clear 2>/dev/null
-        fi
-    fi
-    # Propagate signal: use special return code -1 to let zsh handle normally
-    return $((128 + ${1:-2}))
-}
-
 _dots_prompt_init() {
     zmodload zsh/datetime 2>/dev/null
-    zmodload zsh/zselect 2>/dev/null
     zmodload zsh/system 2>/dev/null
     _dots_init_colors
+    _dots_session_cache="$(_dots_session)"
     _dots_build_dots_prompt_base
     
     setopt PROMPT_SUBST EXTENDED_HISTORY INC_APPEND_HISTORY_TIME
@@ -319,7 +294,7 @@ _dots_prompt_init() {
     add-zsh-hook preexec _dots_preexec
     add-zsh-hook precmd _dots_precmd
     add-zsh-hook chpwd _dots_build_dots_prompt_base
-    
+
     PROMPT="$_dots_prompt_base" RPROMPT=""
 }
 _dots_prompt_init
