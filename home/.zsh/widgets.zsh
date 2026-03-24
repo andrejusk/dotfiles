@@ -45,7 +45,13 @@ _dots_load_keybindings() {
                     if (st !~ /D/) git[f] = st
                 }
                 close(cmd)
+                # Build index of local files for filtering history entries
+                fcmd = "rg --files --hidden --glob \"!.git\" 2>/dev/null"
+                while ((fcmd | getline line) > 0) local_files[line] = 1
+                close(fcmd)
                 for (f in cnt) {
+                    # Only include history entries that exist in current directory
+                    if (!(f in local_files)) continue
                     s = cnt[f] * 1000 + ts[f]
                     if (f in git) { s += 100000; printf "%d\t%s\t%s\n", s, clr(git[f]), f; delete git[f] }
                     else printf "%d\t \t%s\n", s, f
@@ -62,9 +68,10 @@ _dots_load_keybindings() {
             rg --files --hidden --glob '!.git' 2>/dev/null | awk '{print " \t" $0}'
         } | awk -F'\t' '!seen[$2]++' \
           | fzf --ansi --delimiter='\t' --nth=2 \
-                --header 'enter=edit | ^v=preview' \
+                --header 'enter=edit | ^v=preview | ^z=zen' \
                 --preview 'preview {2}' \
-                --bind 'ctrl-v:execute(preview {2})')" \
+                --bind 'ctrl-v:execute(preview {2})' \
+                --bind 'ctrl-z:execute(preview --zen {2})')" \
           || { zle reset-prompt; return; }
         file="$(printf '%s' "$file" | cut -f2)"
         [[ -z "$file" ]] && { zle reset-prompt; return; }
@@ -81,14 +88,6 @@ _dots_load_keybindings() {
     if [[ -z "${CODESPACES:-}" ]]; then
     _dots_ssh_hosts() {
         local ssh_log="${XDG_DATA_HOME:-$HOME/.local/share}/ssh/log"
-        local cs_cache="$_dots_cache_dir/codespaces"
-
-        # Background refresh if cache is stale (>5 min)
-        if [[ -f "$cs_cache" ]] && [[ -n "$(find "$cs_cache" -mmin +5 2>/dev/null)" ]]; then
-            { gh cs list --json name,repository,gitStatus \
-                -q '.[] | "cs:\(.name)\t\(.repository)\t\(.gitStatus.ref // "")"' \
-                2>/dev/null > "$cs_cache.tmp" && mv "$cs_cache.tmp" "$cs_cache"; } &!
-        fi
 
         {
             if [[ -f "$ssh_log" ]]; then
@@ -96,13 +95,9 @@ _dots_load_keybindings() {
             fi
             awk '/^Host / && !/\*/ {print $2}' ~/.ssh/config ~/.ssh/config.d/* 2>/dev/null
             awk '{print $1}' ~/.ssh/known_hosts 2>/dev/null | tr ',' '\n' | sed 's/\[//;s/\]:.*//'
-            if [[ -f "$cs_cache" ]]; then
-                cat "$cs_cache"
-            else
-                gh cs list --json name,repository,gitStatus \
-                    -q '.[] | "cs:\(.name)\t\(.repository)\t\(.gitStatus.ref // "")"' \
-                    2>/dev/null | tee "$cs_cache"
-            fi
+            gh cs list --json name,repository,gitStatus \
+                -q '.[] | "cs:\(.name)\t\(.repository)\t\(.gitStatus.ref // "")"' \
+                2>/dev/null
         } | awk -F'\t' '
             BEGIN {
                 teal  = "\033[38;2;44;180;148m"
@@ -323,8 +318,8 @@ for line in sys.stdin:
     except: pass
 " 2>/dev/null
         ' --delimiter="|" --with-nth=1,3 \
-           --header 'enter=resume | ^r=restricted | ^s=latest | ^n=new' \
-           --expect=ctrl-r,ctrl-s,ctrl-n)"
+           --header 'enter=resume | ^r=restricted | ^s=latest | ^n=new | ^d=delete' \
+           --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d)"
         local fzf_rc=$?
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
@@ -344,6 +339,13 @@ for line in sys.stdin:
             return
         fi
         local id=$(echo "$line" | cut -d'|' -f2 | tr -d ' ')
+        [[ -n "$id" ]] || { zle reset-prompt; return; }
+        # Ctrl+D — delete session
+        if [[ "$key" == "ctrl-d" ]]; then
+            rm -rf "${session_dir:?}/$id" "${session_dir:?}/${id}.jsonl"
+            zle reset-prompt
+            return
+        fi
         if [[ "$key" == "ctrl-r" ]]; then
             BUFFER="gh copilot --resume $id"
         else
