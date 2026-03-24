@@ -24,5 +24,5 @@ if ! command -v cmatrix &> /dev/null; then
             ;;
     esac
 fi
-command -v cmatrix &> /dev/null && cmatrix -V 2>&1 | sed -n '1p' | log_quote
 log_pass "cmatrix installed"
+command -v cmatrix &> /dev/null && cmatrix -V 2>&1 | sed -n '1p' | log_quote

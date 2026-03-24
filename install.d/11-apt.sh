@@ -29,6 +29,6 @@ sudo apt-get install -qq "${apt_packages[@]}"
 
 unset apt_packages
 
-apt --version | log_quote
 log_pass "apt packages installed"
+apt --version | log_quote
 

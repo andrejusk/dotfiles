@@ -49,9 +49,7 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 
     log_info "Installing runtimes..."
     MISE_QUIET=1 mise install "${MISE_RUNTIMES[@]}" 2>&1 | log_quote
-    for tool in "${MISE_RUNTIMES[@]}"; do
-        MISE_QUIET=1 mise use -g "$tool" 2>&1 | log_quote
-    done
+    MISE_QUIET=1 mise use -g "${MISE_RUNTIMES[@]}" 2>&1 | log_quote
 fi
 
 # Activate mise shims so runtimes (e.g. python3) are available for app installers
@@ -78,9 +76,7 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 fi
 
 log_info "Installing apps..."
-for tool in "${MISE_APPS[@]}"; do
-    MISE_QUIET=1 mise use -g "$tool" 2>&1 | tail -1 | log_quote
-done
+MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote
 
 # Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
 bat cache --build &>/dev/null
@@ -94,24 +90,5 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
     fi
 fi
 
-# Verify installations
-log_info "Verifying installations..."
-{
-    if [[ "$DOTS_ENV" != "codespaces" ]]; then
-        mise exec -- python --version
-        mise exec -- poetry --version
-        echo "node $(mise exec -- node --version)"
-        echo "npm $(mise exec -- npm --version)"
-        mise exec -- gh --version
-        mise exec -- terraform --version | sed -n '1p'
-        echo "firebase: $(mise exec -- firebase --version)"
-        echo "fastfetch: $(mise exec -- fastfetch --version 2>&1 | sed -n '1p')"
-        mise exec -- glow --version | sed -n '1p'
-    fi
-    echo "fzf $(fzf --version)"
-    bat --version | sed -n '1p'
-    zoxide --version
-    rg --version | sed -n '1p'
-    delta --version 2>/dev/null | sed -n '1p' || echo "delta: installed (version check failed)"
-} | log_quote
 log_pass "mise tools installed"
+mise ls --current 2>/dev/null | awk '{printf "%s %s\n", $1, $2}' | log_quote

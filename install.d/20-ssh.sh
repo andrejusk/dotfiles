@@ -23,7 +23,7 @@ if [ ! -f "$ssh_key" ]; then
         -C "$(whoami)@$(hostname)-$(date -I)"
 fi
 
+log_pass "SSH key configured"
 cat "$ssh_pub" | log_quote
 
 unset ssh_method ssh_target ssh_key ssh_pub
-log_pass "SSH key configured"

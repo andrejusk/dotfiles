@@ -10,7 +10,6 @@
 
 if ! echo "$BREW_CASKS" | grep -q "^visual-studio-code$"; then
     brew install --cask visual-studio-code
-else
-    log_skip "VSCode already installed"
 fi
 log_pass "VSCode installed"
+echo "$BREW_CASK_VERSIONS" | grep "^visual-studio-code " | log_quote

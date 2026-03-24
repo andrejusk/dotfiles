@@ -88,8 +88,6 @@ if [[ "$DOTS_PKG" == "brew" ]]; then
     export HOMEBREW_NO_ENV_HINTS=1
     export HOMEBREW_NO_AUTO_UPDATE=1
     export HOMEBREW_NO_INSTALL_CLEANUP=1
-    export BREW_CASKS=$(brew list --cask 2>/dev/null || true)
-    export BREW_FORMULAE=$(brew list 2>/dev/null || true)
 fi
 
 # Set up directory variables
@@ -137,6 +135,15 @@ run() {
         fi
     } | log_quote
 
+    # Cache brew package lists (avoid repeated slow brew queries in install scripts)
+    if [[ "$DOTS_PKG" == "brew" ]]; then
+        log_info "Caching brew package lists..."
+        export BREW_CASKS=$(brew list --cask 2>/dev/null || true)
+        export BREW_FORMULAE=$(brew list 2>/dev/null || true)
+        export BREW_CASK_VERSIONS=$(brew list --cask --versions 2>/dev/null || true)
+        export BREW_FORMULA_VERSIONS=$(brew list --versions 2>/dev/null || true)
+    fi
+
     scripts=("$install_dir"/*.sh)
     for script in "${scripts[@]}"; do
         if [[ -n "$targets" ]]; then
@@ -167,7 +174,8 @@ run() {
         printf "completed in ${time_color}${execution_ms_formatted}ms${NC}\n"
     done
 }
-echo -e "\n${GREY}Logging to \"$log_abs_target\"${NC}"
+log_info "Logging to \"$log_abs_target\""
+
 total_start_ns=$(now_ns)
 run 2>&1 | tee "$log_abs_target"
 total_end_ns=$(now_ns)

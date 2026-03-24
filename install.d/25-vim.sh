@@ -18,11 +18,12 @@ for url in "${vim_plugins[@]}"; do
     name=$(basename "$url" .git)
     dest="$vim_pack_dir/$name"
     if [[ -d "$dest" ]]; then
-        git -C "$dest" pull --quiet
-        log_pass "$name updated"
+        git -C "$dest" pull --quiet &
     else
-        git clone --depth 1 --quiet "$url" "$dest"
-        log_pass "$name installed"
+        git clone --depth 1 --quiet "$url" "$dest" &
     fi
 done
+wait
+
 log_pass "vim plugins configured"
+vim --version 2>/dev/null | sed -n '1p' | log_quote

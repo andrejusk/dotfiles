@@ -10,7 +10,6 @@
 
 if ! echo "$BREW_FORMULAE" | grep -q "^dockutil$"; then
     brew install dockutil
-else
-    log_skip "dockutil already installed"
 fi
 log_pass "dockutil installed"
+echo "$BREW_FORMULA_VERSIONS" | grep "^dockutil " | log_quote

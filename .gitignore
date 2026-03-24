@@ -22,3 +22,4 @@ home/.vim/pack
 # compiled binaries
 home/.tmux/donut
 
+*.zwc

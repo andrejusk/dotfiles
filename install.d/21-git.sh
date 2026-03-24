@@ -26,5 +26,5 @@ if ! command -v git &> /dev/null; then
     esac
 fi
 
-git --version | log_quote
 log_pass "git configured"
+git --version | log_quote

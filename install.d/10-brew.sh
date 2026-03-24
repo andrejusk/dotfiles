@@ -15,5 +15,5 @@ if ! command -v brew &> /dev/null; then
 else
     log_skip "Homebrew already installed"
 fi
-brew --version | log_quote
 log_pass "Homebrew installed"
+echo "Homebrew $(cat "$(brew --repository 2>/dev/null)"/.git/describe-cache/* 2>/dev/null || brew --version | head -1)" | log_quote

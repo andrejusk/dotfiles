@@ -23,11 +23,13 @@ if ! command -v tmux &> /dev/null; then
     esac
 fi
 
-tmux -V | log_quote
-
-# Compile screensaver
+# Compile screensaver (skip if binary is newer than source)
 if command -v cc &> /dev/null && [ -f "$HOME/.tmux/donut.c" ]; then
-    cc -O2 -o "$HOME/.tmux/donut" "$HOME/.tmux/donut.c" -lm
-    log_pass "Compiled donut screensaver"
+    if [ ! -f "$HOME/.tmux/donut" ] || [ "$HOME/.tmux/donut.c" -nt "$HOME/.tmux/donut" ]; then
+        cc -O2 -o "$HOME/.tmux/donut" "$HOME/.tmux/donut.c" -lm
+    fi
 fi
+
+log_pass "tmux configured"
+tmux -V | log_quote
 
