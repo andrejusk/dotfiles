@@ -1,6 +1,8 @@
 _dots_load_keybindings() {
     bindkey -e
-    stty -ixon 2>/dev/null
+
+    # Ctrl+D: delete char (suppress IGNORE_EOF logout warning)
+    bindkey '^D' delete-char
 
     # Ctrl+J: zoxide jump
     _dots_zoxide_widget() {

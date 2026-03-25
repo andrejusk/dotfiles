@@ -110,7 +110,7 @@ _dots_load_history() {
 }
 _dots_load_history
 
-setopt IGNORE_EOF
+stty -ixon 2>/dev/null
 
 # --- Tool init (cached) ---
 
