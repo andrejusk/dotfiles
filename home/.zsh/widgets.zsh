@@ -387,5 +387,22 @@ for line in sys.stdin:
     }
     zle -N _dots_stash_widget
     bindkey '^Y' _dots_stash_widget
+
+    # Restore Tab after bindkey -e
+    if (( ${+widgets[fzf-completion]} )); then
+        bindkey '^I' fzf-completion
+    elif (( ${+widgets[_dots_lazy_comp_widget]} )); then
+        bindkey '^I' _dots_lazy_comp_widget
+    fi
+
+    # Enter: expand colby → full copilot invocation (visible in terminal history)
+    _dots_enter_handler() {
+        if [[ "$BUFFER" == "colby" || "$BUFFER" == "colby "* ]]; then
+            BUFFER="${BUFFER/#colby/copilot --allow-all-tools --allow-all-paths}"
+        fi
+        zle accept-line
+    }
+    zle -N _dots_enter_handler
+    bindkey '^M' _dots_enter_handler
 }
 _dots_load_keybindings

@@ -88,11 +88,14 @@ _dots_init_completion() {
 # Stub that loads real completion on first Tab, then replays the keypress
 _dots_lazy_comp_widget() {
     _dots_init_completion
+    # Point fzf fallback to real completion before removing this widget
+    fzf_default_completion=expand-or-complete
     zle -D _dots_lazy_comp_widget
-    # If fzf-completion exists (loaded via zle-line-init), use it; otherwise default
     if (( ${+widgets[fzf-completion]} )); then
+        bindkey '^I' fzf-completion
         zle fzf-completion "$@"
     else
+        bindkey '^I' expand-or-complete
         zle expand-or-complete "$@"
     fi
 }

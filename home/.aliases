@@ -51,7 +51,6 @@ _copilot_tmux_wrap() {
     trap - EXIT INT TERM
     [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
 }
-colby() { _copilot_tmux_wrap gh copilot --allow-all-tools --allow-all-paths "$@"; }
 alias gs='git s'
 alias gd='git d'
 alias gdc='git dc'
