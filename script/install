@@ -31,9 +31,10 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[FAIL]${NC} $*"; }
 log_debug() { echo -e "${TEAL}$*${NC}"; }
 log_quote() { sed "s/^/  ${GREY}│ /" | sed "s/$/${NC}/"; }
+log_indent() { sed "s/^/  │ /"; }
 
 # Export log functions
-export -f log_info log_pass log_skip log_warn log_error log_debug log_quote
+export -f log_info log_pass log_skip log_warn log_error log_debug log_quote log_indent
 
 printf "\n\t${TEAL} <<< ${TEAL_BOLD}dots${TEAL} >>> ${NC}\n"
 printf "\t${GREY}==============${NC}\n\n"
@@ -138,10 +139,18 @@ run() {
     # Cache brew package lists (avoid repeated slow brew queries in install scripts)
     if [[ "$DOTS_PKG" == "brew" ]]; then
         log_info "Caching brew package lists..."
-        export BREW_CASKS=$(brew list --cask 2>/dev/null || true)
-        export BREW_FORMULAE=$(brew list 2>/dev/null || true)
-        export BREW_CASK_VERSIONS=$(brew list --cask --versions 2>/dev/null || true)
-        export BREW_FORMULA_VERSIONS=$(brew list --versions 2>/dev/null || true)
+        local cask_versions_tmp=$(mktemp)
+        local formula_versions_tmp=$(mktemp)
+        brew list --cask --versions 2>/dev/null > "$cask_versions_tmp" &
+        local cask_pid=$!
+        brew list --versions 2>/dev/null > "$formula_versions_tmp" &
+        local formula_pid=$!
+        wait "$cask_pid" "$formula_pid" 2>/dev/null || true
+        export BREW_CASK_VERSIONS=$(cat "$cask_versions_tmp")
+        export BREW_FORMULA_VERSIONS=$(cat "$formula_versions_tmp")
+        export BREW_CASKS=$(awk '{print $1}' <<< "$BREW_CASK_VERSIONS")
+        export BREW_FORMULAE=$(awk '{print $1}' <<< "$BREW_FORMULA_VERSIONS")
+        rm -f "$cask_versions_tmp" "$formula_versions_tmp"
     fi
 
     scripts=("$install_dir"/*.sh)
@@ -155,8 +164,14 @@ run() {
         fi
 
         local script_name=$(basename "$script")
+        local label=" ${script_name} "
+        local rule_width=40
+        local label_len=${#label}
+        local pad_len=$(( rule_width - label_len - 2 ))
+        (( pad_len < 2 )) && pad_len=2
+        local pad=$(printf '─%.0s' $(seq 1 "$pad_len"))
 
-        printf "\n\n${TEAL}<<< ${TEAL_BOLD}$script_name:${NC}\n"
+        printf "\n${GREY}──${label}${pad}${NC}\n"
         local start_ns=$(now_ns)
         source "$script"
         local end_ns=$(now_ns)
@@ -170,8 +185,7 @@ run() {
         else
             time_color="$RED"
         fi
-        printf "${TEAL}>>> ${TEAL_BOLD}${script_name}, ${NC}"
-        printf "completed in ${time_color}${execution_ms_formatted}ms${NC}\n"
+        printf "${GREY}── ${time_color}${execution_ms_formatted}ms${NC}\n"
     done
 }
 log_info "Logging to \"$log_abs_target\""

@@ -48,8 +48,8 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
     )
 
     log_info "Installing runtimes..."
-    MISE_QUIET=1 mise install "${MISE_RUNTIMES[@]}" 2>&1 | log_quote
-    MISE_QUIET=1 mise use -g "${MISE_RUNTIMES[@]}" 2>&1 | log_quote
+    MISE_QUIET=1 mise install "${MISE_RUNTIMES[@]}" 2>&1 | log_quote || true
+    MISE_QUIET=1 mise use -g "${MISE_RUNTIMES[@]}" 2>&1 | log_quote || true
 fi
 
 # Activate mise shims so runtimes (e.g. python3) are available for app installers
@@ -62,6 +62,12 @@ typeset -a MISE_APPS=(
     "zoxide@latest"
     "ripgrep@latest"
     "delta@latest"
+    "eza@latest"
+    "fd@latest"
+    "sd@latest"
+    "bottom@latest"
+    "ubi:dalance/procs@latest"
+    "cargo:tealdeer@latest"
 )
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
@@ -76,10 +82,10 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 fi
 
 log_info "Installing apps..."
-MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote
+MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote || true
 
 # Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
-bat cache --build &>/dev/null
+bat cache --build &>/dev/null || true
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     # Setup Poetry ZSH completions (XDG compliant)
