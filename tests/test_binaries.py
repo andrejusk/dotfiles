@@ -55,6 +55,8 @@ binaries: List[Text] = [
     "firebase",
     "redis-cli",
     "redis-server",
+    # debugging tools
+    "gdb",
     # language: python
     "python",
     "python3",
