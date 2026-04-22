@@ -264,7 +264,8 @@ _dots_load_keybindings() {
     # Ctrl+S: copilot sessions
     _dots_copilot_session_widget() {
         local session_dir="$HOME/.copilot/session-state"
-        [[ -d "$session_dir" ]] || { BUFFER="colby"; zle reset-prompt; zle accept-line; return; }
+        local colby_cmd="copilot --allow-all-tools --allow-all-paths"
+        [[ -d "$session_dir" ]] || { BUFFER="$colby_cmd"; zle reset-prompt; zle accept-line; return; }
         local session
         session="$(python3 -c "
 import os, json, glob
@@ -341,14 +342,14 @@ for line in sys.stdin:
         local line=$(echo "$session" | tail -1)
         # Ctrl+N — new session
         if [[ "$key" == "ctrl-n" ]]; then
-            BUFFER="colby"
+            BUFFER="$colby_cmd"
             zle reset-prompt
             zle accept-line
             return
         fi
         # Ctrl+S again — continue latest
         if [[ "$key" == "ctrl-s" ]]; then
-            BUFFER="colby --continue"
+            BUFFER="$colby_cmd --continue"
             zle reset-prompt
             zle accept-line
             return
