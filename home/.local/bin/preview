@@ -82,6 +82,10 @@ preview_pdf() {
 
 preview_markdown() {
     local glow_style="${XDG_CONFIG_HOME:-$HOME/.config}/glow/preview.json"
+    if [[ "$DOTS_THEME" == "light" ]]; then
+        local light_style="${XDG_CONFIG_HOME:-$HOME/.config}/glow/preview-light.json"
+        [[ -f "$light_style" ]] && glow_style="$light_style"
+    fi
     if command -v glow &>/dev/null; then
         local style_args=(-s dark)
         [[ -f "$glow_style" ]] && style_args=(-s "$glow_style")
@@ -90,39 +94,68 @@ preview_markdown() {
                 'COLORTERM=truecolor glow "$@"' _ "${style_args[@]}" -w "${FZF_PREVIEW_COLUMNS:-80}" "$file" \
                 2>/dev/null | tr -d '\r'
         else
-            local tmp term_w render_w
+            local tmp pid_file prev_w render_w pad
             tmp=$(mktemp)
-            # Hide tmux chrome in zen mode
+            pid_file=$(mktemp)
+            local cleanup_cmd="rm -f '${tmp}' '${pid_file}'"
+            # Snapshot and hide tmux chrome in zen mode
             if [[ "$zen" == true && -n "${TMUX:-}" ]]; then
+                local _ts _tpbs
+                _ts="$(tmux show -gqv status 2>/dev/null || echo on)"
+                _tpbs="$(tmux show -gqv pane-border-status 2>/dev/null || echo off)"
                 tmux set status off
                 tmux set pane-border-status off 2>/dev/null
-                trap 'tmux set status on; tmux set pane-border-status off 2>/dev/null; rm -f "$tmp"' EXIT
-            else
-                trap 'rm -f "$tmp"' EXIT
+                cleanup_cmd="tmux set status '${_ts}'; tmux set pane-border-status '${_tpbs}' 2>/dev/null; ${cleanup_cmd}"
             fi
-            term_w="$(tput cols)"
-            render_w="$term_w"
-            if [[ "$zen" == true ]] && (( term_w > 104 )); then
-                render_w=100
-            fi
-            local pad=$(( (term_w - render_w) / 2 ))
             local glow_input="$file"
             if [[ "$zen" == true ]]; then
-                # Pre-process: replace link URLs with dummy anchors (keeps link styling)
-                # and strip bare URLs
+                # Strip URLs for cleaner reading in zen mode
                 glow_input=$(mktemp).md
                 perl -pe '
                     s/\[([^\]]+)\]\([^\)]+\)/[$1](#)/g;
                     s/\s*<?https?:\/\/\S+>?//g;
                 ' "$file" > "$glow_input"
+                cleanup_cmd="rm -f '${glow_input}'; ${cleanup_cmd}"
             fi
-            script -q /dev/null bash -c \
-                'COLORTERM=truecolor glow "$@"' _ "${style_args[@]}" -w "$render_w" "$glow_input" 2>/dev/null \
-                | tr -d '\r' \
-                | if (( pad > 0 )); then sed "s/^/$(printf '%*s' "$pad" '')/"; else cat; fi \
-                > "$tmp"
-            [[ "$glow_input" != "$file" ]] && rm -f "$glow_input"
-            LESS='-R --mouse' less < "$tmp"
+            # Background monitor: kills the pager on terminal resize so the
+            # render loop can re-render at the new width.
+            # Uses SIGWINCH (signal-driven) — zero CPU while idle.
+            (
+                _spid=
+                trap 'pid=$(cat "${pid_file}" 2>/dev/null) && kill "$pid" 2>/dev/null' WINCH
+                trap 'kill "$_spid" 2>/dev/null; exit 0' TERM
+                while true; do
+                    sleep 86400 &
+                    _spid=$!
+                    wait "$_spid" 2>/dev/null
+                    kill "$_spid" 2>/dev/null
+                done
+            ) &
+            local monitor_pid=$!
+            cleanup_cmd="kill ${monitor_pid} 2>/dev/null; wait ${monitor_pid} 2>/dev/null; ${cleanup_cmd}"
+            trap "${cleanup_cmd}" EXIT
+            # Render-view loop: re-renders at new width when the monitor
+            # detects a terminal resize and kills the pager
+            while true; do
+                prev_w="$(tput cols)"
+                render_w="$prev_w"
+                if [[ "$zen" == true ]] && (( prev_w > 104 )); then
+                    render_w=100
+                fi
+                pad=$(( (prev_w - render_w) / 2 ))
+                script -q /dev/null bash -c \
+                    'COLORTERM=truecolor glow "$@"' _ "${style_args[@]}" -w "$render_w" "$glow_input" 2>/dev/null \
+                    | tr -d '\r' \
+                    | if (( pad > 0 )); then sed "s/^/$(printf '%*s' "$pad" '')/"; else cat; fi \
+                    > "$tmp"
+                [[ -s "$tmp" ]] || break
+                LESS='-R' less < "$tmp" &
+                echo $! > "$pid_file"
+                wait $! 2>/dev/null
+                # Re-render if terminal was resized while viewing
+                [[ "$(tput cols)" != "$prev_w" ]] && continue
+                break
+            done
         fi
     elif is_fzf; then
         bat --color=always --style=numbers ${line:+--highlight-line="$line"} "$file"

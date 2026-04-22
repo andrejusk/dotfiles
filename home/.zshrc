@@ -127,7 +127,11 @@ _dots_load_mise() {
 if [[ -n "${commands[fzf]:-}" ]]; then
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-    export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#808080,fg+:#CCE0D0,bg:-1,bg+:#1A1A1A --color=hl:#2CB494,hl+:#2CB494,info:#808080,marker:#2CB494 --color=prompt:#2CB494,spinner:#88409C,pointer:#2CB494,header:#808080 --color=border:#3C3C3C,preview-border:#3C3C3C,gutter:#1A1A1A,preview-fg:#CCE0D0'
+    if [[ "$DOTS_THEME" == light ]]; then
+        export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#506888,fg+:#3C4A50,bg:-1,bg+:#E0D8C0 --color=hl:#1A7864,hl+:#1A7864,info:#808080,marker:#1A7864 --color=prompt:#1A7864,spinner:#78348C,pointer:#1A7864,header:#808080 --color=border:#C0B898,preview-border:#C0B898,gutter:-1,preview-fg:#3C4A50'
+    else
+        export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#808080,fg+:#CCE0D0,bg:-1,bg+:#1A1A1A --color=hl:#2CB494,hl+:#2CB494,info:#808080,marker:#2CB494 --color=prompt:#2CB494,spinner:#88409C,pointer:#2CB494,header:#808080 --color=border:#3C3C3C,preview-border:#3C3C3C,gutter:#1A1A1A,preview-fg:#CCE0D0'
+    fi
 fi
 
 _dots_load_fzf() {

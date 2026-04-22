@@ -29,12 +29,24 @@
   line-numbers = true
   paging = always
   pager = less --mouse -R -+X -+F
-  syntax-theme = dots
   file-decoration-style = none
-  file-style = "#2CB494" bold
   hunk-header-decoration-style = none
   line-numbers-left-style = "#808080"
   line-numbers-right-style = "#808080"
+
+[delta "light"]
+  syntax-theme = dots-light
+  file-style = "#1A8A72" bold
+  line-numbers-minus-style = "#B46400"
+  line-numbers-plus-style = "#1A8A72"
+  plus-style = syntax "#D8F0E4"
+  plus-emph-style = syntax "#B8E0CC"
+  minus-style = syntax "#F8E8D0"
+  minus-emph-style = syntax "#F0D8B8"
+
+[delta "dark"]
+  syntax-theme = dots
+  file-style = "#2CB494" bold
   line-numbers-minus-style = "#F88C14"
   line-numbers-plus-style = "#2CB494"
   plus-style = syntax "#0C2A24"

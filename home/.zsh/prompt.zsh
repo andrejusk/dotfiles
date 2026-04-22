@@ -10,44 +10,89 @@ typeset -gA _dots_pc
 
 _dots_init_colors() {
     if [[ "$COLORTERM" == (truecolor|24bit) ]]; then
-        _dots_pc=(
-            teal      $'%{\e[38;2;44;180;148m%}'
-            teal_bg   $'%{\e[48;2;44;180;148m%}'
-            orange    $'%{\e[38;2;248;140;20m%}'
-            grey      $'%{\e[38;2;114;144;184m%}'
-            grey_bg   $'%{\e[48;2;114;144;184m%}'
-            purple    $'%{\e[38;2;136;64;156m%}'
-            purple_bg $'%{\e[48;2;136;64;156m%}'
-            bright    $'%{\e[38;2;204;224;208m%}'
-            dark      $'%{\e[38;2;26;26;26m%}'
-            dark_bg   $'%{\e[48;2;26;26;26m%}'
-        )
+        if [[ "$DOTS_THEME" == light ]]; then
+            _dots_pc=(
+                teal      $'%{\e[38;2;26;120;100m%}'
+                teal_bg   $'%{\e[48;2;26;120;100m%}'
+                orange    $'%{\e[38;2;180;100;0m%}'
+                grey      $'%{\e[38;2;80;104;136m%}'
+                grey_bg   $'%{\e[48;2;80;104;136m%}'
+                purple    $'%{\e[38;2;120;52;140m%}'
+                purple_bg $'%{\e[48;2;120;52;140m%}'
+                bright    $'%{\e[38;2;60;74;80m%}'
+                dark      $'%{\e[38;2;138;128;112m%}'
+                dark_bg   $'%{\e[48;2;224;216;192m%}'
+            )
+        else
+            _dots_pc=(
+                teal      $'%{\e[38;2;44;180;148m%}'
+                teal_bg   $'%{\e[48;2;44;180;148m%}'
+                orange    $'%{\e[38;2;248;140;20m%}'
+                grey      $'%{\e[38;2;114;144;184m%}'
+                grey_bg   $'%{\e[48;2;114;144;184m%}'
+                purple    $'%{\e[38;2;136;64;156m%}'
+                purple_bg $'%{\e[48;2;136;64;156m%}'
+                bright    $'%{\e[38;2;204;224;208m%}'
+                dark      $'%{\e[38;2;26;26;26m%}'
+                dark_bg   $'%{\e[48;2;26;26;26m%}'
+            )
+        fi
     elif [[ "$TERM" == *256color* ]]; then
-        _dots_pc=(
-            teal      $'%{\e[38;5;43m%}'
-            teal_bg   $'%{\e[48;5;43m%}'
-            orange    $'%{\e[38;5;208m%}'
-            grey      $'%{\e[38;5;103m%}'
-            grey_bg   $'%{\e[48;5;103m%}'
-            purple    $'%{\e[38;5;133m%}'
-            purple_bg $'%{\e[48;5;133m%}'
-            bright    $'%{\e[38;5;188m%}'
-            dark      $'%{\e[38;5;234m%}'
-            dark_bg   $'%{\e[48;5;234m%}'
-        )
+        if [[ "$DOTS_THEME" == light ]]; then
+            _dots_pc=(
+                teal      $'%{\e[38;5;30m%}'
+                teal_bg   $'%{\e[48;5;30m%}'
+                orange    $'%{\e[38;5;166m%}'
+                grey      $'%{\e[38;5;60m%}'
+                grey_bg   $'%{\e[48;5;60m%}'
+                purple    $'%{\e[38;5;133m%}'
+                purple_bg $'%{\e[48;5;133m%}'
+                bright    $'%{\e[38;5;240m%}'
+                dark      $'%{\e[38;5;144m%}'
+                dark_bg   $'%{\e[48;5;187m%}'
+            )
+        else
+            _dots_pc=(
+                teal      $'%{\e[38;5;43m%}'
+                teal_bg   $'%{\e[48;5;43m%}'
+                orange    $'%{\e[38;5;208m%}'
+                grey      $'%{\e[38;5;103m%}'
+                grey_bg   $'%{\e[48;5;103m%}'
+                purple    $'%{\e[38;5;133m%}'
+                purple_bg $'%{\e[48;5;133m%}'
+                bright    $'%{\e[38;5;188m%}'
+                dark      $'%{\e[38;5;234m%}'
+                dark_bg   $'%{\e[48;5;234m%}'
+            )
+        fi
     else
-        _dots_pc=(
-            teal      $'%{\e[36m%}'
-            teal_bg   $'%{\e[46m%}'
-            orange    $'%{\e[33m%}'
-            grey      $'%{\e[34m%}'
-            grey_bg   $'%{\e[44m%}'
-            purple    $'%{\e[35m%}'
-            purple_bg $'%{\e[45m%}'
-            bright    $'%{\e[37m%}'
-            dark      $'%{\e[30m%}'
-            dark_bg   $'%{\e[40m%}'
-        )
+        if [[ "$DOTS_THEME" == light ]]; then
+            _dots_pc=(
+                teal      $'%{\e[36m%}'
+                teal_bg   $'%{\e[46m%}'
+                orange    $'%{\e[33m%}'
+                grey      $'%{\e[34m%}'
+                grey_bg   $'%{\e[44m%}'
+                purple    $'%{\e[35m%}'
+                purple_bg $'%{\e[45m%}'
+                bright    $'%{\e[30m%}'
+                dark      $'%{\e[37m%}'
+                dark_bg   $'%{\e[47m%}'
+            )
+        else
+            _dots_pc=(
+                teal      $'%{\e[36m%}'
+                teal_bg   $'%{\e[46m%}'
+                orange    $'%{\e[33m%}'
+                grey      $'%{\e[34m%}'
+                grey_bg   $'%{\e[44m%}'
+                purple    $'%{\e[35m%}'
+                purple_bg $'%{\e[45m%}'
+                bright    $'%{\e[37m%}'
+                dark      $'%{\e[30m%}'
+                dark_bg   $'%{\e[40m%}'
+            )
+        fi
     fi
     _dots_pc[reset]=$'%{\e[0m%}'
     _dots_pc[bold]=$'%{\e[1m%}'

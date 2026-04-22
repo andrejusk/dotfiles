@@ -10,20 +10,63 @@ fi
 export EDITOR=vim
 export VISUAL=vim
 export PAGER=less
-export BAT_THEME=dots
+
+# Machine-local overrides (DOTS_THEME, credentials, etc.)
+[[ -f ~/.profile.local ]] && source ~/.profile.local
+
+# Theme detection: explicit > COLORFGBG > macOS appearance > dark
+_dots_detect_theme() {
+    [[ -n "${DOTS_THEME:-}" ]] && return
+    if [[ -n "${COLORFGBG:-}" ]]; then
+        local bg="${COLORFGBG##*;}"
+        if (( bg >= 7 )); then
+            export DOTS_THEME=light
+        else
+            export DOTS_THEME=dark
+        fi
+        return
+    fi
+    if [[ "$OSTYPE" == darwin* ]] && defaults read -g AppleInterfaceStyle &>/dev/null; then
+        export DOTS_THEME=dark
+    else
+        export DOTS_THEME=${DOTS_THEME:-dark}
+    fi
+}
+_dots_detect_theme
+
+# Theme-aware tool configuration
+if [[ "$DOTS_THEME" == light ]]; then
+    export BAT_THEME=dots-light
+    export GLAMOUR_STYLE=light
+    export DELTA_FEATURES=light
+else
+    export BAT_THEME=dots
+    export GLAMOUR_STYLE=dark
+    export DELTA_FEATURES=dark
+fi
 
 # Man pages via bat for syntax highlighting
 export MANPAGER="sh -c 'col -bx | sed -e \"s/\x1b\[[0-9;]*m//g\" | bat -l man -p'"
 
 # Less colours for bold/underline (man pages fallback)
 export LESS="-R --mouse"
-export LESS_TERMCAP_mb=$'\e[1;38;2;248;140;20m'
-export LESS_TERMCAP_md=$'\e[1;38;2;64;104;212m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[38;2;26;26;26;48;2;44;180;148m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[4;38;2;44;180;148m'
-export LESS_TERMCAP_ue=$'\e[0m'
+if [[ "$DOTS_THEME" == light ]]; then
+    export LESS_TERMCAP_mb=$'\e[1;38;2;200;100;0m'
+    export LESS_TERMCAP_md=$'\e[1;38;2;50;80;170m'
+    export LESS_TERMCAP_me=$'\e[0m'
+    export LESS_TERMCAP_so=$'\e[38;2;253;246;227;48;2;44;180;148m'
+    export LESS_TERMCAP_se=$'\e[0m'
+    export LESS_TERMCAP_us=$'\e[4;38;2;44;180;148m'
+    export LESS_TERMCAP_ue=$'\e[0m'
+else
+    export LESS_TERMCAP_mb=$'\e[1;38;2;248;140;20m'
+    export LESS_TERMCAP_md=$'\e[1;38;2;64;104;212m'
+    export LESS_TERMCAP_me=$'\e[0m'
+    export LESS_TERMCAP_so=$'\e[38;2;26;26;26;48;2;44;180;148m'
+    export LESS_TERMCAP_se=$'\e[0m'
+    export LESS_TERMCAP_us=$'\e[4;38;2;44;180;148m'
+    export LESS_TERMCAP_ue=$'\e[0m'
+fi
 
 # Use bat as a colourised pager for less
 export LESSOPEN="| bat --color=always --style=plain %s 2>/dev/null"
