@@ -264,7 +264,7 @@ _dots_load_keybindings() {
     # Ctrl+S: copilot sessions
     _dots_copilot_session_widget() {
         local session_dir="$HOME/.copilot/session-state"
-        [[ -d "$session_dir" ]] || { BUFFER="colby --continue"; zle reset-prompt; zle accept-line; return; }
+        [[ -d "$session_dir" ]] || { BUFFER="colby"; zle reset-prompt; zle accept-line; return; }
         local session
         session="$(python3 -c "
 import os, json, glob
@@ -332,7 +332,7 @@ for line in sys.stdin:
     except: pass
 " 2>/dev/null
         ' --ansi --delimiter="|" --with-nth=1,3,4 \
-           --header 'enter=resume | ^l=this dir | ^s=latest | ^n=new | ^d=delete | ^r=restricted' \
+           --header '^n=new ^s=latest enter=resume ^l=cwd ^d=del ^r=restricted' \
            --bind "ctrl-l:change-query(${PWD/#$HOME/~})+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d)"
         local fzf_rc=$?
