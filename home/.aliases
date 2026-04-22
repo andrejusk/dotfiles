@@ -1,3 +1,9 @@
+# Reset terminal mouse tracking (fixes stuck mouse mode after unclean SSH disconnect)
+_dots_reset_mouse() {
+    printf '\e[?9l\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?1015l\e[?25h'
+}
+alias reset-mouse='_dots_reset_mouse'
+
 alias bench='ZSH_BENCH=1 exec zsh'
 alias dots='cd $DOTFILES'
 alias j='z'
@@ -14,12 +20,14 @@ cs() {
     local codespace="${1:-}"
     if [[ -z "$codespace" ]]; then
         gh cs ssh
+        _dots_reset_mouse
         return
     fi
     [[ -n "$TMUX" ]] && tmux rename-window "cs:${codespace%-*}"
-    trap '[[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
+    trap '_dots_reset_mouse; [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
     gh cs ssh -c "$codespace"
     local rc=$?
+    _dots_reset_mouse
     trap - EXIT INT TERM
     [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
     if (( rc == 0 )); then
@@ -73,9 +81,10 @@ if [[ -z "${CODESPACES:-}" ]]; then
 ssh() {
     local ssh_target="${@: -1}"
     [[ -n "$TMUX" ]] && tmux rename-window "ssh:$ssh_target"
-    trap '[[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
+    trap '_dots_reset_mouse; [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)' EXIT INT TERM
     command ssh "$@"
     local rc=$?
+    _dots_reset_mouse
     trap - EXIT INT TERM
     [[ -n "$TMUX" ]] && (tmux set automatic-rename on &)
 
