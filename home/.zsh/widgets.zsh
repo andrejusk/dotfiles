@@ -30,8 +30,8 @@ _dots_load_keybindings() {
 
     # Ctrl+E: edit file (frecency + git status boost)
     _dots_edit_widget() {
-        local file edit_log="${XDG_DATA_HOME:-$HOME/.local/share}/edit/log"
-        file="$({
+        local selection edit_log="${XDG_DATA_HOME:-$HOME/.local/share}/edit/log"
+        selection="$({
             awk -v logfile="$edit_log" '
             BEGIN {
                 while ((getline line < logfile) > 0) {
@@ -72,14 +72,24 @@ _dots_load_keybindings() {
           | fzf --ansi --delimiter='\t' --nth=2 \
                 --header 'enter=edit | ^v=preview | ^z=zen' \
                 --preview 'preview {2}' \
-                --bind 'ctrl-v:execute(preview {2})' \
-                --bind 'ctrl-z:execute(preview --zen {2})')" \
+                --expect='ctrl-v,ctrl-z')" \
           || { zle reset-prompt; return; }
-        file="$(printf '%s' "$file" | cut -f2)"
+        local key=$(head -1 <<< "$selection")
+        local file=$(printf '%s' "$(tail -1 <<< "$selection")" | cut -f2)
         [[ -z "$file" ]] && { zle reset-prompt; return; }
-        mkdir -p "${edit_log:h}"
-        printf '%s\t%s\n' "$(date +%s)" "$file" >> "$edit_log"
-        BUFFER="${EDITOR:-vim} ${(q)file}"
+        case "$key" in
+            ctrl-v)
+                BUFFER="preview ${(q)file}"
+                ;;
+            ctrl-z)
+                BUFFER="preview --zen ${(q)file}"
+                ;;
+            *)
+                mkdir -p "${edit_log:h}"
+                printf '%s\t%s\n' "$(date +%s)" "$file" >> "$edit_log"
+                BUFFER="${EDITOR:-vim} ${(q)file}"
+                ;;
+        esac
         zle reset-prompt
         zle accept-line
     }
@@ -283,9 +293,10 @@ for ws in glob.glob(os.path.join(sd, '*/workspace.yaml')):
                         except: pass
                         break
         if not msg: continue
+        cwd = d.get('cwd', '')
         ctx = repo or d.get('cwd','?').replace(home,'~')
         label = f'{ctx} \u00b7 {summary}' if summary else f'{ctx} \u00b7 {msg}'
-        entries.append((ts, sid, label))
+        entries.append((ts, sid, label, cwd))
     except: pass
 for jf in glob.glob(os.path.join(sd, '*.jsonl')):
     try:
@@ -300,11 +311,12 @@ for jf in glob.glob(os.path.join(sd, '*.jsonl')):
                     except: pass
                     break
         if not msg: continue
-        entries.append((ts, sid, msg))
+        entries.append((ts, sid, msg, ''))
     except: pass
 entries.sort(key=lambda x: x[0], reverse=True)
-for ts, sid, label in entries:
-    print(f'{ts} | {sid} | {label}')
+for ts, sid, label, cwd in entries:
+    cwd_short = '\033[90m' + cwd.replace(home, '~') + '\033[0m' if cwd else ''
+    print(f'{ts} | {sid} | {label} | {cwd_short}')
 " 2>/dev/null | fzf --preview '
             id=$(echo {} | cut -d"|" -f2 | tr -d " ")
             sd="'"$session_dir"'"
@@ -319,8 +331,9 @@ for line in sys.stdin:
         print(\">\", msg)
     except: pass
 " 2>/dev/null
-        ' --delimiter="|" --with-nth=1,3 \
-           --header 'enter=resume | ^r=restricted | ^s=latest | ^n=new | ^d=delete' \
+        ' --ansi --delimiter="|" --with-nth=1,3,4 \
+           --header 'enter=resume | ^l=this dir | ^s=latest | ^n=new | ^d=delete | ^r=restricted' \
+           --bind "ctrl-l:change-query(${PWD/#$HOME/~})+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d)"
         local fzf_rc=$?
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* ]] && { zle reset-prompt; return; }
