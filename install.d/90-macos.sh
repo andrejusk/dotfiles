@@ -63,52 +63,5 @@ _defaults_set com.apple.Spotlight MenuItemHidden -int 1
 _defaults_set com.apple.dock show-recents -bool false
 _defaults_set com.apple.dock scroll-to-open -bool true
 
-# Remove default apps from the dock
-dock_state=$(defaults read com.apple.dock persistent-apps 2>/dev/null || echo "")
-default_apps=(
-    "Messages"
-    "Mail"
-    "Maps"
-    "Photos"
-    "FaceTime"
-    "Calendar"
-    "Contacts"
-    "Reminders"
-    "Freeform"
-    "TV"
-    "Music"
-    "News"
-    "Keynote"
-    "Numbers"
-    "Pages"
-)
-for default_app in "${default_apps[@]}"; do
-    [[ $dock_state == *"$default_app"* ]] && dockutil --remove "$default_app" --no-restart 1>/dev/null 2>&1 || true
-done
-
-# Set up apps in the dock
-dock_order=(
-    "/System/Library/CoreServices/Finder.app" # Cannot be moved
-    "/System/Applications/App Store.app"
-    "/System/Applications/Apps.app"
-    "/System/Applications/System Settings.app"
-    "/System/Applications/Utilities/Activity Monitor.app"
-    "/Applications/iTerm.app"
-)
-for i in "${!dock_order[@]}"; do
-    if [[ $i -ne 0 ]]; then
-        path="${dock_order[$i]}"
-        name=$(basename "$path" | sed 's/\.app$//')
-        if [[ $dock_state == *"$name"* ]]; then
-            dockutil --move "${path}" --position "$i" --no-restart 2>/dev/null || true
-        else
-            dockutil --add "${path}" --position "$i" --no-restart 2>/dev/null || true
-        fi
-    fi
-done
-if [[ ! $dock_state == *"spacer"* ]]; then
-    dockutil --add '' --type spacer --section apps --position "${#dock_order[@]}" --no-restart 2>/dev/null || true
-fi
-
 log_info "Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
 log_pass "macOS defaults configured"
