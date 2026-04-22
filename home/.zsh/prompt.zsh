@@ -20,7 +20,7 @@ _dots_init_colors() {
                 purple    $'%{\e[38;2;120;52;140m%}'
                 purple_bg $'%{\e[48;2;120;52;140m%}'
                 bright    $'%{\e[38;2;60;74;80m%}'
-                dark      $'%{\e[38;2;138;128;112m%}'
+                dark      $'%{\e[38;2;224;216;192m%}'
                 dark_bg   $'%{\e[48;2;224;216;192m%}'
             )
         else
@@ -48,7 +48,7 @@ _dots_init_colors() {
                 purple    $'%{\e[38;5;133m%}'
                 purple_bg $'%{\e[48;5;133m%}'
                 bright    $'%{\e[38;5;240m%}'
-                dark      $'%{\e[38;5;144m%}'
+                dark      $'%{\e[38;5;187m%}'
                 dark_bg   $'%{\e[48;5;187m%}'
             )
         else
