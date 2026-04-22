@@ -213,7 +213,8 @@ _dots_load_keybindings() {
         elif [[ -n "$TMUX" ]]; then
             local session
             session="$({ echo '+ new session'; echo "$sessions"; } \
-                | fzf --preview 'case {} in "+ new session") echo "Create a new tmux session";; *) tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}";; esac')" \
+                | fzf --bind 'ctrl-n:first+accept' \
+                      --preview 'case {} in "+ new session") echo "Create a new tmux session";; *) tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}";; esac')" \
                 || { zle reset-prompt; return; }
             if [[ "$session" == "+ new session" ]]; then
                 BUFFER="tmux new-session -d && tmux switch-client -n"
@@ -223,7 +224,8 @@ _dots_load_keybindings() {
         else
             local session
             session="$(echo "$sessions" \
-                | fzf --preview 'tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}"')" \
+                | fzf --bind 'ctrl-n:accept' \
+                      --preview 'tmux list-windows -t {} -F "  #{window_index}: #{window_name} #{pane_current_command}"')" \
                 || { zle reset-prompt; return; }
             BUFFER="tmux attach -t ${(q)session}"
         fi
@@ -333,16 +335,23 @@ for line in sys.stdin:
     except: pass
 " 2>/dev/null
         ' --ansi --delimiter="|" --with-nth=1,3,4 \
-           --header '^n=new ^s=latest enter=resume ^l=cwd ^d=del ^r=restricted' \
+           --header '^n=new ^s=latest enter=resume ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
            --bind "ctrl-l:change-query(${PWD/#$HOME/~})+first" \
-           --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d)"
+           --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"
         local fzf_rc=$?
-        [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* ]] && { zle reset-prompt; return; }
+        [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* && "$session" != alt-n* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
         local line=$(echo "$session" | tail -1)
         # Ctrl+N — new session
         if [[ "$key" == "ctrl-n" ]]; then
             BUFFER="$colby_cmd"
+            zle reset-prompt
+            zle accept-line
+            return
+        fi
+        # Alt+N — new restricted session
+        if [[ "$key" == "alt-n" ]]; then
+            BUFFER="gh copilot"
             zle reset-prompt
             zle accept-line
             return
