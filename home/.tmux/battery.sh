@@ -6,6 +6,9 @@ pct=""
 charging=""
 full=""
 
+sep_color="#3C3C3C"
+[[ "$DOTS_THEME" == "light" ]] && sep_color="#C0B898"
+
 if command -v pmset &>/dev/null; then
     # macOS
     info=$(pmset -g batt)
@@ -22,20 +25,22 @@ fi
 
 [[ -z "$pct" ]] && exit 0
 
+suffix=" #[fg=${sep_color}] "
+
 if [[ -n "$full" ]]; then
-    echo "#[fg=#808080]󰚥 AC#[default]"
+    echo "#[fg=#808080]󰚥 AC#[default]${suffix}"
 elif [[ -n "$charging" ]]; then
-    echo "#[fg=#808080]󰂄 ${pct}%#[default]"
+    echo "#[fg=#808080]󰂄 ${pct}%#[default]${suffix}"
 elif (( pct <= 10 )); then
-    echo "#[fg=#F88C14,bold]󰂎 ${pct}%#[default]"
+    echo "#[fg=#F88C14,bold]󰂎 ${pct}%#[default]${suffix}"
 elif (( pct <= 20 )); then
-    echo "#[fg=#F88C14,bold]󰁺 ${pct}%#[default]"
+    echo "#[fg=#F88C14,bold]󰁺 ${pct}%#[default]${suffix}"
 elif (( pct <= 40 )); then
-    echo "#[fg=#808080]󰁼 ${pct}%#[default]"
+    echo "#[fg=#808080]󰁼 ${pct}%#[default]${suffix}"
 elif (( pct <= 60 )); then
-    echo "#[fg=#808080]󰁾 ${pct}%#[default]"
+    echo "#[fg=#808080]󰁾 ${pct}%#[default]${suffix}"
 elif (( pct <= 80 )); then
-    echo "#[fg=#808080]󰂀 ${pct}%#[default]"
+    echo "#[fg=#808080]󰂀 ${pct}%#[default]${suffix}"
 else
-    echo "#[fg=#808080]󰁹 ${pct}%#[default]"
+    echo "#[fg=#808080]󰁹 ${pct}%#[default]${suffix}"
 fi
