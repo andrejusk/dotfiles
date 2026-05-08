@@ -17,6 +17,7 @@
 
 static struct termios orig_termios;
 static volatile sig_atomic_t running = 1;
+static int light_mode = 0;
 
 static void restore_tmux(void) {
     system("tmux set-option status on 2>/dev/null");
@@ -44,18 +45,24 @@ static void write_all(int fd, const char *buf, int len) {
 
 /* 64 foreground-color escapes: teal color ramp. */
 #define N_SHADES 64
+/* Shades below this cutoff render as blank cells so the real terminal
+ * background shows through, making the donut/rain fade theme-agnostic
+ * instead of fading toward a hardcoded near-background color. */
+#define DIM_CUTOFF 8
 static char SHADE_ESC[N_SHADES][28];
 static int  SHADE_LEN[N_SHADES];
 
 /* Fixed escape sequences with known lengths */
 #define ESC_RESET     "\033[0m"
 #define ESC_RESET_LEN (sizeof(ESC_RESET) - 1)
-#define ESC_CLK_FG     "\033[38;2;44;180;148m"
-#define ESC_CLK_FG_LEN (sizeof(ESC_CLK_FG) - 1)
-#define ESC_CLK_SH     "\033[38;2;10;40;34m"
-#define ESC_CLK_SH_LEN (sizeof(ESC_CLK_SH) - 1)
 #define ESC_ROWEND     "\033[0m\033[K"
 #define ESC_ROWEND_LEN (sizeof(ESC_ROWEND) - 1)
+
+/* Clock colors — set at startup based on DOTS_THEME */
+static char esc_clk_fg[32];
+static int  esc_clk_fg_len;
+static char esc_clk_sh[32];
+static int  esc_clk_sh_len;
 
 /* Read input, return 1 if should quit. Ignores mouse release events.
  * X11 basic: \033[M btn x y (release: btn & 3 == 3)
@@ -97,19 +104,49 @@ static void init_palette(float dim) {
     for (int i = 0; i < N_SHADES; i++) {
         float t = (float)i / (N_SHADES - 1);
         int r, g, b;
-        if (t <= 0.45f) {
-            float s = t / 0.45f;
-            r = 4  + (int)((44  - 4)  * s);
-            g = 20 + (int)((180 - 20) * s);
-            b = 16 + (int)((148 - 16) * s);
+        if (light_mode) {
+            /* Light theme: pale teal → saturated mid-teal.
+             * Low shades are blanked via DIM_CUTOFF so they fade to the
+             * real terminal background; the high end stays a readable
+             * mid-teal instead of going near-black, which looked muddy
+             * against a light background. */
+            if (t <= 0.45f) {
+                float s = t / 0.45f;
+                r = 190 - (int)(120 * s);
+                g = 220 - (int)( 70 * s);
+                b = 205 - (int)( 80 * s);
+            } else {
+                float s = (t - 0.45f) / 0.55f;
+                r = 70  - (int)((70  - 26)  * s);
+                g = 150 - (int)((150 - 120) * s);
+                b = 125 - (int)((125 - 100) * s);
+            }
         } else {
-            float s = (t - 0.45f) / 0.55f;
-            r = 44  + (int)((196 - 44)  * s);
-            g = 180 + (int)((236 - 180) * s);
-            b = 148 + (int)((216 - 148) * s);
+            /* Dark theme: dark teal → bright teal */
+            if (t <= 0.45f) {
+                float s = t / 0.45f;
+                r = 4  + (int)((44  - 4)  * s);
+                g = 20 + (int)((180 - 20) * s);
+                b = 16 + (int)((148 - 16) * s);
+            } else {
+                float s = (t - 0.45f) / 0.55f;
+                r = 44  + (int)((196 - 44)  * s);
+                g = 180 + (int)((236 - 180) * s);
+                b = 148 + (int)((216 - 148) * s);
+            }
         }
         r = (int)(r * dim); g = (int)(g * dim); b = (int)(b * dim);
         SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[38;2;%d;%d;%dm", r, g, b);
+    }
+}
+
+static void init_clock_colors(void) {
+    if (light_mode) {
+        esc_clk_fg_len = sprintf(esc_clk_fg, "\033[38;2;26;120;100m");
+        esc_clk_sh_len = sprintf(esc_clk_sh, "\033[38;2;140;185;170m");
+    } else {
+        esc_clk_fg_len = sprintf(esc_clk_fg, "\033[38;2;44;180;148m");
+        esc_clk_sh_len = sprintf(esc_clk_sh, "\033[38;2;10;40;34m");
     }
 }
 
@@ -219,7 +256,11 @@ static int clock_shadow(int row, int col, const int hhmm[4], int blink_on) {
 }
 
 int main(int argc, char **argv) {
+    const char *theme = getenv("DOTS_THEME");
+    light_mode = (theme && strcmp(theme, "light") == 0);
+
     init_palette(1.0f);
+    init_clock_colors();
 
     /* Read active time from argv (passed once at lock) */
     int active_secs = 0;
@@ -229,12 +270,12 @@ int main(int argc, char **argv) {
     if (active_secs > 0) {
         int h = active_secs / 3600, m = (active_secs % 3600) / 60;
         if (h > 0 && m > 0)
-            activity_len = sprintf(activity_str, "%d hour%s %d minute%s active today",
+            activity_len = sprintf(activity_str, "%d hour%s %d minute%s active this session",
                                    h, h == 1 ? "" : "s", m, m == 1 ? "" : "s");
         else if (h > 0)
-            activity_len = sprintf(activity_str, "%d hour%s active today", h, h == 1 ? "" : "s");
+            activity_len = sprintf(activity_str, "%d hour%s active this session", h, h == 1 ? "" : "s");
         else
-            activity_len = sprintf(activity_str, "%d minute%s active today", m, m == 1 ? "" : "s");
+            activity_len = sprintf(activity_str, "%d minute%s active this session", m, m == 1 ? "" : "s");
     }
 
     tcgetattr(STDIN_FILENO, &orig_termios);
@@ -538,7 +579,7 @@ int main(int argc, char **argv) {
                             if (cstate != CS_RESET) {
                                 memcpy(p, ESC_RESET, ESC_RESET_LEN); p += ESC_RESET_LEN;
                             }
-                            memcpy(p, ESC_CLK_FG, ESC_CLK_FG_LEN); p += ESC_CLK_FG_LEN;
+                            memcpy(p, esc_clk_fg, esc_clk_fg_len); p += esc_clk_fg_len;
                             cstate = CS_CLK_FG;
                         }
                         *p++ = activity_str[cc - act_x0];
@@ -547,7 +588,7 @@ int main(int argc, char **argv) {
                             if (cstate != CS_RESET) {
                                 memcpy(p, ESC_RESET, ESC_RESET_LEN); p += ESC_RESET_LEN;
                             }
-                            memcpy(p, ESC_CLK_FG, ESC_CLK_FG_LEN); p += ESC_CLK_FG_LEN;
+                            memcpy(p, esc_clk_fg, esc_clk_fg_len); p += esc_clk_fg_len;
                             cstate = CS_CLK_FG;
                         }
                         *p++ = (char)0xE2; *p++ = (char)0x96; *p++ = (char)0x88;
@@ -556,7 +597,7 @@ int main(int argc, char **argv) {
                             if (cstate != CS_RESET) {
                                 memcpy(p, ESC_RESET, ESC_RESET_LEN); p += ESC_RESET_LEN;
                             }
-                            memcpy(p, ESC_CLK_SH, ESC_CLK_SH_LEN); p += ESC_CLK_SH_LEN;
+                            memcpy(p, esc_clk_sh, esc_clk_sh_len); p += esc_clk_sh_len;
                             cstate = CS_CLK_SH;
                         }
                         *p++ = (char)0xE2; *p++ = (char)0x96; *p++ = (char)0x88;
@@ -571,7 +612,7 @@ int main(int argc, char **argv) {
                                 ci = ci * 3 / 10;  /* 30% */
                             else
                                 ci = ci * 15 / 100; /* 15% */
-                            if (ci < 1) ci = 1;
+                            if (ci < DIM_CUTOFF) ci = -1;  /* blank → real bg */
                         }
                         if (ci < 0) {
                             if (cstate != CS_RESET) {
@@ -591,7 +632,7 @@ int main(int argc, char **argv) {
                     }
                 } else {
                     int ci = sbuf[rs + c];
-                    if (ci < 0) {
+                    if (ci < DIM_CUTOFF) {
                         if (cstate != CS_RESET) {
                             memcpy(p, ESC_RESET, ESC_RESET_LEN); p += ESC_RESET_LEN;
                             cstate = CS_RESET;
