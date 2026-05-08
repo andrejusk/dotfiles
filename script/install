@@ -6,12 +6,35 @@ set -eo pipefail
 #
 
 if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
-    TEAL=$'\033[38;2;44;180;148m'
-    TEAL_BOLD=$'\033[1;38;2;44;180;148m'
-    RED=$'\033[38;2;248;140;20m'
-    GREEN=$'\033[38;2;114;144;184m'
-    YELLOW=$'\033[38;2;252;252;56m'
-    GREY=$'\033[38;2;128;128;128m'
+    # Theme detection: explicit > COLORFGBG > macOS appearance > dark
+    if [[ -z "${DOTS_THEME:-}" ]]; then
+        if [[ -n "${COLORFGBG:-}" ]]; then
+            _bg="${COLORFGBG##*;}"
+            if (( _bg >= 7 )); then DOTS_THEME=light; else DOTS_THEME=dark; fi
+            unset _bg
+        elif [[ "$OSTYPE" == darwin* ]] && defaults read -g AppleInterfaceStyle &>/dev/null; then
+            DOTS_THEME=dark
+        else
+            DOTS_THEME=dark
+        fi
+    fi
+
+    if [[ "$DOTS_THEME" == light ]]; then
+        # Darker, saturated tones for legibility on light backgrounds
+        TEAL=$'\033[38;2;26;120;100m'
+        TEAL_BOLD=$'\033[1;38;2;26;120;100m'
+        RED=$'\033[38;2;176;64;16m'
+        GREEN=$'\033[38;2;60;92;148m'
+        YELLOW=$'\033[38;2;148;96;0m'
+        GREY=$'\033[38;2;96;96;96m'
+    else
+        TEAL=$'\033[38;2;44;180;148m'
+        TEAL_BOLD=$'\033[1;38;2;44;180;148m'
+        RED=$'\033[38;2;248;140;20m'
+        GREEN=$'\033[38;2;114;144;184m'
+        YELLOW=$'\033[38;2;252;252;56m'
+        GREY=$'\033[38;2;128;128;128m'
+    fi
     NC=$'\033[0m'
 else
     TEAL=""

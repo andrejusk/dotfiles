@@ -45,6 +45,48 @@ else
     export DELTA_FEATURES=dark
 fi
 
+# Git colour overrides: .gitconfig hex values are tuned for dark backgrounds
+# and include near-white shades (header, branch.local) that vanish on light.
+# Applied via GIT_CONFIG_COUNT overlay so no per-invocation config rewrite.
+_dots_git_light_overrides() {
+    set -- \
+        color.status.added          '#1A8A72' \
+        color.status.changed        '#3A5C94' \
+        color.status.untracked      '#B46400 italic' \
+        color.status.branch         '#1A8A72' \
+        color.status.header         '#3A5A50' \
+        color.diff.meta             '#6A2078' \
+        color.diff.frag             '#2848A0' \
+        color.diff.old              '#B46400' \
+        color.diff.new              '#1A8A72' \
+        color.diff.context          '#606060' \
+        color.diff.commit           '#B46400' \
+        color.branch.current        '#1A8A72 bold' \
+        color.branch.local          '#3A5A50' \
+        color.branch.remote         '#2848A0' \
+        color.branch.upstream       '#3A5C94' \
+        color.decorate.branch       '#1A8A72' \
+        color.decorate.remoteBranch '#2848A0' \
+        color.decorate.tag          '#B46400' \
+        color.decorate.stash        '#6A2078' \
+        color.decorate.HEAD         '#B46400 bold' \
+        alias.l  'log --pretty=format:%C(#B46400)%h\ %ad%C(#1A8A72)%d\ %Creset%s%C(#606060)\ [%cn] --decorate --date=short' \
+        alias.ls 'log --pretty=format:%C(#B46400)%h%C(#1A8A72)%d\ %Creset%s%C(#606060)\ [%cn] --decorate' \
+        alias.ll 'log --pretty=format:%C(#B46400)%h%C(#1A8A72)%d\ %Creset%s%C(#606060)\ [%cn] --decorate --numstat' \
+        alias.ld 'log --pretty=format:%C(#B46400)%h\ %ad%C(#1A8A72)%d\ %Creset%s%C(#606060)\ [%cn] --decorate --date=relative'
+    local i=0
+    export GIT_CONFIG_COUNT=$(( $# / 2 ))
+    while [ $# -ge 2 ]; do
+        export "GIT_CONFIG_KEY_${i}=$1"
+        export "GIT_CONFIG_VALUE_${i}=$2"
+        shift 2
+        i=$(( i + 1 ))
+    done
+}
+if [[ "$DOTS_THEME" == light ]]; then
+    _dots_git_light_overrides
+fi
+
 # Man pages via bat for syntax highlighting
 export MANPAGER="sh -c 'col -bx | sed -e \"s/\x1b\[[0-9;]*m//g\" | bat -l man -p'"
 
