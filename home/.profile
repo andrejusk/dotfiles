@@ -117,6 +117,9 @@ export LESSOPEN="| bat --color=always --style=plain %s 2>/dev/null"
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
 
+# GitHub Copilot CLI
+export COPILOT_AUTO_UPDATE=false
+
 # PATH setup with caching (invalidates when base PATH or .profile changes)
 _dots_path_cache="${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 _dots_path_hit=false
