@@ -27,6 +27,13 @@ by invoking the `setup-new` script directly via `curl`:
     # Run
     curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | bash
 
+### iSH (iOS)
+
+On a fresh [iSH](https://ish.app/) install, bootstrap the prerequisites first:
+
+    apk add bash curl
+    curl -s https://raw.githubusercontent.com/andrejusk/dotfiles/HEAD/script/setup-new | bash
+
 ## Keyboard shortcuts
 
 | Key | Mnemonic | Action |

@@ -98,6 +98,8 @@ case "$OSTYPE" in
             DOTS_PKG="apt"
         elif command -v pacman &>/dev/null; then
             DOTS_PKG="pacman"
+        elif command -v apk &>/dev/null; then
+            DOTS_PKG="apk"
         elif command -v dnf &>/dev/null; then
             DOTS_PKG="dnf"
         fi

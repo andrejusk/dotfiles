@@ -1,0 +1,58 @@
+#
+# alpine-base: Base Alpine image with sudo user
+#
+FROM alpine:3.21 AS base
+
+RUN apk update --quiet && \
+    apk add --quiet --no-cache \
+        bash \
+        curl \
+        gnupg \
+        openssh-client \
+        shadow \
+        sudo \
+        wget
+
+# Create user with sudo privilege
+RUN useradd -r -u 1001 --create-home -m "test-user" && \
+    echo "test-user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Use bash as default shell
+SHELL ["/bin/bash", "-c"]
+
+#
+# source: Base image with source copied over
+#
+FROM base AS source
+
+ARG DOTFILES_DIR="/workdir/.dotfiles"
+RUN mkdir -p "$DOTFILES_DIR" && \
+    chown -R "test-user" "$DOTFILES_DIR"
+
+ADD --chown="test-user" home "$DOTFILES_DIR/home"
+ADD --chown="test-user" install.d "$DOTFILES_DIR/install.d"
+ADD --chown="test-user" script "$DOTFILES_DIR/script"
+WORKDIR "$DOTFILES_DIR"
+
+#
+# install: Installation steps
+#
+FROM source AS install
+
+ENV USER=test-user
+ENV SKIP_SUDO_CHECK=true
+ENV SKIP_SSH_CONFIG=true
+ENV SKIP_DOCKER_CONFIG=true
+
+USER test-user
+ARG UUID="docker"
+RUN ./script/install
+
+#
+# test: Test entrypoint
+#
+FROM install AS test
+
+ADD --chown="test-user" tests "$DOTFILES_DIR/tests"
+WORKDIR "$DOTFILES_DIR/tests"
+ENTRYPOINT [ "./run.sh" ]

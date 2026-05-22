@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [Dockerfile, Dockerfile.arch]
+        dockerfile: [Dockerfile, Dockerfile.arch, Dockerfile.alpine]
     steps:
       - uses: actions/checkout@v6.0.2
 

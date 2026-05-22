@@ -27,4 +27,5 @@ if ! command -v az &>/dev/null; then
 fi
 
 log_pass "Azure CLI installed"
-echo "$BREW_FORMULA_VERSIONS" | grep "^azure-cli " | log_quote
+az version --output tsv 2>/dev/null | head -1 | log_quote
+

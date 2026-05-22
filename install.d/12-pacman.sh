@@ -17,8 +17,8 @@ pacman_packages=(
     base-devel
 )
 
-sudo pacman -Sy --noconfirm
-sudo pacman -S --noconfirm --needed "${pacman_packages[@]}"
+sudo pacman -Sy --noconfirm &>/dev/null
+sudo pacman -S --noconfirm --needed "${pacman_packages[@]}" &>/dev/null
 
 unset pacman_packages
 
