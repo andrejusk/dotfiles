@@ -25,6 +25,11 @@ _defaults_set NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 _defaults_set NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 _defaults_set NSGlobalDomain WebAutomaticSpellingCorrectionEnabled -bool false
 
+# Dictation (on-device; hold Globe 🌐 key to dictate)
+_defaults_set com.apple.assistant.support "Dictation Enabled" -bool true
+_defaults_set com.apple.HIToolbox AppleDictationAutoEnable -int 1
+_defaults_set com.apple.HIToolbox AppleFnUsageType -int 3
+
 # Appearance
 _defaults_set -globalDomain AppleAquaColorVariant -int 6
 _defaults_set -globalDomain AppleInterfaceStyle -string Dark
