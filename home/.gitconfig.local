@@ -1,3 +1,8 @@
 [user]
   name = Andrejus
   email = git@andrejus.uk
+
+[includeIf "gitdir:~/Workspace/github/"]
+  path = ~/.gitconfig.work
+[includeIf "gitdir:~/Workspace/githubnext/"]
+  path = ~/.gitconfig.work
