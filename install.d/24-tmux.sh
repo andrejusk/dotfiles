@@ -62,6 +62,18 @@ if command -v git &> /dev/null; then
         name=$(basename "$url" .git)
         echo "$name" | log_quote
     done
+
+    # NOTE: Do NOT seed an empty resurrect "last" file. An empty-but-existing
+    # save makes tmux-resurrect's restore (triggered by @continuum-restore 'on')
+    # treat the single-pane startup as "restore from scratch", restore nothing,
+    # then kill session 0 — taking the whole server down on every start. When the
+    # file is absent, restore aborts cleanly (the harmless "Tmux resurrect file
+    # not found!" status flashes until continuum's first auto-save). Remove any
+    # stale empty seed left by older versions of this script.
+    resurrect_dir="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/resurrect"
+    if [[ -f "$resurrect_dir/last" && ! -s "$resurrect_dir/last" ]]; then
+        rm -f "$resurrect_dir/last"
+    fi
 else
     log_warn "Skipping tmux plugins: git not found"
 fi
