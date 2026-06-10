@@ -19,6 +19,9 @@ temp
 # vim plugins (installed via install script)
 home/.vim/pack
 
+# tmux plugins (installed via install script)
+home/.tmux/plugins
+
 # compiled binaries
 home/.tmux/donut
 

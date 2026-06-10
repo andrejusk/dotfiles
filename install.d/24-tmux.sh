@@ -33,3 +33,36 @@ fi
 log_pass "tmux configured"
 tmux -V | log_quote
 
+# Install tmux plugins (TPM + session persistence). Cloned directly so they
+# load headlessly, i.e. without an interactive `prefix + I`. ~/.tmux/plugins is
+# a stow-folded symlink into the repo, so this dir is gitignored.
+if command -v git &> /dev/null; then
+    tmux_plugin_dir="$HOME/.tmux/plugins"
+    mkdir -p "$tmux_plugin_dir"
+
+    tmux_plugins=(
+        "https://github.com/tmux-plugins/tpm.git"
+        "https://github.com/tmux-plugins/tmux-resurrect.git"
+        "https://github.com/tmux-plugins/tmux-continuum.git"
+    )
+
+    for url in "${tmux_plugins[@]}"; do
+        name=$(basename "$url" .git)
+        dest="$tmux_plugin_dir/$name"
+        if [[ -d "$dest" ]]; then
+            git -C "$dest" pull --quiet &
+        else
+            git clone --depth 1 --quiet "$url" "$dest" &
+        fi
+    done
+    wait
+
+    log_pass "tmux plugins configured"
+    for url in "${tmux_plugins[@]}"; do
+        name=$(basename "$url" .git)
+        echo "$name" | log_quote
+    done
+else
+    log_warn "Skipping tmux plugins: git not found"
+fi
+
