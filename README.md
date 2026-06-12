@@ -40,7 +40,7 @@ On a fresh [iSH](https://ish.app/) install, bootstrap the prerequisites first:
 |-----|----------|--------|
 | `^A` | **A**ll commits | Git log browser with diff preview |
 | `^B` | **B**ranch | Git branch checkout with log preview |
-| `^E` | **E**dit | Find and edit file in `$EDITOR` |
+| `^E` | **E**dit | Edit file in `$EDITOR` — folder-scoped (`^g` whole repo, `^l` folder) |
 | `^F` | **F**ind | Find in files (rg + fzf), open at line |
 | `^G` | **G**o remote | SSH/codespace connect *(local only)* |
 | `^J` | **J**ump | Zoxide directory jump |
@@ -49,7 +49,7 @@ On a fresh [iSH](https://ish.app/) install, bootstrap the prerequisites first:
 | `^O` | **O**pen | Open repo/PR/issues/actions in browser |
 | `^P` | **P**roject | Switch to workspace project |
 | `^R` | **R**everse | Fuzzy search command history *(fzf built-in)* |
-| `^S` | **S**ession | Browse & resume Copilot CLI sessions |
+| `^S` | **S**ession | Resume Copilot CLI sessions — cwd-scoped (`^g` global, `^l` cwd) |
 | `^X` | e**X**ecute | Process manager (fzf + kill) |
 | `^Y` | **Y**ank stash | Browse git stashes with diff preview |
 

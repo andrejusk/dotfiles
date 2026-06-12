@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# edit-list — candidate file list for the ^E edit widget, scoped to a root dir.
+# Combines edit-log frecency + git status + tracked/untracked files, ranked by
+# frecency with a boost for git-changed files.
+#
+# Emits TSV rows: <status-glyph>\t<display-path>\t<absolute-path>
+#   - display-path is relative to the requested root (short, for the picker)
+#   - absolute-path is what the widget opens / previews (root-independent)
+#
+# Usage: edit-list [root-dir]   (default: current directory)
+
+root="${1:-.}"
+cd "$root" 2>/dev/null || exit 0
+root="$PWD" # absolutise
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+edit_log="${XDG_DATA_HOME:-$HOME/.local/share}/edit/log"
+
+{
+    awk -v logfile="$edit_log" -v root="$root" -v repo_root="$repo_root" '
+    BEGIN {
+        while ((getline line < logfile) > 0) {
+            idx = index(line, "\t")
+            if (idx) { f = substr(line, idx+1); cnt[f]++; ts[f] = substr(line, 1, idx-1)+0 }
+        }
+        close(logfile)
+        # git status is scoped to the current subtree (pathspec ".") but prints
+        # paths relative to the repo root, so anchor them on repo_root.
+        if (repo_root != "") {
+            cmd = "git status --porcelain . 2>/dev/null"
+            while ((cmd | getline line) > 0) {
+                st = substr(line, 1, 2); f = substr(line, 4)
+                if ((i = index(f, " -> ")) > 0) f = substr(f, i+4)
+                gsub(/^"|"$/, "", f)
+                if (st !~ /D/) git[repo_root "/" f] = st
+            }
+            close(cmd)
+        }
+        # rg lists files relative to the cwd (root), so anchor them on root.
+        fcmd = "rg --files --hidden --glob \"!.git\" 2>/dev/null"
+        while ((fcmd | getline line) > 0) local_files[root "/" line] = 1
+        close(fcmd)
+        for (f in cnt) {
+            # Only include history entries that exist under the active root
+            if (!(f in local_files)) continue
+            s = cnt[f] * 1000 + ts[f]
+            if (f in git) { s += 100000; printf "%d\t%s\t%s\t%s\n", s, clr(git[f]), disp(f), f; delete git[f] }
+            else printf "%d\t \t%s\t%s\n", s, disp(f), f
+        }
+        for (f in git) printf "100000\t%s\t%s\t%s\n", clr(git[f]), disp(f), f
+    }
+    function disp(abs) { return substr(abs, length(root) + 2) }
+    function clr(st) {
+        if (st ~ /^\?\?/) return "\033[33m?\033[0m"
+        if (st ~ /^R/)    return "\033[36mR\033[0m"
+        if (st ~ /^A/)    return "\033[32mA\033[0m"
+        if (st ~ /M/)     return "\033[38;5;103mM\033[0m"
+        return "\033[90m~\033[0m"
+    }' /dev/null 2>/dev/null | sort -rn | cut -f2-
+    rg --files --hidden --glob '!.git' 2>/dev/null | awk -v root="$root" '{print " \t" $0 "\t" root "/" $0}'
+} | awk -F'\t' '!seen[$3]++'

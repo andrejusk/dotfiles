@@ -29,53 +29,23 @@ _dots_load_keybindings() {
     bindkey '^B' _dots_git_branch_widget
 
     # Ctrl+E: edit file (frecency + git status boost)
+    # Defaults to the current folder; ^g pulls out to the whole repo, ^l re-scopes
+    # to the folder. Display paths are root-relative; field 3 is the absolute path.
     _dots_edit_widget() {
         local selection edit_log="${XDG_DATA_HOME:-$HOME/.local/share}/edit/log"
-        selection="$({
-            awk -v logfile="$edit_log" '
-            BEGIN {
-                while ((getline line < logfile) > 0) {
-                    idx = index(line, "\t")
-                    if (idx) { f = substr(line, idx+1); cnt[f]++; ts[f] = substr(line, 1, idx-1)+0 }
-                }
-                close(logfile)
-                cmd = "git status --porcelain 2>/dev/null"
-                while ((cmd | getline line) > 0) {
-                    st = substr(line, 1, 2); f = substr(line, 4)
-                    if ((i = index(f, " -> ")) > 0) f = substr(f, i+4)
-                    gsub(/^"|"$/, "", f)
-                    if (st !~ /D/) git[f] = st
-                }
-                close(cmd)
-                # Build index of local files for filtering history entries
-                fcmd = "rg --files --hidden --glob \"!.git\" 2>/dev/null"
-                while ((fcmd | getline line) > 0) local_files[line] = 1
-                close(fcmd)
-                for (f in cnt) {
-                    # Only include history entries that exist in current directory
-                    if (!(f in local_files)) continue
-                    s = cnt[f] * 1000 + ts[f]
-                    if (f in git) { s += 100000; printf "%d\t%s\t%s\n", s, clr(git[f]), f; delete git[f] }
-                    else printf "%d\t \t%s\n", s, f
-                }
-                for (f in git) printf "100000\t%s\t%s\n", clr(git[f]), f
-            }
-            function clr(st) {
-                if (st ~ /^\?\?/) return "\033[33m?\033[0m"
-                if (st ~ /^R/)    return "\033[36mR\033[0m"
-                if (st ~ /^A/)    return "\033[32mA\033[0m"
-                if (st ~ /M/)     return "\033[38;5;103mM\033[0m"
-                return "\033[90m~\033[0m"
-            }' /dev/null 2>/dev/null | sort -rn | cut -f2-
-            rg --files --hidden --glob '!.git' 2>/dev/null | awk '{print " \t" $0}'
-        } | awk -F'\t' '!seen[$2]++' \
-          | fzf --ansi --delimiter='\t' --nth=2 \
-                --header 'enter=edit | ^v=preview | ^z=zen' \
-                --preview 'preview {2}' \
+        local repo_root
+        repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || repo_root="$PWD"
+        [[ -z "$repo_root" ]] && repo_root="$PWD"
+        selection="$(edit-list "$PWD" \
+          | fzf --ansi --delimiter='\t' --with-nth=1,2 --nth=2 \
+                --header 'enter=edit | ^v=preview | ^z=zen | ^g=repo | ^l=folder' \
+                --preview 'preview {3}' \
+                --bind "ctrl-g:reload(edit-list ${(q)repo_root})" \
+                --bind "ctrl-l:reload(edit-list ${(q)PWD})" \
                 --expect='ctrl-v,ctrl-z')" \
           || { zle reset-prompt; return; }
         local key=$(head -1 <<< "$selection")
-        local file=$(printf '%s' "$(tail -1 <<< "$selection")" | cut -f2)
+        local file=$(printf '%s' "$(tail -1 <<< "$selection")" | cut -f3)
         [[ -z "$file" ]] && { zle reset-prompt; return; }
         case "$key" in
             ctrl-v)
@@ -268,8 +238,8 @@ _dots_load_keybindings() {
         local session_dir="$HOME/.copilot/session-state"
         local colby_cmd="copilot --allow-all-tools --allow-all-paths"
         [[ -d "$session_dir" ]] || { BUFFER="$colby_cmd"; zle reset-prompt; zle accept-line; return; }
-        local session
-        session="$(python3 -c "
+        local session list query='' cwd_disp="${PWD/#$HOME/~}"
+        list="$(python3 -c "
 import os, json, glob
 sd = os.path.expanduser('~/.copilot/session-state')
 home = os.path.expanduser('~')
@@ -320,7 +290,13 @@ entries.sort(key=lambda x: x[0], reverse=True)
 for ts, sid, label, cwd in entries:
     cwd_short = '\033[90m' + cwd.replace(home, '~') + '\033[0m' if cwd else ''
     print(f'{ts} | {sid} | {label} | {cwd_short}')
-" 2>/dev/null | fzf --preview '
+" 2>/dev/null)"
+        # Default to sessions in the current directory when any exist; ^g pulls
+        # out to the global list, ^l re-applies the current-directory filter.
+        if [[ "$PWD" != "$HOME" ]] && print -r -- "$list" | grep -qF -- "$cwd_disp"; then
+            query="'$cwd_disp"
+        fi
+        session="$(print -r -- "$list" | fzf --query "$query" --preview '
             id=$(echo {} | cut -d"|" -f2 | tr -d " ")
             sd="'"$session_dir"'"
             f="$sd/$id/events.jsonl"
@@ -335,8 +311,9 @@ for line in sys.stdin:
     except: pass
 " 2>/dev/null
         ' --ansi --delimiter="|" --with-nth=1,3,4 \
-           --header '^n=new ^s=latest enter=resume ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
-           --bind "ctrl-l:change-query(${PWD/#$HOME/~})+first" \
+           --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
+           --bind "ctrl-l:change-query('${cwd_disp})+first" \
+           --bind "ctrl-g:clear-query+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"
         local fzf_rc=$?
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* && "$session" != alt-n* ]] && { zle reset-prompt; return; }
