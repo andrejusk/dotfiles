@@ -38,11 +38,11 @@ _dots_load_keybindings() {
         [[ -z "$repo_root" ]] && repo_root="$PWD"
         selection="$(edit-list "$PWD" \
           | fzf --ansi --delimiter='\t' --with-nth=1,2 --nth=2 \
-                --header 'enter=edit | ^v=preview | ^z=zen | ^g=repo | ^l=folder' \
+                --header 'enter=edit | ^v=preview | ^z=zen | ^y=copy | ^g=repo | ^l=folder' \
                 --preview 'preview {3}' \
                 --bind "ctrl-g:reload(edit-list ${(q)repo_root})" \
                 --bind "ctrl-l:reload(edit-list ${(q)PWD})" \
-                --expect='ctrl-v,ctrl-z')" \
+                --expect='ctrl-v,ctrl-z,ctrl-y')" \
           || { zle reset-prompt; return; }
         local key=$(head -1 <<< "$selection")
         local file=$(printf '%s' "$(tail -1 <<< "$selection")" | cut -f3)
@@ -53,6 +53,9 @@ _dots_load_keybindings() {
                 ;;
             ctrl-z)
                 BUFFER="preview --zen ${(q)file}"
+                ;;
+            ctrl-y)
+                BUFFER="clip ${(q)file}"
                 ;;
             *)
                 mkdir -p "${edit_log:h}"

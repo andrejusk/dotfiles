@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# clip — copy stdin (or named files) to the system clipboard, platform-aware.
+#
+# Selection order: pbcopy (macOS) > wl-copy (Wayland) > xclip / xsel (X11) >
+# OSC 52 escape (any terminal, incl. SSH / tmux / Codespaces where no native
+# clipboard tool exists). The tmux config relies on OSC 52 too (set-clipboard).
+#
+# Usage: clip [file...]      copy file contents
+#        some-cmd | clip     copy piped input
+
+# Read named files if given, otherwise stdin.
+read_input() {
+    if (( $# > 0 )); then cat -- "$@"; else cat; fi
+}
+
+if command -v pbcopy >/dev/null 2>&1; then
+    read_input "$@" | pbcopy
+elif [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
+    read_input "$@" | wl-copy
+elif [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
+    read_input "$@" | xclip -selection clipboard
+elif [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
+    read_input "$@" | xsel --clipboard --input
+else
+    # OSC 52 fallback: base64-encode the payload and hand it to the terminal.
+    payload="$(read_input "$@" | base64 | tr -d '\n')"
+    seq="$(printf '\033]52;c;%s\a' "$payload")"
+    # Wrap for tmux passthrough (doubling the leading ESC) when inside tmux.
+    [[ -n "${TMUX:-}" ]] && seq="$(printf '\033Ptmux;\033%s\033\\' "$seq")"
+    { printf '%s' "$seq" > /dev/tty; } 2>/dev/null || printf '%s' "$seq"
+fi

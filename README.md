@@ -40,7 +40,7 @@ On a fresh [iSH](https://ish.app/) install, bootstrap the prerequisites first:
 |-----|----------|--------|
 | `^A` | **A**ll commits | Git log browser with diff preview |
 | `^B` | **B**ranch | Git branch checkout with log preview |
-| `^E` | **E**dit | Edit file in `$EDITOR` — folder-scoped (`^g` whole repo, `^l` folder) |
+| `^E` | **E**dit | Edit file in `$EDITOR` — folder-scoped (`^g` repo, `^l` folder, `^y` copy) |
 | `^F` | **F**ind | Find in files (rg + fzf), open at line |
 | `^G` | **G**o remote | SSH/codespace connect *(local only)* |
 | `^J` | **J**ump | Zoxide directory jump |
