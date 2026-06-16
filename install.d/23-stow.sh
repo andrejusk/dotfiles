@@ -36,6 +36,9 @@ rm -f "$HOME/.ssh/config"
 
 mkdir -p "$HOME/.config"
 mkdir -p "$HOME/.ssh"
+# Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
+# the hooks file inside, rather than folding the whole state-heavy dir into the repo.
+mkdir -p "$HOME/.copilot/hooks"
 
 stow --dir="$root_dir" --target="$HOME" home
 
