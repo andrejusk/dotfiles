@@ -241,7 +241,7 @@ _dots_load_keybindings() {
         local session_dir="$HOME/.copilot/session-state"
         local colby_cmd="copilot --allow-all-tools --allow-all-paths"
         [[ -d "$session_dir" ]] || { BUFFER="$colby_cmd"; zle reset-prompt; zle accept-line; return; }
-        local session list query='' cwd_disp="${PWD/#$HOME/~}"
+        local session list cwd_disp="${PWD/#$HOME/~}"
         list="$(python3 -c "
 import os, json, glob
 sd = os.path.expanduser('~/.copilot/session-state')
@@ -257,7 +257,6 @@ for ws in glob.glob(os.path.join(sd, '*/workspace.yaml')):
         sid = d.get('id','')
         if not sid: continue
         ts = d.get('updated_at','?')[:16]
-        repo = d.get('repository','').split('/')[-1] if d.get('repository') else ''
         summary = d.get('summary','')
         msg = ''
         ev = os.path.join(os.path.dirname(ws), 'events.jsonl')
@@ -270,9 +269,8 @@ for ws in glob.glob(os.path.join(sd, '*/workspace.yaml')):
                         break
         if not msg: continue
         cwd = d.get('cwd', '')
-        ctx = repo or d.get('cwd','?').replace(home,'~')
-        label = f'{ctx} \u00b7 {summary}' if summary else f'{ctx} \u00b7 {msg}'
-        entries.append((ts, sid, label, cwd))
+        text = summary or msg
+        entries.append((ts, sid, text, cwd))
     except: pass
 for jf in glob.glob(os.path.join(sd, '*.jsonl')):
     try:
@@ -290,16 +288,23 @@ for jf in glob.glob(os.path.join(sd, '*.jsonl')):
         entries.append((ts, sid, msg, ''))
     except: pass
 entries.sort(key=lambda x: x[0], reverse=True)
-for ts, sid, label, cwd in entries:
+for ts, sid, text, cwd in entries:
     cwd_short = '\033[90m' + cwd.replace(home, '~') + '\033[0m' if cwd else ''
-    print(f'{ts} | {sid} | {label} | {cwd_short}')
+    print(f'{ts} | {sid} | {text} | {cwd_short}')
 " 2>/dev/null)"
-        # Default to sessions in the current directory when any exist; ^g pulls
-        # out to the global list, ^l re-applies the current-directory filter.
-        if [[ "$PWD" != "$HOME" ]] && print -r -- "$list" | grep -qF -- "$cwd_disp"; then
-            query="'$cwd_disp"
+        # Default to sessions in the current directory when any exist. The dir
+        # column is hidden in this view since every row shares $PWD; ^g pulls
+        # out to the global list and shows the dir column up front (before the
+        # message, so it stays readable), ^l re-scopes to the current directory
+        # and hides it again.
+        local list_file with_nth='1,4,3' initial_list="$list"
+        list_file="$(mktemp -t copilot-sessions.XXXXXX)"
+        print -r -- "$list" > "$list_file"
+        if [[ "$PWD" != "$HOME" ]] && grep -qF -- "$cwd_disp" "$list_file"; then
+            with_nth='1,3'
+            initial_list="$(grep -F -- "$cwd_disp" "$list_file")"
         fi
-        session="$(print -r -- "$list" | fzf --query "$query" --preview '
+        session="$(print -r -- "$initial_list" | fzf --preview '
             id=$(echo {} | cut -d"|" -f2 | tr -d " ")
             sd="'"$session_dir"'"
             f="$sd/$id/events.jsonl"
@@ -313,12 +318,13 @@ for line in sys.stdin:
         print(\">\", msg)
     except: pass
 " 2>/dev/null
-        ' --ansi --delimiter="|" --with-nth=1,3,4 \
+        ' --ansi --delimiter="|" --with-nth="$with_nth" \
            --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
-           --bind "ctrl-l:change-query('${cwd_disp})+first" \
-           --bind "ctrl-g:clear-query+first" \
+           --bind "ctrl-l:reload(grep -F -- ${(qq)cwd_disp} ${(qq)list_file})+change-with-nth(1,3)+first" \
+           --bind "ctrl-g:reload(cat -- ${(qq)list_file})+change-with-nth(1,4,3)+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"
         local fzf_rc=$?
+        rm -f -- "$list_file"
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* && "$session" != alt-n* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
         local line=$(echo "$session" | tail -1)
