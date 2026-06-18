@@ -113,9 +113,12 @@ fi
 # Use bat as a colourised pager for less
 export LESSOPEN="| bat --color=always --style=plain %s 2>/dev/null"
 
-# Homebrew
+# Homebrew — update deliberately (run `brew update` by hand) so installs stay
+# deterministic and don't pull rolling-release changes unbidden. The installer
+# already sets this for its own run (script/install); this covers interactive use.
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
+export HOMEBREW_NO_AUTO_UPDATE=1
 
 # GitHub Copilot CLI
 export COPILOT_AUTO_UPDATE=false
