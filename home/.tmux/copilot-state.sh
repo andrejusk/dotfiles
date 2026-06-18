@@ -8,6 +8,13 @@
 #   question  agent is asking you (ask_user)  error    last turn errored
 #   clear     remove the indicator (session ended)
 #
+# When a response lands (waiting) or a question is raised (question) on a window
+# you are NOT currently viewing, the window is also flagged "unread" via a
+# @copilot_unread option, which window-status-format paints as a full amber tab
+# so it stands out among already-seen tabs. The pane-focus-in hook in
+# ~/.tmux.conf clears the flag the moment you view (focus) the tab; a new turn
+# (working) or session end (clear) clears it too.
+#
 # Idempotent and a no-op outside tmux. Set COPILOT_STATE_DEBUG=<file> to trace.
 
 [ -n "$COPILOT_STATE_DEBUG" ] && \
@@ -19,9 +26,23 @@
 
 case "$1" in
     ''|clear)
-        tmux set-option -wu -t "$TMUX_PANE" @copilot_state 2>/dev/null ;;
+        tmux set-option -wu -t "$TMUX_PANE" @copilot_state  2>/dev/null
+        tmux set-option -wu -t "$TMUX_PANE" @copilot_unread 2>/dev/null
+        ;;
+    working)
+        tmux set-option -w  -t "$TMUX_PANE" @copilot_state working 2>/dev/null
+        tmux set-option -wu -t "$TMUX_PANE" @copilot_unread        2>/dev/null
+        ;;
+    waiting|question)
+        tmux set-option -w -t "$TMUX_PANE" @copilot_state "$1" 2>/dev/null
+        # Flag as unread only when you're not already looking at this window;
+        # otherwise pane-focus-in never fires to clear it and the tab sticks amber.
+        [ "$(tmux display-message -p -t "$TMUX_PANE" '#{window_active}' 2>/dev/null)" = "1" ] || \
+            tmux set-option -w -t "$TMUX_PANE" @copilot_unread 1 2>/dev/null
+        ;;
     *)
-        tmux set-option -w -t "$TMUX_PANE" @copilot_state "$1" 2>/dev/null ;;
+        tmux set-option -w -t "$TMUX_PANE" @copilot_state "$1" 2>/dev/null
+        ;;
 esac
 
 exit 0
