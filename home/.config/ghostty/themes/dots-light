@@ -1,0 +1,29 @@
+# dots — light palette (warm off-white background, dark text).
+# Tones are the darker/saturated variants used elsewhere in light mode (tmux,
+# bat dots-light, fzf) so they stay legible on the cream background.
+background = #F6F0DE
+foreground = #3C4A50
+
+cursor-color = #1A8A72
+cursor-text = #F6F0DE
+selection-background = #D0E0D8
+selection-foreground = #3C4A50
+
+# Normal
+palette = 0=#3C4A50
+palette = 1=#B04010
+palette = 2=#1A8A72
+palette = 3=#946000
+palette = 4=#3C5C94
+palette = 5=#78348C
+palette = 6=#1A8A8A
+palette = 7=#506888
+# Bright (reuse the normals; distinguish only the black/white anchors).
+palette = 8=#808080
+palette = 9=#B04010
+palette = 10=#1A8A72
+palette = 11=#946000
+palette = 12=#3C5C94
+palette = 13=#78348C
+palette = 14=#1A8A8A
+palette = 15=#3C4A50

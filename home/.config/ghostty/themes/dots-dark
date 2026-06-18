@@ -1,0 +1,29 @@
+# dots — dark palette (near-black background, cream text).
+# Derived from the repo's accessibility palette (see AGENTS.md "Colours").
+background = #0A0A0A
+foreground = #CCE0D0
+
+cursor-color = #2CB494
+cursor-text = #0A0A0A
+selection-background = #1A3050
+selection-foreground = #CCE0D0
+
+# Normal
+palette = 0=#0A0A0A
+palette = 1=#F40404
+palette = 2=#2CB494
+palette = 3=#FCFC38
+palette = 4=#7290B8
+palette = 5=#88409C
+palette = 6=#2CB4B4
+palette = 7=#CCE0D0
+# Bright (brand palette defines no separate bright tones; reuse the normals,
+# distinguishing only the black/white anchors).
+palette = 8=#808080
+palette = 9=#F40404
+palette = 10=#2CB494
+palette = 11=#FCFC38
+palette = 12=#7290B8
+palette = 13=#88409C
+palette = 14=#2CB4B4
+palette = 15=#E8F0E8

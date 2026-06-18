@@ -1,0 +1,15 @@
+# Ghostty — managed by github.com/andrejusk/dotfiles via GNU Stow.
+#
+# Follow the macOS system appearance, mirroring how DOTS_THEME is resolved for
+# the rest of the stack (shell, tmux, bat, fzf, glow). Both palettes derive
+# from the repo's accessibility-tuned colours (see AGENTS.md "Colours"). The
+# referenced themes live alongside this file in ./themes/.
+theme = light:dots-light,dark:dots-dark
+
+# Keep the window chrome (titlebar) in step with the active palette.
+window-theme = auto
+
+# Accessibility floor: nudge any theme colour that would otherwise fall below a
+# legible contrast ratio against the background (matters most on the light
+# cream background, where pale tones can wash out).
+minimum-contrast = 1.05
