@@ -50,6 +50,7 @@ binaries: List[Text] = [
     "docker" if not os.environ.get("SKIP_DOCKER_CONFIG") else None,
     "mise",
     "fastfetch",
+    "hyperfine",
     "cmatrix",
     "az",
     "firebase",

@@ -32,7 +32,7 @@ fi
 
 log_info "Installing mlx-lm..."
 # uv provides the fast installer engine for mise's pipx backend
-MISE_QUIET=1 mise use -g "uv@0.11.19" 2>&1 | log_quote || true
+MISE_QUIET=1 mise use -g "uv@0.11.21" 2>&1 | log_quote || true
 MISE_QUIET=1 mise use -g "pipx:mlx-lm@0.31.3" 2>&1 | log_quote || true
 
 log_pass "MLX tooling installed"

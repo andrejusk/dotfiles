@@ -41,8 +41,8 @@ echo "mise $(MISE_QUIET=1 mise --version)" | log_quote
 # Skip runtimes in Codespaces (use pre-installed versions)
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     typeset -a MISE_RUNTIMES=(
-        "python@3.14.2"
-        "node@25.5.0"
+        "python@3.14.6"
+        "node@26.3.0"
         "bun@latest"
         "rust@latest"
     )
@@ -72,10 +72,11 @@ typeset -a MISE_APPS=(
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     MISE_APPS+=(
-        "poetry@2.3.2"
-        "gh@2.86.0"
-        "terraform@1.14.4"
-        "firebase@15.5.1"
+        "poetry@2.4.1"
+        "gh@2.94.0"
+        "terraform@1.15.6"
+        "firebase@15.20.0"
+        "ubi:sharkdp/hyperfine@1.20.0"
         "fastfetch@latest"
         "glow@latest"
     )
