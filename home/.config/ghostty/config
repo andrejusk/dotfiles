@@ -35,3 +35,40 @@ macos-icon = custom-style
 macos-icon-frame = beige
 macos-icon-ghost-color = #0A7A4A
 macos-icon-screen-color = #08251F
+
+# --- Window & rendering polish ---
+# Subtle translucency with blur behind the default background. Cells with an
+# explicit background (e.g. the prompt pills) stay opaque because
+# background-opacity-cells defaults to false.
+background-opacity = 0.96
+background-blur = true
+
+# Reclaim the titlebar for a full-bleed window. tmux already provides tabs and a
+# status line, so the native title bar / traffic-light buttons aren't needed
+# (use Cmd+W / Cmd+M / Cmd+Q, or set this back to `transparent` to restore them).
+macos-titlebar-style = hidden
+
+# Breathing room around the grid, balanced so opposite edges match.
+window-padding-x = 8
+window-padding-y = 6
+window-padding-balance = true
+
+# Hide the mouse pointer while typing.
+mouse-hide-while-typing = true
+
+# --- Typography ---
+# A little extra line spacing for readability, plus slightly thicker glyphs.
+adjust-cell-height = 8%
+font-thicken = true
+
+# --- Shell integration ---
+# Add SSH support to the auto-detected zsh integration: ssh-terminfo installs the
+# xterm-ghostty terminfo on remote hosts and ssh-env propagates TERM, so colours,
+# keys, `clear` and tmux render correctly over SSH instead of "unknown terminal
+# type". (cursor/title/path are the existing on-by-default features, kept.)
+shell-integration-features = cursor,title,path,ssh-env,ssh-terminfo
+
+# --- Keybinds ---
+# Quake-style global dropdown terminal. The `global:` bind needs Ghostty granted
+# Accessibility permission (System Settings > Privacy & Security > Accessibility).
+keybind = global:cmd+grave_accent=toggle_quick_terminal
