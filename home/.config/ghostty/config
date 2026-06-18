@@ -24,3 +24,12 @@ minimum-contrast = 1
 # The cask is `auto_updates true`, so brew defers to the app's self-updater;
 # upgrade explicitly with:  brew upgrade --cask --greedy ghostty
 auto-update = off
+
+# Dock / app-switcher icon: recolour Ghostty's ghost into the repo teal
+# (#2CB494 -- see AGENTS.md "Colours") on a dark terminal screen, for a
+# teal-on-dark look in place of the default. Declarative via macos-icon, so it
+# survives app updates. Frame options: aluminum | beige | plastic | chrome.
+macos-icon = custom-style
+macos-icon-frame = aluminum
+macos-icon-ghost-color = #2CB494
+macos-icon-screen-color = #0A0A0A
