@@ -9,10 +9,13 @@ theme = light:dots-light,dark:dots-dark
 # Keep the window chrome (titlebar) in step with the active palette.
 window-theme = auto
 
-# Accessibility floor: nudge any theme colour that would otherwise fall below a
-# legible contrast ratio against the background (matters most on the light
-# cream background, where pale tones can wash out).
-minimum-contrast = 1.05
+# Keep minimum-contrast at 1 (disabled). The zsh prompt (home/.zsh/prompt.zsh)
+# draws its path/branch "pills" with padding characters coloured the SAME as
+# their background (fg == bg) so they render as invisible block padding. Any
+# value > 1 forces those zero-contrast cells to become legible, exposing the
+# literal `#` / `(` / `)` padding. iTerm2 has no such feature, hence it looked
+# fine there. Leave this at 1 unless the prompt stops using the pill technique.
+minimum-contrast = 1
 
 # Updates are owned by Homebrew, not Ghostty's built-in Sparkle updater.
 # `off` stops the periodic check and every prompt it raises -- including
