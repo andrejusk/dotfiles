@@ -13,3 +13,11 @@ window-theme = auto
 # legible contrast ratio against the background (matters most on the light
 # cream background, where pale tones can wash out).
 minimum-contrast = 1.05
+
+# Updates are owned by Homebrew, not Ghostty's built-in Sparkle updater.
+# `off` stops the periodic check and every prompt it raises -- including
+# Sparkle's first-launch "check for updates automatically?" dialog -- so the
+# choice is declarative on every machine rather than a per-machine GUI click.
+# The cask is `auto_updates true`, so brew defers to the app's self-updater;
+# upgrade explicitly with:  brew upgrade --cask --greedy ghostty
+auto-update = off
