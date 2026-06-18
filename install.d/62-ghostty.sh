@@ -12,4 +12,4 @@ if ! echo "$BREW_CASKS" | grep -q "^ghostty$"; then
     brew install --cask ghostty
 fi
 log_pass "Ghostty installed"
-echo "$BREW_CASK_VERSIONS" | grep "^ghostty " | log_quote
+echo "$BREW_CASK_VERSIONS" | grep "^ghostty " | log_quote || true

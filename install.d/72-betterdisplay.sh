@@ -12,4 +12,4 @@ if ! echo "$BREW_CASKS" | grep -q "^betterdisplay$"; then
     brew install --cask betterdisplay
 fi
 log_pass "BetterDisplay installed"
-echo "$BREW_CASK_VERSIONS" | grep "^betterdisplay " | log_quote
+echo "$BREW_CASK_VERSIONS" | grep "^betterdisplay " | log_quote || true

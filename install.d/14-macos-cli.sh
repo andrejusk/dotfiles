@@ -20,4 +20,4 @@ done
 unset formula formulae
 
 log_pass "macOS CLI utilities installed"
-echo "$BREW_FORMULA_VERSIONS" | grep -E "^(coreutils|dockutil) " | log_quote
+echo "$BREW_FORMULA_VERSIONS" | grep -E "^(coreutils|dockutil) " | log_quote || true

@@ -12,4 +12,4 @@ if ! echo "$BREW_CASKS" | grep -q "^rectangle$"; then
     brew install --cask rectangle
 fi
 log_pass "Rectangle installed"
-echo "$BREW_CASK_VERSIONS" | grep "^rectangle " | log_quote
+echo "$BREW_CASK_VERSIONS" | grep "^rectangle " | log_quote || true
