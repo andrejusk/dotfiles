@@ -23,7 +23,8 @@ for font in "${fonts_list[@]}"; do
 done
 
 if [[ "$fonts_missing" == "true" ]]; then
-    brew tap homebrew/cask-fonts
+    # Nerd Fonts live in homebrew/cask (the homebrew/cask-fonts tap was
+    # deprecated and removed in 2024); no tap required.
     for font in "${fonts_list[@]}"; do
         if ! echo "$BREW_CASKS" | grep -q "^$font$"; then
             brew install --cask "$font"
