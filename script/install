@@ -12,8 +12,13 @@ if [[ -t 1 && -n "$TERM" && "$TERM" != "dumb" ]]; then
             _bg="${COLORFGBG##*;}"
             if (( _bg >= 7 )); then DOTS_THEME=light; else DOTS_THEME=dark; fi
             unset _bg
-        elif [[ "$OSTYPE" == darwin* ]] && defaults read -g AppleInterfaceStyle &>/dev/null; then
-            DOTS_THEME=dark
+        elif [[ "$OSTYPE" == darwin* ]]; then
+            # AppleInterfaceStyle exists only in Dark mode; its absence means Light.
+            if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" == Dark ]]; then
+                DOTS_THEME=dark
+            else
+                DOTS_THEME=light
+            fi
         else
             DOTS_THEME=dark
         fi

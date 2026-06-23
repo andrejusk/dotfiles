@@ -26,8 +26,13 @@ _dots_detect_theme() {
         fi
         return
     fi
-    if [[ "$OSTYPE" == darwin* ]] && defaults read -g AppleInterfaceStyle &>/dev/null; then
-        export DOTS_THEME=dark
+    if [[ "$OSTYPE" == darwin* ]]; then
+        # AppleInterfaceStyle exists only in Dark mode; its absence means Light.
+        if [[ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" == Dark ]]; then
+            export DOTS_THEME=dark
+        else
+            export DOTS_THEME=light
+        fi
     else
         export DOTS_THEME=${DOTS_THEME:-dark}
     fi

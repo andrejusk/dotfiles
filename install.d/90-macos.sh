@@ -30,9 +30,10 @@ _defaults_set com.apple.assistant.support "Dictation Enabled" -bool true
 _defaults_set com.apple.HIToolbox AppleDictationAutoEnable -int 1
 _defaults_set com.apple.HIToolbox AppleFnUsageType -int 3
 
-# Appearance
+# Appearance (light/dark is intentionally NOT forced here — it's controlled
+# per-machine via System Settings, and DOTS_THEME detection follows it. See
+# home/.profile's _dots_detect_theme.)
 _defaults_set -globalDomain AppleAquaColorVariant -int 6
-_defaults_set -globalDomain AppleInterfaceStyle -string Dark
 _defaults_set -globalDomain AppleHighlightColor -string "0.172549 0.705882 0.580392"
 
 # Control Center
