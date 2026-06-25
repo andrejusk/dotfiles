@@ -14,6 +14,14 @@ alias reload-cache='rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/dots" ~/.zcompdump* 
 alias zen='curl -s https://api.github.com/zen && echo'
 alias la='ls -la'
 alias vi='vim'
+
+# bottom: load the palette config matching the active theme (light/dark)
+btm() {
+    case " $* " in
+        *" -C "*|*" --config_location "*) command btm "$@" ;;
+        *) command btm -C "$HOME/.config/bottom/bottom-${DOTS_THEME:-dark}.toml" "$@" ;;
+    esac
+}
 copilot() { _copilot_tmux_wrap gh copilot "$@"; }
 if [[ -z "${CODESPACES:-}" ]]; then
 cs() {

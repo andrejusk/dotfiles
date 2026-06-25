@@ -1,0 +1,45 @@
+# bottom - DARK theme (dots palette).
+# Selected automatically by the `btm` wrapper in ~/.aliases via $DOTS_THEME.
+# Accent shades follow the project palette (see ~/.zsh/prompt.zsh, ~/.tmux.conf),
+# tuned for a dark background. Keep in sync with bottom-light.toml.
+
+[styles]
+theme = "default"
+
+[styles.cpu]
+all_entry_color = "#CCE0D0"
+avg_entry_color = "#F88C14"
+cpu_core_colors = ["#F88C14", "#2CB494", "#88409C", "#0C48CC", "#FCFC38", "#F40404"]
+
+[styles.memory]
+ram_color = "#2CB494"
+cache_color = "#88409C"
+swap_color = "#F88C14"
+arc_color = "#0C48CC"
+gpu_colors = ["#FCFC38", "#88409C", "#0C48CC", "#F40404"]
+
+[styles.network]
+rx_color = "#2CB494"
+tx_color = "#F88C14"
+rx_total_color = "#2CB494"
+tx_total_color = "#F88C14"
+
+[styles.battery]
+high_battery_color = "#2CB494"
+medium_battery_color = "#FCFC38"
+low_battery_color = "#F40404"
+
+[styles.tables]
+headers = {color = "#2CB494", bold = true}
+
+[styles.graphs]
+graph_color = "#808080"
+legend_text = {color = "#CCE0D0"}
+
+[styles.widgets]
+border_color = "#808080"
+selected_border_color = "#2CB494"
+widget_title = {color = "#CCE0D0", bold = true}
+text = {color = "#CCE0D0"}
+selected_text = {color = "#1A1A1A", bg_color = "#2CB494"}
+disabled_text = {color = "#808080"}

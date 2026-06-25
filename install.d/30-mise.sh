@@ -65,7 +65,7 @@ typeset -a MISE_APPS=(
     "eza@latest"
     "fd@latest"
     "sd@latest"
-    "bottom@latest"
+    "bottom@0.14.1"
     "ubi:dalance/procs@latest"
     "cargo:tealdeer@latest"
 )
