@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# csearch-watch — event-driven csearch index refresher (macOS FSEvents via
+# fswatch; no polling, ~0 cost when idle). After a debounce window it reindexes
+# only the changed, non-ignored files into each repo's per-repo csearch index.
+# Self-supervising; intended to run under a launchd LaunchAgent.
+#
+# Tunables (env): CSEARCH_LATENCY (debounce seconds, default 30).
+set -u
+. "$HOME/.local/bin/csearch-env" 2>/dev/null || { echo "csearch-watch: cannot load csearch-env" >&2; exit 1; }
+
+LATENCY="${CSEARCH_LATENCY:-30}"   # fswatch coalesce/debounce window (seconds)
+command -v fswatch >/dev/null 2>&1 || { echo "csearch-watch: fswatch missing" >&2; exit 1; }
+
+roots=()
+discover() {   # populate roots[] from the per-repo index files that exist
+    roots=()
+    local idx base owner repo root
+    for idx in "$CSEARCH_DIR"/*.idx; do
+        [ -e "$idx" ] || continue
+        base=$(basename "$idx" .idx); owner=${base%%__*}; repo=${base#*__}
+        root="$WORKSPACE/$owner/$repo"
+        [ -d "$root/.git" ] && roots+=("$root")
+    done
+}
+
+flush() {   # $1 = file of NUL-delimited changed absolute paths
+    local batch="$1" root rels ignored
+    for root in "${roots[@]}"; do
+        # changed paths under this repo, repo-relative
+        rels=$(tr '\0' '\n' <"$batch" | grep -F "$root/" | sed "s#^${root}/##" | sort -u)
+        [ -n "$rels" ] || continue
+        # drop gitignored (node_modules, build output, ...) — one git call per repo
+        ignored=$(printf '%s\n' "$rels" | ( cd "$root" && git check-ignore --stdin 2>/dev/null ) | sort -u)
+        # keep = changed - ignored, back to absolute, NUL -> incremental reindex
+        comm -23 <(printf '%s\n' "$rels") <(printf '%s\n' "$ignored") \
+            | sed "s#^#${root}/#" | tr '\n' '\0' \
+            | csearch-refresh "$root" --stdin0
+    done
+}
+
+watch_once() {
+    local tmp; tmp=$(mktemp) || return 1
+    fswatch --latency "$LATENCY" -e '/\.git/' -e '/node_modules/' "${roots[@]}" \
+    | while IFS= read -r p; do
+        : >"$tmp"; printf '%s\0' "$p" >>"$tmp"
+        # drain the coalesced burst, then flush once
+        while IFS= read -r -t 2 q; do printf '%s\0' "$q" >>"$tmp"; done
+        flush "$tmp"
+    done
+    rm -f "$tmp"
+}
+
+while :; do
+    discover
+    if [ "${#roots[@]}" -eq 0 ]; then
+        echo "csearch-watch: no indexed repos under $WORKSPACE; retry in 300s"
+        sleep 300; continue
+    fi
+    echo "csearch-watch: watching ${#roots[@]} repo(s) [debounce ${LATENCY}s]: ${roots[*]}"
+    watch_once
+    echo "csearch-watch: fswatch ended; restarting in 5s"
+    sleep 5
+done

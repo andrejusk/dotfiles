@@ -111,6 +111,14 @@ case "$OSTYPE" in
         ;;
 esac
 
+# Detect enforced Microsoft Defender (endpoint AV). Its per-file open() scan
+# makes ripgrep slow on huge repos, so the csearch tooling (30-mise.sh binaries,
+# 33-csearch.sh watcher) is gated on this — managed/work Macs only.
+export DOTS_DEFENDER=""
+if [[ "$DOTS_OS" == "macos" ]] && { [[ -d "/Applications/Microsoft Defender.app" ]] || command -v mdatp &>/dev/null; }; then
+    DOTS_DEFENDER="1"
+fi
+
 # Set up Homebrew environment
 if [[ "$DOTS_PKG" == "brew" ]]; then
     export NONINTERACTIVE=1

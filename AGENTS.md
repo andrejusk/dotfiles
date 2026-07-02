@@ -62,6 +62,10 @@ than re-detecting:
 - `DOTS_OS` — `macos` | `linux`.
 - `DOTS_PKG` — `brew` | `apt` | `pacman` | `apk` | `dnf`.
 - `DOTS_ENV` — `codespaces` when applicable (otherwise empty).
+- `DOTS_DEFENDER` — `1` when enforced Microsoft Defender is detected (managed
+  Macs); otherwise empty. Its per-file `open()` scan makes `rg` slow on huge
+  repos, so the csearch index tooling (`install.d/30-mise.sh` binaries,
+  `install.d/33-csearch.sh` watcher) is gated on it.
 - `DOTS_THEME` — `dark` | `light`; resolved as explicit > `COLORFGBG` > macOS
   appearance > dark. Drives `BAT_THEME`, `GLAMOUR_STYLE`, `DELTA_FEATURES`, and
   the prompt/`LS_COLORS` palettes.

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# cs — run csearch against the current repo's per-repo trigram index.
+# The repo is inferred from your cwd, so no -f scoping is needed (one index per
+# repo). Flags are csearch/grep-style, Go-parsed (keep them separate: -i -n,
+# never -in). RE2 regex (no look-around / back-references).
+#
+#   cs <regex>        matches           cs -n <regex>   with line numbers
+#   cs -l <regex>     matching files    cs -c <regex>   per-file counts
+set -u
+. "$HOME/.local/bin/csearch-env" 2>/dev/null || { echo "cs: cannot load csearch-env" >&2; exit 1; }
+
+root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+idx=
+[ -n "$root" ] && idx=$(csearch_index_for "$root" 2>/dev/null || true)
+
+if [ -n "$idx" ] && [ -f "$idx" ]; then
+    exec env CSEARCHINDEX="$idx" csearch "$@"
+fi
+
+{
+    echo "cs: no csearch index for '${root:-$PWD}'."
+    echo "cs: use ripgrep here, or build the index:  ~/Workspace/bootstrap-workspace.sh"
+} >&2
+exit 3

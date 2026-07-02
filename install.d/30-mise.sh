@@ -45,6 +45,7 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
         "node@26.3.0"
         "bun@latest"
         "rust@latest"
+        "go@1.26.4"   # general runtime (also builds codesearch on Defender Macs)
     )
 
     log_info "Installing runtimes..."
@@ -79,6 +80,20 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
         "ubi:sharkdp/hyperfine@1.20.0"
         "fastfetch@latest"
         "glow@latest"
+    )
+fi
+
+# Trigram code search — only where endpoint AV (Microsoft Defender) makes rg
+# slow. Defender scans every file open(), so rg scales with file count and a
+# single search over a huge repo (github/github, github-ui) takes ~a minute;
+# csearch answers selective queries in <1s off a prebuilt index. No release
+# binaries exist, so build from source via the go runtime above. Gated on
+# DOTS_DEFENDER so lean/personal machines (fast rg) skip it. Indexes are built
+# and kept fresh by bootstrap-workspace.sh + install.d/33-csearch.sh.
+if [[ -n "$DOTS_DEFENDER" ]]; then
+    MISE_APPS+=(
+        "go:github.com/google/codesearch/cmd/cindex@v1.2.0"
+        "go:github.com/google/codesearch/cmd/csearch@v1.2.0"
     )
 fi
 

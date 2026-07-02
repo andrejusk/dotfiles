@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# csearch-env — shared config + helpers for the csearch trigram-index tooling.
+# Sourced by cs, csearch-refresh, csearch-watch and ~/Workspace/bootstrap-workspace.sh.
+#
+# Why this exists: on this machine endpoint AV scans every file open(), so rg
+# scales with *file count* and a search over a huge repo takes ~a minute. A
+# per-repo trigram index lets `cs`/csearch answer in well under a second, and
+# csearch-watch keeps each index fresh incrementally.
+#
+# Layout: repos live at $WORKSPACE/<owner>/<repo>; each gets its own index at
+# $CSEARCH_DIR/<owner>__<repo>.idx (per-repo so an edit rewrites only that
+# repo's index, not one giant combined file).
+
+: "${WORKSPACE:=$HOME/Workspace}"
+: "${CSEARCH_DIR:=${XDG_CACHE_HOME:-$HOME/.cache}/csearch}"
+
+# Make the tooling resolve under a minimal PATH (launchd, or a non-interactive
+# `bash -c` from an agent): our own scripts, mise shims (csearch/cindex),
+# Homebrew (fswatch).
+for _csd in "$HOME/.local/bin" "$HOME/.local/share/mise/shims" /opt/homebrew/bin /usr/local/bin; do
+    case ":$PATH:" in
+        *":$_csd:"*) ;;
+        *) [ -d "$_csd" ] && PATH="$_csd:$PATH" ;;
+    esac
+done
+unset _csd
+export PATH WORKSPACE CSEARCH_DIR
+
+# csearch_index_for <repo-root> — print the per-repo index path, or return 1 if
+# the root is not an <owner>/<repo> directory under $WORKSPACE.
+csearch_index_for() {
+    case "$1" in
+        "$WORKSPACE"/*/*)
+            local rel owner rest repo
+            rel=${1#"$WORKSPACE"/}
+            owner=${rel%%/*}; rest=${rel#*/}; repo=${rest%%/*}
+            printf '%s/%s__%s.idx\n' "$CSEARCH_DIR" "$owner" "$repo"
+            ;;
+        *) return 1 ;;
+    esac
+}

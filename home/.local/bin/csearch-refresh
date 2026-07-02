@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# csearch-refresh — incrementally reindex changed files into a repo's per-repo
+# csearch index. cindex rewrites the whole (per-repo) index file on each call,
+# so callers should batch changes (csearch-watch debounces ~30s).
+#
+#   csearch-refresh <repo-root>            reindex the git dirty set (edited + new)
+#   csearch-refresh <repo-root> --stdin0   reindex NUL-delimited abs paths from stdin
+set -u
+. "$HOME/.local/bin/csearch-env" 2>/dev/null || { echo "csearch-refresh: cannot load csearch-env" >&2; exit 1; }
+
+root=${1:-}; mode=${2:-}
+[ -n "$root" ] || { echo "usage: csearch-refresh <repo-root> [--stdin0]" >&2; exit 2; }
+[ -d "$root/.git" ] || { echo "csearch-refresh: not a git repo: $root" >&2; exit 2; }
+idx=$(csearch_index_for "$root") || { echo "csearch-refresh: $root not under $WORKSPACE" >&2; exit 2; }
+command -v cindex >/dev/null 2>&1 || { echo "csearch-refresh: cindex missing" >&2; exit 1; }
+
+tmp=$(mktemp) || exit 1
+trap 'rm -f "$tmp"' EXIT
+
+# Collect target files as NUL-delimited absolute paths (existing regular files).
+if [ "$mode" = "--stdin0" ]; then
+    while IFS= read -r -d '' f; do [ -f "$f" ] && printf '%s\0' "$f"; done >"$tmp"
+else
+    ( cd "$root" && git ls-files -z --modified --others --exclude-standard ) \
+        | P="$root/" perl -0 -pe 's{\A}{$ENV{P}}' \
+        | while IFS= read -r -d '' f; do [ -f "$f" ] && printf '%s\0' "$f"; done >"$tmp"
+fi
+
+# Never run `cindex` with zero paths — that reindexes ALL known paths (slow).
+[ -s "$tmp" ] || exit 0
+
+# Serialize writers (parallel workers / manual runs / the watcher) via a mutex.
+lock="$idx.lock"
+i=0
+until mkdir "$lock" 2>/dev/null; do
+    i=$((i + 1))
+    [ "$i" -ge 120 ] && { echo "csearch-refresh: $idx busy; skipping" >&2; exit 0; }
+    sleep 1
+done
+trap 'rm -f "$tmp"; rmdir "$lock" 2>/dev/null' EXIT
+
+n=$(tr -cd '\0' <"$tmp" | wc -c | tr -d ' ')
+mkdir -p "$CSEARCH_DIR"
+CSEARCHINDEX="$idx" xargs -0 cindex <"$tmp" >/dev/null 2>&1
+echo "csearch-refresh: $(basename "$idx") — reindexed $n file(s)"
