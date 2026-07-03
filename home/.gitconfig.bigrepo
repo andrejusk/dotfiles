@@ -1,0 +1,20 @@
+# Performance overrides for large local working trees (github/github,
+# github-ui, …). Applied via an `includeIf "gitdir:~/Workspace/"` in
+# ~/.gitconfig, so it affects every repo cloned under ~/Workspace (current and
+# future) but NOT Codespaces (/workspaces/…), throwaway /tmp repos, or other
+# machines' repos.
+#
+# Why scoped rather than global: the built-in fsmonitor daemon is macOS/Windows
+# since git 2.37 but Linux only since 2.44 (Debian bookworm ships 2.39), and is
+# often absent on musl/Alpine + iSH — a global core.fsmonitor=true would emit
+# warnings there. ~/Workspace heavy repos live on the managed macOS box, so
+# scope the optimisation to where the daemon is known-good.
+#
+# Measured: `git status` on github/github (123k files) drops ~1.2–2.0s -> ~0.23s
+# (Microsoft Defender scans every lstat; fsmonitor avoids re-stat'ing the tree).
+
+[core]
+	# FSEvents-backed daemon tracks changes so git needn't lstat the whole tree.
+	fsmonitor = true
+	# Cache the untracked-file scan between runs (safe on APFS/ext4).
+	untrackedCache = true

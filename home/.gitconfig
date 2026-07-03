@@ -1,6 +1,12 @@
 [include]
   path = ~/.gitconfig.local
 
+# Performance overrides for large local working trees. Scoped to ~/Workspace so
+# it never fires in Codespaces (/workspaces/) or on platforms lacking the
+# fsmonitor daemon. See ~/.gitconfig.bigrepo for the rationale.
+[includeIf "gitdir:~/Workspace/"]
+  path = ~/.gitconfig.bigrepo
+
 [github]
   user = andrejusk
 
