@@ -76,17 +76,5 @@ _defaults_set com.apple.dock wvous-bl-modifier -int 0
 # Scrolling: traditional direction (i.e. "natural scrolling" off).
 _defaults_set NSGlobalDomain com.apple.swipescrolldirection -bool false
 
-# Screenshots -> OneDrive when it's set up. The folder is org-specific
-# (OneDrive-<Org>), so glob for it; this is a no-op on machines without
-# OneDrive (screenshots then stay on ~/Desktop). Re-run `./install macos`
-# after signing into OneDrive on a fresh machine to apply.
-_screenshot_dir=$(ls -d "$HOME"/Library/CloudStorage/OneDrive-*/ 2>/dev/null | head -1)
-if [[ -n "$_screenshot_dir" ]]; then
-    _screenshot_dir="${_screenshot_dir}Pictures/Screenshots"
-    mkdir -p "$_screenshot_dir"
-    _defaults_set com.apple.screencapture location -string "$_screenshot_dir"
-fi
-unset _screenshot_dir
-
 log_info "Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
 log_pass "macOS defaults configured"
