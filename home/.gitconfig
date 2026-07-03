@@ -1,11 +1,12 @@
 [include]
   path = ~/.gitconfig.local
 
-# Performance overrides for large local working trees. Scoped to ~/Workspace so
-# it never fires in Codespaces (/workspaces/) or on platforms lacking the
-# fsmonitor daemon. See ~/.gitconfig.bigrepo for the rationale.
-[includeIf "gitdir:~/Workspace/"]
-  path = ~/.gitconfig.bigrepo
+# Machine-local performance overrides (e.g. core.fsmonitor). Written by
+# install.d/21-git.sh ONLY where git's fsmonitor daemon is supported, so this
+# include is a silent no-op elsewhere (git ignores a missing include path) —
+# no warnings on musl/Alpine, iSH, or older git. See that script for the probe.
+[include]
+  path = ~/.gitconfig.perf
 
 [github]
   user = andrejusk
