@@ -24,10 +24,14 @@ if ! command -v zsh &> /dev/null; then
     esac
 fi
 
-# change default shell to zsh
+# change default shell to zsh. chsh works on macOS and Linux; usermod is a
+# Linux-only fallback (absent on macOS — an unguarded call aborts ./install
+# under set -e) and may be missing on minimal distros (busybox/Alpine/iSH).
 if [[ "$SHELL" != *zsh ]]; then
     sudo chsh -s "$(command -v zsh)" "$(whoami)"
-    sudo usermod -s "$(command -v zsh)" "$(whoami)"
+    if [[ "$DOTS_OS" == "linux" ]] && command -v usermod &>/dev/null; then
+        sudo usermod -s "$(command -v zsh)" "$(whoami)"
+    fi
 fi
 
 log_pass "zsh configured"
