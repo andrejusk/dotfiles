@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# find-in-files — search backend for the ^F "find in files" live-grep widget.
+# Emits `path:line:content`. Prefers the current repo's csearch trigram index
+# (csearch opens only trigram-candidate files, so far fewer Defender-scanned
+# open()s) and falls back to ripgrep when there is no index.
+#
+#   find-in-files <root> <query>        search (needs a >=3-char query); capped
+#   find-in-files --status <root>       one-line backend/index status (fzf header)
+#   find-in-files --ensure-index <root> if <root> is index-eligible but unindexed,
+#                                       kick off a one-time background full build
+#
+# The index is used automatically the moment it exists; a background build
+# (csearch-refresh --all) publishes a "<index>.building" marker so we can show
+# "indexing..." and keep serving ripgrep until it lands.
+set -u
+
+. "$HOME/.local/bin/csearch-env" 2>/dev/null || true
+
+MIN=3                    # csearch needs a >=3-char literal for the trigram prefilter
+MAX="${FF_MAX:-500}"     # cap matches; also SIGPIPEs csearch early on broad queries
+STALE_MIN=30             # a build marker older than this (minutes) is treated as dead
+
+# _idx_path <root> -> the eligible index path (may or may not exist yet), or empty.
+_idx_path() {
+    command -v csearch_index_for >/dev/null 2>&1 || return 0
+    csearch_index_for "$1" 2>/dev/null || true
+}
+
+# _abs <path> -> absolute path (csearch_index_for only matches absolute roots).
+_abs() { (cd "$1" 2>/dev/null && pwd) || printf '%s' "$1"; }
+
+# _building <idx> -> success if a *fresh* build marker exists for that index.
+_building() {
+    [ -n "$1" ] && [ -e "$1.building" ] \
+        && [ -z "$(find "$1.building" -mmin +"$STALE_MIN" 2>/dev/null)" ]
+}
+
+case "${1:-}" in
+    --status)
+        root="$(_abs "${2:-$PWD}")"; idx="$(_idx_path "$root")"
+        if [ -n "$idx" ] && [ -f "$idx" ]; then
+            printf '[index]  enter=open  (>=3 chars)'
+        elif _building "$idx"; then
+            printf '[ripgrep] indexing...  ^T=use index when ready'
+        else
+            printf '[ripgrep]  enter=open  (>=3 chars)'
+        fi
+        exit 0
+        ;;
+    --ensure-index)
+        root="$(_abs "${2:-$PWD}")"
+        command -v cindex >/dev/null 2>&1 || exit 0   # no csearch tooling (e.g. no Defender)
+        idx="$(_idx_path "$root")"
+        [ -n "$idx" ] || exit 0                       # not under $WORKSPACE -> ripgrep only
+        [ -f "$idx" ] && exit 0                       # already indexed
+        _building "$idx" && exit 0                    # a build is already running
+        nohup csearch-refresh "$root" --all >/dev/null 2>&1 &
+        exit 0
+        ;;
+esac
+
+root="${1:?usage: find-in-files <root> <query> | --status <root> | --ensure-index <root>}"
+shift
+root="$(_abs "$root")"
+query="${*:-}"
+[ "${#query}" -ge "$MIN" ] || exit 0
+
+idx="$(_idx_path "$root")"
+if [ -n "$idx" ] && [ -f "$idx" ]; then
+    CSEARCHINDEX="$idx" csearch -n -i "$query" 2>/dev/null | head -n "$MAX"
+else
+    rg -n -i --no-heading --hidden --glob '!.git' "$query" "$root" 2>/dev/null | head -n "$MAX"
+fi

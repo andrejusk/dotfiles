@@ -130,15 +130,34 @@ _dots_load_keybindings() {
     bindkey -r '^G'
     fi
 
-    # Ctrl+F: find in files
+    # Ctrl+F: find in files (live grep). Searches as you type and streams
+    # matches, so nothing scans the whole tree up front (the old version ran
+    # `rg ''`, opening every file's content — brutal under Defender). Prefers the
+    # repo's csearch trigram index (csearch opens only candidate files, far fewer
+    # scanned open()s) and falls back to ripgrep. For an index-eligible repo
+    # ($WORKSPACE/owner/repo) with no index yet, ripgrep serves the search while
+    # the index builds once in the background; new keystrokes pick it up
+    # automatically, or press ^T to switch the current query over when ready.
     _dots_find_in_files_widget() {
+        local root
+        root="$(git rev-parse --show-toplevel 2>/dev/null)" || root="$PWD"
+        [[ -n "$root" ]] || root="$PWD"
+        # One-time background index build if eligible + unindexed (no-op else).
+        find-in-files --ensure-index "$root" 2>/dev/null
+
         local selection
-        selection="$(rg --color=always --line-number --no-heading --hidden --glob '!.git' '' 2>/dev/null \
-            | fzf --ansi --delimiter=: \
-                  --preview 'preview {1} {2}' \
-                  --preview-window='right:60%')" || { zle -I; zle reset-prompt; return; }
+        selection="$(fzf --ansi --disabled --delimiter=: \
+            --prompt 'find> ' \
+            --header "$(find-in-files --status "$root")" \
+            --preview 'preview {1} {2}' \
+            --preview-window='right:60%' \
+            --bind "change:reload(sleep 0.2; find-in-files ${(q)root} {q})" \
+            --bind "ctrl-t:reload(find-in-files ${(q)root} {q})" \
+            --bind "result:transform-header(find-in-files --status ${(q)root})" \
+            </dev/null)" || { zle reset-prompt; return; }
         local file="${selection%%:*}"
         local line="${${selection#*:}%%:*}"
+        [[ -n "$file" ]] || { zle reset-prompt; return; }
         BUFFER="${EDITOR:-vim} +${line} ${(q)file}"
         zle reset-prompt
         zle accept-line
@@ -241,70 +260,27 @@ _dots_load_keybindings() {
         local session_dir="$HOME/.copilot/session-state"
         local colby_cmd="copilot --allow-all-tools --allow-all-paths"
         [[ -d "$session_dir" ]] || { BUFFER="$colby_cmd"; zle reset-prompt; zle accept-line; return; }
-        local session list cwd_disp="${PWD/#$HOME/~}"
-        list="$(python3 -c "
-import os, json, glob
-sd = os.path.expanduser('~/.copilot/session-state')
-home = os.path.expanduser('~')
-entries = []
-for ws in glob.glob(os.path.join(sd, '*/workspace.yaml')):
-    try:
-        d = {}
-        with open(ws) as f:
-            for l in f:
-                for k in ('updated_at:','cwd:','id:','summary:','repository:'):
-                    if l.startswith(k): d[k[:-1]] = l.split(': ',1)[1].strip()
-        sid = d.get('id','')
-        if not sid: continue
-        ts = d.get('updated_at','?')[:16]
-        summary = d.get('summary','')
-        msg = ''
-        ev = os.path.join(os.path.dirname(ws), 'events.jsonl')
-        if os.path.exists(ev):
-            with open(ev) as f:
-                for l in f:
-                    if '\"user.message\"' in l:
-                        try: msg = json.loads(l)['data']['content'].strip().split(chr(10))[0][:60]
-                        except: pass
-                        break
-        if not msg: continue
-        cwd = d.get('cwd', '')
-        text = summary or msg
-        entries.append((ts, sid, text, cwd))
-    except: pass
-for jf in glob.glob(os.path.join(sd, '*.jsonl')):
-    try:
-        sid = os.path.basename(jf).replace('.jsonl','')
-        with open(jf) as f:
-            ts = json.loads(f.readline())['data']['startTime'][:16]
-        msg = ''
-        with open(jf) as f:
-            for l in f:
-                if '\"user.message\"' in l:
-                    try: msg = json.loads(l)['data']['content'].strip().split(chr(10))[0][:60]
-                    except: pass
-                    break
-        if not msg: continue
-        entries.append((ts, sid, msg, ''))
-    except: pass
-entries.sort(key=lambda x: x[0], reverse=True)
-for ts, sid, text, cwd in entries:
-    cwd_short = '\033[90m' + cwd.replace(home, '~') + '\033[0m' if cwd else ''
-    print(f'{ts} | {sid} | {text} | {cwd_short}')
-" 2>/dev/null)"
-        # Default to sessions in the current directory when any exist. The dir
-        # column is hidden in this view since every row shares $PWD; ^g pulls
-        # out to the global list and shows the dir column up front (before the
-        # message, so it stays readable), ^l re-scopes to the current directory
-        # and hides it again.
-        local list_file with_nth='1,4,3' initial_list="$list"
-        list_file="$(mktemp -t copilot-sessions.XXXXXX)"
-        print -r -- "$list" > "$list_file"
-        if [[ "$PWD" != "$HOME" ]] && grep -qF -- "$cwd_disp" "$list_file"; then
+        local session
+        # Session rows come from `copilot-sessions`, which keeps an incremental
+        # cache (~/.cache/copilot-sessions) so only sessions whose files changed
+        # are re-opened. This machine's Microsoft Defender scans every file
+        # open(), so the old inline scan of ~500 sessions (events.jsonl up to
+        # 32MB each) froze the prompt for seconds on the first ^S of each
+        # terminal; piping the helper straight into fzf instead opens the picker
+        # instantly and shows fzf's spinner while any rebuild streams in.
+        #
+        # Default to sessions in the current directory when the cache shows any
+        # (checked instantly, no scan). The dir column is hidden in that view
+        # since every row shares $PWD; ^g pulls out to the global list and shows
+        # the dir column (before the message, so it stays readable), ^l re-scopes
+        # to the current directory and hides it again.
+        local cache="${XDG_CACHE_HOME:-$HOME/.cache}/copilot-sessions/index.tsv"
+        local with_nth='1,4,3' scope=()
+        if [[ "$PWD" != "$HOME" && -f "$cache" ]] && grep -qF -- "$PWD" "$cache"; then
             with_nth='1,3'
-            initial_list="$(grep -F -- "$cwd_disp" "$list_file")"
+            scope=(--cwd "$PWD")
         fi
-        session="$(print -r -- "$initial_list" | fzf --preview '
+        session="$(copilot-sessions "${scope[@]}" | fzf --preview '
             id=$(echo {} | cut -d"|" -f2 | tr -d " ")
             sd="'"$session_dir"'"
             f="$sd/$id/events.jsonl"
@@ -320,11 +296,10 @@ for line in sys.stdin:
 " 2>/dev/null
         ' --ansi --delimiter="|" --with-nth="$with_nth" \
            --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
-           --bind "ctrl-l:reload(grep -F -- ${(qq)cwd_disp} ${(qq)list_file})+change-with-nth(1,3)+first" \
-           --bind "ctrl-g:reload(cat -- ${(qq)list_file})+change-with-nth(1,4,3)+first" \
+           --bind "ctrl-l:reload(copilot-sessions --cwd ${(q)PWD})+change-with-nth(1,3)+first" \
+           --bind "ctrl-g:reload(copilot-sessions)+change-with-nth(1,4,3)+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"
         local fzf_rc=$?
-        rm -f -- "$list_file"
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* && "$session" != alt-n* ]] && { zle reset-prompt; return; }
         local key=$(echo "$session" | head -1)
         local line=$(echo "$session" | tail -1)

@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+"""copilot-sessions — resumable-session feed for the ^S copilot picker widget.
+
+Emits one fzf row per resumable Copilot session, newest first, in the format
+the widget expects:
+
+    <updated-at> | <session-id> | <summary-or-first-message> | <grey-cwd>
+
+Why this exists (performance): on this machine Microsoft Defender scans every
+file open(). The picker previously opened ~1000 files on every ^S (a
+workspace.yaml + an events.jsonl, up to 32MB each, for ~500 sessions), so a
+cold scan — every first ^S in a fresh terminal — froze the prompt for seconds
+while Defender scanned each file in full.
+
+This keeps an incremental cache keyed on session-file mtimes. stat() is not
+scanned by Defender, so unchanged sessions are served from the cache for free
+and only genuinely new/changed sessions are re-opened. After the first build,
+^S is effectively instant.
+
+Usage: copilot-sessions [--cwd DIR]
+  --cwd DIR   only emit sessions whose cwd == DIR (the full cache is still
+              refreshed regardless, so ^g/^l reloads stay instant).
+"""
+import glob
+import json
+import os
+import sys
+
+SD = os.path.expanduser("~/.copilot/session-state")
+HOME = os.path.expanduser("~")
+CACHE_DIR = os.path.join(
+    os.environ.get("XDG_CACHE_HOME", os.path.join(HOME, ".cache")), "copilot-sessions"
+)
+CACHE = os.path.join(CACHE_DIR, "index.tsv")
+
+GREY, RST = "\033[90m", "\033[0m"
+
+
+def _mtime(path):
+    """repr() of st_mtime, or None if the path is missing."""
+    try:
+        return repr(os.stat(path).st_mtime)
+    except OSError:
+        return None
+
+
+def _first_user_message(path):
+    """First user.message content (first line, capped), or '' if none/unreadable.
+
+    Breaks at the first match so we rarely read past the top of the file, but
+    the open() itself is what Defender scans — hence the mtime cache around it.
+    """
+    try:
+        with open(path) as f:
+            for line in f:
+                if '"user.message"' in line:
+                    try:
+                        content = json.loads(line)["data"]["content"]
+                        return content.strip().split("\n")[0][:60]
+                    except Exception:
+                        return ""
+    except OSError:
+        pass
+    return ""
+
+
+def _sanitize(s):
+    """Flatten tabs/newlines so a value is safe in the TSV cache and fzf row."""
+    return s.replace("\t", " ").replace("\n", " ").strip()
+
+
+def _load_cache():
+    """sid -> (key, ok, ts, text, cwd) from the last run, or {} if none."""
+    cache = {}
+    try:
+        with open(CACHE) as f:
+            for line in f:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) == 6:
+                    key, sid, ok, ts, text, cwd = parts
+                    cache[sid] = (key, ok, ts, text, cwd)
+    except OSError:
+        pass
+    return cache
+
+
+def _scan_dir_session(ws):
+    """(ts, ok, text, cwd) for a workspace.yaml-backed session."""
+    d = {}
+    try:
+        with open(ws) as f:
+            for line in f:
+                for k in ("updated_at:", "cwd:", "summary:"):
+                    if line.startswith(k):
+                        d[k[:-1]] = line.split(": ", 1)[1].strip()
+    except OSError:
+        return None
+    ts = (d.get("updated_at", "?") or "?")[:16]
+    msg = _first_user_message(os.path.join(os.path.dirname(ws), "events.jsonl"))
+    ok = "1" if msg else "0"  # sessions with no user message are hidden (as before)
+    text = _sanitize(d.get("summary") or msg)
+    return ts, ok, text, d.get("cwd", "")
+
+
+def _scan_loose_session(jf):
+    """(ts, ok, text, cwd) for a bare <id>.jsonl session (no workspace dir)."""
+    ts = "?"
+    try:
+        with open(jf) as f:
+            ts = (json.loads(f.readline())["data"]["startTime"] or "?")[:16]
+    except Exception:
+        pass
+    msg = _first_user_message(jf)
+    return ts, ("1" if msg else "0"), _sanitize(msg), ""
+
+
+def build():
+    """Refresh the cache incrementally; return displayable rows (ts, sid, text, cwd)."""
+    old = _load_cache()
+    new = {}
+    rescanned = 0  # sessions we had to open() this run (cache misses)
+
+    # Dir-based sessions. The directory name is the session id, so we can look
+    # up the cache (and thus skip the open()) without reading any file. Key on
+    # both the workspace.yaml and events.jsonl mtimes so any activity — but not
+    # a mere stat — invalidates the cached row.
+    for ws in glob.glob(os.path.join(SD, "*", "workspace.yaml")):
+        sid = os.path.basename(os.path.dirname(ws))
+        wm = _mtime(ws)
+        if wm is None:
+            continue
+        key = wm + ":" + (_mtime(os.path.join(os.path.dirname(ws), "events.jsonl")) or "-")
+        cached = old.get(sid)
+        if cached and cached[0] == key:
+            new[sid] = cached
+            continue
+        scanned = _scan_dir_session(ws)
+        if scanned is None:
+            continue
+        ts, ok, text, cwd = scanned
+        new[sid] = (key, ok, ts, text, cwd)
+        rescanned += 1
+
+    # Bare <id>.jsonl sessions (older sessions with no workspace dir).
+    for jf in glob.glob(os.path.join(SD, "*.jsonl")):
+        sid = os.path.basename(jf)[: -len(".jsonl")]
+        if sid in new:
+            continue  # a workspace dir for this id wins (it carries a cwd)
+        key = _mtime(jf)
+        if key is None:
+            continue
+        cached = old.get(sid)
+        if cached and cached[0] == key:
+            new[sid] = cached
+            continue
+        ts, ok, text, cwd = _scan_loose_session(jf)
+        new[sid] = (key, ok, ts, text, cwd)
+        rescanned += 1
+
+    if os.environ.get("COPILOT_SESSIONS_DEBUG"):
+        print(
+            f"copilot-sessions: {len(new)} sessions, {rescanned} re-read, "
+            f"{len(new) - rescanned} from cache",
+            file=sys.stderr,
+        )
+
+    _write_cache(new)
+
+    rows = [
+        (ts, sid, text, cwd)
+        for sid, (key, ok, ts, text, cwd) in new.items()
+        if ok == "1"
+    ]
+    rows.sort(key=lambda r: r[0], reverse=True)
+    return rows
+
+
+def _write_cache(new):
+    """Persist the cache atomically (tmp + rename) so a broken pipe can't corrupt it."""
+    try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        tmp = CACHE + f".{os.getpid()}.tmp"
+        with open(tmp, "w") as f:
+            for sid, (key, ok, ts, text, cwd) in new.items():
+                f.write("\t".join((key, sid, ok, ts, text, cwd)) + "\n")
+        os.replace(tmp, CACHE)
+    except OSError:
+        pass
+
+
+def main():
+    filter_cwd = None
+    args = sys.argv[1:]
+    if args and args[0] == "--cwd":
+        filter_cwd = args[1] if len(args) > 1 else None
+
+    rows = build()
+
+    try:
+        for ts, sid, text, cwd in rows:
+            if filter_cwd is not None and cwd != filter_cwd:
+                continue
+            grey = f"{GREY}{cwd.replace(HOME, '~')}{RST}" if cwd else ""
+            print(f"{ts} | {sid} | {text} | {grey}")
+    except BrokenPipeError:
+        # fzf closed early (e.g. Esc); cache is already written, so just exit.
+        try:
+            sys.stdout.close()
+        except Exception:
+            pass
+
+
+if __name__ == "__main__":
+    main()

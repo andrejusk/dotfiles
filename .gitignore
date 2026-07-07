@@ -26,3 +26,7 @@ home/.tmux/plugins
 home/.tmux/donut
 
 *.zwc
+
+# python bytecode (e.g. from linting bin/ python helpers)
+__pycache__/
+*.pyc
