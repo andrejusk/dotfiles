@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+# dev-container — run a repo's devcontainer locally in a Linux VM (podman), with
+# the working tree in a named VOLUME (never a host bind mount) so file I/O is not
+# scanned by endpoint AV (Microsoft Defender scans host open()s; in-VM reads are
+# invisible to it — an ~90x speedup for search/build/test on huge repos).
+#
+# The Copilot CLI is expected to run INSIDE the container (via the devcontainer's
+# copilot-cli feature), so the agent's file ops happen in-VM and stay fast.
+#
+# GENERIC BY DESIGN: this script contains no repo names, image/registry URLs, or
+# secrets. You pass the repo; the repo ships its own .devcontainer; secrets come
+# from `gh`/keychain or a git-ignored local env file. Nothing internal is stored
+# here (this dotfiles repo is public).
+#
+# Usage:
+#   dev-container <owner/repo> [--rebuild] [--copilot|--shell] [--branch B]
+#   dev-container --stop | --status | --rm <owner/repo>
+#
+# Optional machine-local config (OUTSIDE this repo), sourced if present:
+#   ${XDG_CONFIG_HOME:-~/.config}/dev-container/config
+#     DC_SECRETS_ENV=~/.config/dev-container/secrets.env  # extra env, exported
+#     DC_DEFAULT_REPO=owner/repo                           # used when none given
+set -euo pipefail
+
+: "${XDG_CONFIG_HOME:=$HOME/.config}"
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+CFG_DIR="$XDG_CONFIG_HOME/dev-container"
+CACHE_DIR="$XDG_CACHE_HOME/dev-container"
+[ -f "$CFG_DIR/config" ] && . "$CFG_DIR/config"
+
+log() { printf '\033[38;2;12;72;204m[dev-container]\033[0m %s\n' "$*" >&2; }
+die() { printf '\033[38;2;244;4;4m[dev-container]\033[0m %s\n' "$*" >&2; exit 1; }
+
+# --- podman machine (applehv on Apple Silicon; krunkit is not installed) -------
+ensure_machine() {
+    command -v podman >/dev/null 2>&1 || die "podman not found (brew install podman)"
+    export CONTAINERS_MACHINE_PROVIDER="${CONTAINERS_MACHINE_PROVIDER:-applehv}"
+    if ! podman machine inspect >/dev/null 2>&1; then
+        log "initialising podman machine ($CONTAINERS_MACHINE_PROVIDER)..."
+        podman machine init --now >/dev/null
+    elif [ "$(podman machine inspect --format '{{.State}}' 2>/dev/null)" != "running" ]; then
+        log "starting podman machine..."
+        podman machine start >/dev/null
+    fi
+    export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
+}
+
+# --- helpers -------------------------------------------------------------------
+safe_id() { printf '%s' "$1" | tr '/ ' '__'; }   # owner/repo -> owner__repo
+
+# clone_into_volume <repo> <vol> — idempotent clone into the volume ROOT (the
+# volume is later mounted AT the workspace folder, so its root must be the repo).
+# Auth via a runtime token from gh (never stored). Uses a throwaway container so
+# the clone happens in-VM (git's many file writes are not host-scanned).
+clone_into_volume() {
+    local repo="$1" vol="$2" branch="${3:-}"
+    local token; token="$(gh auth token 2>/dev/null)" || die "run: gh auth login"
+    local user; user="$(gh api user -q .login 2>/dev/null || echo git)"
+    if podman run --rm -v "$vol:/vol" alpine test -d "/vol/.git" 2>/dev/null; then
+        log "repo already present in volume $vol (skipping clone)"
+        return 0
+    fi
+    log "cloning $repo into volume $vol (in-VM)..."
+    podman run --rm -e GH_TOKEN="$token" -e GH_USER="$user" -e REPO="$repo" \
+        -e BRANCH="$branch" -v "$vol:/vol" alpine sh -c '
+        apk add --no-cache git >/dev/null 2>&1
+        b=""; [ -n "$BRANCH" ] && b="--branch $BRANCH"
+        git clone --depth 1 $b \
+          "https://${GH_USER}:${GH_TOKEN}@github.com/${REPO}.git" /vol
+    ' || die "clone failed (for internal repos: gh auth refresh -s read:packages)"
+}
+
+# build_override <hostcfg> <vol> <workdir> <copilotvol> — write override.json that
+# swaps the workspace to the volume, persists ~/.copilot, and makes setup idempotent.
+build_override() {
+    local H="$1" vol="$2" workdir="$3" cvol="$4"
+    python3 - "$H" "$vol" "$workdir" "$cvol" <<'PY'
+import json, re, sys, os
+H, vol, workdir, cvol = sys.argv[1:5]
+raw = open(os.path.join(H, ".devcontainer", "devcontainer.json")).read()
+
+def strip_jsonc(s):
+    out, i, n = [], 0, len(s)
+    instr = esc = False
+    while i < n:
+        c = s[i]
+        if instr:
+            out.append(c)
+            if esc: esc = False
+            elif c == '\\': esc = True
+            elif c == '"': instr = False
+            i += 1; continue
+        if c == '"': instr = True; out.append(c); i += 1; continue
+        if c == '/' and i+1 < n and s[i+1] == '/':
+            while i < n and s[i] != '\n': i += 1
+            continue
+        if c == '/' and i+1 < n and s[i+1] == '*':
+            i += 2
+            while i+1 < n and not (s[i] == '*' and s[i+1] == '/'): i += 1
+            i += 2; continue
+        out.append(c); i += 1
+    t = ''.join(out)
+    return re.sub(r',(\s*[}\]])', r'\1', t)   # trailing commas
+
+cfg = json.loads(strip_jsonc(raw))
+cfg["workspaceMount"] = f"source={vol},target={workdir},type=volume"
+cfg["workspaceFolder"] = workdir
+# Headless agentic use needs no host port-forwarding; publishing the repo's
+# forwardPorts (incl. privileged <1024 like 80) fails under rootless podman.
+for k in ("forwardPorts", "appPort", "portsAttributes"):
+    cfg.pop(k, None)
+mounts = cfg.get("mounts") or []
+mounts.append(f"source={cvol},target=/dc-persist,type=volume")
+cfg["mounts"] = mounts
+setup = (f"sudo chown -R $(id -u):$(id -g) {workdir} /dc-persist 2>/dev/null || true; "
+         "mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot $HOME/.copilot; "
+         f"git config --global --add safe.directory {workdir}")
+orig = cfg.get("onCreateCommand")
+if isinstance(orig, str): setup += " && " + orig
+elif isinstance(orig, list): setup = [setup] + orig  # keep array form intact
+cfg["onCreateCommand"] = setup
+open(os.path.join(H, ".devcontainer", "override.json"), "w").write(json.dumps(cfg, indent=2))
+PY
+}
+
+# --- subcommands ---------------------------------------------------------------
+case "${1:-}" in
+    --status) ensure_machine; podman ps --filter label=dev-container --format \
+                'table {{.Names}}\t{{.Status}}\t{{.Labels.dev-container-repo}}'; exit 0 ;;
+    --stop)   podman machine stop 2>/dev/null; log "podman machine stopped"; exit 0 ;;
+    --rm)     shift; repo="${1:?usage: dev-container --rm <owner/repo>}"; id="$(safe_id "$repo")"
+              ensure_machine
+              podman rm -f "dc-$id" 2>/dev/null || true
+              podman volume rm -f "dc-$id-ws" "dc-$id-copilot" 2>/dev/null || true
+              rm -rf "${CACHE_DIR:?}/$id"; log "removed $repo (container + volumes)"; exit 0 ;;
+esac
+
+REPO="${1:-${DC_DEFAULT_REPO:-}}"; [ -n "$REPO" ] || die "usage: dev-container <owner/repo>"
+[ "$REPO" = "${REPO#-}" ] || die "usage: dev-container <owner/repo> [flags]"
+shift || true
+FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP=""
+while [ $# -gt 0 ]; do case "$1" in
+    --rebuild) REBUILD=1 ;; --shell) FINAL=shell ;; --copilot) FINAL=copilot ;;
+    --up-only) FINAL=none ;;
+    --skip-setup) SKIP_SETUP=1 ;;
+    --branch) shift; BRANCH="$1" ;; *) die "unknown flag: $1" ;;
+esac; shift; done
+
+ID="$(safe_id "$REPO")"
+NAME="$(basename "$REPO")"
+WS_VOL="dc-$ID-ws"; COPILOT_VOL="dc-$ID-copilot"
+WORKDIR="/workspaces/$NAME"
+H="$CACHE_DIR/$ID"
+
+command -v devcontainer >/dev/null 2>&1 || die "devcontainer CLI missing (npm i -g @devcontainers/cli)"
+ensure_machine
+clone_into_volume "$REPO" "$WS_VOL" "$BRANCH"
+
+log "extracting .devcontainer to $H..."
+rm -rf "$H"; mkdir -p "$H"
+podman run --rm -v "$WS_VOL:/vol" -v "$H:/out" alpine \
+    sh -c "cp -r /vol/.devcontainer /out/ 2>/dev/null" \
+    || die "$REPO has no .devcontainer/"
+build_override "$H" "$WS_VOL" "$WORKDIR" "$COPILOT_VOL"
+
+# Secrets → the devcontainer reads ${localEnv:...}; supply from gh + local file.
+export GITHUB_USER="$(gh api user -q .login 2>/dev/null || true)"
+export GITHUB_TOKEN="$(gh auth token 2>/dev/null || true)"
+[ -n "${DC_SECRETS_ENV:-}" ] && [ -f "$DC_SECRETS_ENV" ] && { set -a; . "$DC_SECRETS_ENV"; set +a; }
+
+log "bringing up devcontainer for $REPO..."
+up_args=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
+         --docker-path podman --id-label "dev-container=1"
+         --id-label "dev-container-repo=$REPO")
+[ -n "$REBUILD" ] && up_args+=(--remove-existing-container)
+# Inject the token into the container so lifecycle scripts / internal features
+# (e.g. goproxy, feature-management) can auth, exactly as Codespaces does.
+[ -n "${GITHUB_TOKEN:-}" ] && up_args+=(--remote-env "GITHUB_TOKEN=$GITHUB_TOKEN"
+                                        --remote-env "GH_TOKEN=$GITHUB_TOKEN")
+# --skip-setup brings the container up with the built image (all tools present)
+# but skips lifecycle scripts — use for repos whose bootstrap needs internal
+# network/VPN (the essential volume setup is then done via exec, below).
+DC_SETUP="sudo chown -R \$(id -u):\$(id -g) $WORKDIR /dc-persist 2>/dev/null || true; \
+mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot \$HOME/.copilot; \
+git config --global --add safe.directory $WORKDIR"
+[ -n "$SKIP_SETUP" ] && up_args+=(--skip-post-create)
+devcontainer up "${up_args[@]}"
+
+# Shared args so `exec` can locate the container (same id-labels as `up`).
+exec_base=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
+           --docker-path podman --id-label "dev-container=1" --id-label "dev-container-repo=$REPO")
+if [ -n "$SKIP_SETUP" ]; then
+    log "running essential volume setup (chown, ~/.copilot, safe.directory)..."
+    devcontainer exec "${exec_base[@]}" bash -lc "$DC_SETUP" || true
+fi
+
+log "container up. entering ($FINAL)..."
+if [ "$FINAL" = none ]; then
+    log "ready. enter with:  dev-container ${REPO} --copilot   (or --shell)"
+elif [ "$FINAL" = copilot ]; then
+    devcontainer exec "${exec_base[@]}" \
+        bash -lc 'command -v copilot >/dev/null && copilot || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
+else
+    devcontainer exec "${exec_base[@]}" bash -l
+fi
