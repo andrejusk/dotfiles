@@ -65,16 +65,23 @@ _dots_init_completion() {
     autoload -Uz compinit
     local dump="$HOME/.zcompdump"
     if [[ -f "$dump" ]]; then
+        # Trust the existing dump for an instant load (~5ms) — never block the
+        # first Tab on a rebuild (a cold rebuild of 1000+ completions can take
+        # seconds). If the dump is stale (>1 day) or its compiled .zwc is
+        # missing/outdated, rebuild + zcompile in a disowned background job so
+        # the *next* shell picks it up. -i skips the insecure-dir prompt that
+        # bare compinit would otherwise block the background job on.
+        compinit -C -d "$dump"
         zmodload -F zsh/stat b:zstat 2>/dev/null
         local -a dump_stat
         zstat -A dump_stat +mtime "$dump" 2>/dev/null
-        if (( dump_stat[1] > EPOCHSECONDS - 86400 )); then
-            compinit -C
-        else
-            compinit
+        if (( dump_stat[1] <= EPOCHSECONDS - 86400 )) || [[ ! -f "$dump.zwc" || "$dump" -nt "$dump.zwc" ]]; then
+            { compinit -i -d "$dump" && zcompile "$dump" } &!
         fi
     else
-        compinit
+        # No dump yet: build synchronously once, then compile for next time.
+        compinit -i -d "$dump"
+        { zcompile "$dump" } &!
     fi
 
     zstyle ':completion:*' menu select
