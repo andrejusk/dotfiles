@@ -7,8 +7,8 @@
 #   fsmonitor (git's built-in FSEvents/inotify daemon) avoids lstat'ing the
 #   whole working tree on every `git status`, a large win on big repos —
 #   especially under endpoint AV (Microsoft Defender), whose per-file open()
-#   scan makes status scale with file count (~1.2-2.6s -> ~0.25s on
-#   github/github). We enable it ONLY where the daemon actually works, probed at
+#   scan makes status scale with file count (~1.2-2.6s -> ~0.25s on a
+#   very large monorepo). We enable it ONLY where the daemon actually works, probed at
 #   runtime, so unsupported platforms (git without the daemon: musl/Alpine, iSH,
 #   git < 2.44 on Linux) skip silently with no warnings. The setting is written
 #   to a machine-local include (~/.gitconfig.perf) so it never dirties the

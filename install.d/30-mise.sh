@@ -85,7 +85,7 @@ fi
 
 # Trigram code search — only where endpoint AV (Microsoft Defender) makes rg
 # slow. Defender scans every file open(), so rg scales with file count and a
-# single search over a huge repo (github/github, github-ui) takes ~a minute;
+# single search over a huge monorepo takes ~a minute;
 # csearch answers selective queries in <1s off a prebuilt index. No release
 # binaries exist, so build from source via the go runtime above. Gated on
 # DOTS_DEFENDER so lean/personal machines (fast rg) skip it. Indexes are built
