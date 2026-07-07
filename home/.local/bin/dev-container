@@ -15,12 +15,15 @@
 # Usage:
 #   dev-container <owner/repo> [--rebuild] [--copilot|--shell] [--branch B]
 #                              [--name INSTANCE] [--skip-setup] [--up-only]
+#                              [--exec CMD]
 #   dev-container --stop | --status | --rm <owner/repo> [name]
 #
 #   --name runs an independent instance (own clone + volumes + container) so you
-#   can work on several branches of the same repo in parallel. Containers are
-#   disposable; the named volumes (clone + ~/.copilot) and built image persist
-#   across teardown/reboot, so re-running is fast.
+#   can work on several branches of the same repo in parallel. --exec CMD runs
+#   an arbitrary command in the container (e.g. a headless `copilot -p "..."`
+#   for autonomous/orchestrated work). Containers are disposable; the named
+#   volumes (clone + ~/.copilot) and built image persist across teardown/reboot,
+#   so re-running is fast.
 #
 # Optional machine-local config (OUTSIDE this repo), sourced if present:
 #   ${XDG_CONFIG_HOME:-~/.config}/dev-container/config
@@ -155,12 +158,13 @@ esac
 REPO="${1:-${DC_DEFAULT_REPO:-}}"; [ -n "$REPO" ] || die "usage: dev-container <owner/repo>"
 [ "$REPO" = "${REPO#-}" ] || die "usage: dev-container <owner/repo> [flags]"
 shift || true
-FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE=""
+FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE="" EXEC_CMD=""
 while [ $# -gt 0 ]; do case "$1" in
     --rebuild) REBUILD=1 ;; --shell) FINAL=shell ;; --copilot) FINAL=copilot ;;
     --up-only) FINAL=none ;;
     --skip-setup) SKIP_SETUP=1 ;;
     --name) shift; INSTANCE="$1" ;;
+    --exec) shift; EXEC_CMD="$1"; FINAL=exec ;;
     --branch) shift; BRANCH="$1" ;; *) die "unknown flag: $1" ;;
 esac; shift; done
 
@@ -219,9 +223,11 @@ fi
 log "container up. entering ($FINAL)..."
 if [ "$FINAL" = none ]; then
     log "ready. enter with:  dev-container ${REPO}${INSTANCE:+ --name $INSTANCE} --copilot   (or --shell)"
+elif [ "$FINAL" = exec ]; then
+    devcontainer exec "${exec_base[@]}" bash -lc "$EXEC_CMD"
 elif [ "$FINAL" = copilot ]; then
     devcontainer exec "${exec_base[@]}" \
-        bash -lc 'command -v copilot >/dev/null && copilot || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
+        bash -lc 'command -v copilot >/dev/null && { copilot --continue 2>/dev/null || copilot; } || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
 else
     devcontainer exec "${exec_base[@]}" bash -l
 fi

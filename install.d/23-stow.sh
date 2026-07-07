@@ -40,6 +40,9 @@ mkdir -p "$HOME/.ssh"
 # Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
 # the hooks file inside, rather than folding the whole state-heavy dir into the repo.
 mkdir -p "$HOME/.copilot/hooks"
+# Same for the skills tree: mkdir the leaf so stow links only SKILL.md, leaving
+# ~/.copilot/skills writable for locally-added skills (`copilot skill add`).
+mkdir -p "$HOME/.copilot/skills/local-dev-container"
 
 stow --dir="$root_dir" --target="$HOME" home
 
