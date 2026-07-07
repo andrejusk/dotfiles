@@ -9,7 +9,8 @@
 [[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }
 
 if ! echo "$BREW_CASKS" | grep -q "^ghostty$"; then
-    brew install --cask ghostty
+    # --adopt takes over an existing manual /Applications/Ghostty.app instead of erroring.
+    brew install --cask --adopt ghostty
 fi
 log_pass "Ghostty installed"
 echo "$BREW_CASK_VERSIONS" | grep "^ghostty " | log_quote || true

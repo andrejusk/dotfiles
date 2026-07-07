@@ -76,6 +76,17 @@ _defaults_set com.apple.finder FXPreferredViewStyle -string nlsv
 # Spotlight
 _defaults_set com.apple.Spotlight MenuItemHidden -int 1
 
+# Spotlight: exclude the code workspace from indexing. mds/mds_stores otherwise
+# continuously reindexes large repos + build output — a top CPU/disk load source
+# that also adds latency to file ops. `.metadata_never_index` is the documented
+# per-folder opt-out (no sudo, survives reindex); it takes effect on the next
+# index pass. Extend the list with any other heavy trees (caches, toolchains).
+for _spotlight_exclude in "$HOME/Workspace"; do
+    mkdir -p "$_spotlight_exclude"
+    touch "$_spotlight_exclude/.metadata_never_index"
+done
+unset _spotlight_exclude
+
 # Dock
 _defaults_set com.apple.dock show-recents -bool false
 _defaults_set com.apple.dock scroll-to-open -bool true

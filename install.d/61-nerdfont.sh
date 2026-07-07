@@ -27,7 +27,8 @@ if [[ "$fonts_missing" == "true" ]]; then
     # deprecated and removed in 2024); no tap required.
     for font in "${fonts_list[@]}"; do
         if ! echo "$BREW_CASKS" | grep -q "^$font$"; then
-            brew install --cask "$font"
+            # --adopt takes over an existing manually-installed font instead of erroring.
+            brew install --cask --adopt "$font"
         fi
     done
 fi
