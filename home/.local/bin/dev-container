@@ -14,7 +14,13 @@
 #
 # Usage:
 #   dev-container <owner/repo> [--rebuild] [--copilot|--shell] [--branch B]
-#   dev-container --stop | --status | --rm <owner/repo>
+#                              [--name INSTANCE] [--skip-setup] [--up-only]
+#   dev-container --stop | --status | --rm <owner/repo> [name]
+#
+#   --name runs an independent instance (own clone + volumes + container) so you
+#   can work on several branches of the same repo in parallel. Containers are
+#   disposable; the named volumes (clone + ~/.copilot) and built image persist
+#   across teardown/reboot, so re-running is fast.
 #
 # Optional machine-local config (OUTSIDE this repo), sourced if present:
 #   ${XDG_CONFIG_HOME:-~/.config}/dev-container/config
@@ -125,28 +131,42 @@ PY
 
 # --- subcommands ---------------------------------------------------------------
 case "${1:-}" in
-    --status) ensure_machine; podman ps --filter label=dev-container --format \
-                'table {{.Names}}\t{{.Status}}\t{{.Labels.dev-container-repo}}'; exit 0 ;;
+    --status) ensure_machine
+              ids="$(podman ps -a --filter label=dev-container=1 -q 2>/dev/null)"
+              if [ -z "$ids" ]; then echo "(no dev-containers)"; else
+                printf '%-38s %-10s %s\n' "CONTAINER" "STATE" "REPO / INSTANCE"
+                for c in $ids; do
+                  podman inspect "$c" --format \
+                    '{{printf "%-38.38s %-10s %s / %s" .Name .State.Status (index .Config.Labels "dev-container-repo") (index .Config.Labels "dev-container-instance")}}'
+                done
+              fi
+              exit 0 ;;
     --stop)   podman machine stop 2>/dev/null; log "podman machine stopped"; exit 0 ;;
-    --rm)     shift; repo="${1:?usage: dev-container --rm <owner/repo>}"; id="$(safe_id "$repo")"
+    --rm)     shift; repo="${1:?usage: dev-container --rm <owner/repo> [name]}"
+              id="$(safe_id "$repo")"; [ -n "${2:-}" ] && id="${id}__$(safe_id "$2")"
               ensure_machine
               podman rm -f "dc-$id" 2>/dev/null || true
+              podman ps -a --filter "label=dev-container-id=$id" --format '{{.ID}}' \
+                | while read -r c; do podman rm -f "$c"; done 2>/dev/null || true
               podman volume rm -f "dc-$id-ws" "dc-$id-copilot" 2>/dev/null || true
-              rm -rf "${CACHE_DIR:?}/$id"; log "removed $repo (container + volumes)"; exit 0 ;;
+              rm -rf "${CACHE_DIR:?}/$id"; log "removed $repo${2:+ (instance $2)} — container + volumes"; exit 0 ;;
 esac
 
 REPO="${1:-${DC_DEFAULT_REPO:-}}"; [ -n "$REPO" ] || die "usage: dev-container <owner/repo>"
 [ "$REPO" = "${REPO#-}" ] || die "usage: dev-container <owner/repo> [flags]"
 shift || true
-FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP=""
+FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE=""
 while [ $# -gt 0 ]; do case "$1" in
     --rebuild) REBUILD=1 ;; --shell) FINAL=shell ;; --copilot) FINAL=copilot ;;
     --up-only) FINAL=none ;;
     --skip-setup) SKIP_SETUP=1 ;;
+    --name) shift; INSTANCE="$1" ;;
     --branch) shift; BRANCH="$1" ;; *) die "unknown flag: $1" ;;
 esac; shift; done
 
-ID="$(safe_id "$REPO")"
+# --name gives an independent instance (own clone + copilot + container) so you
+# can run several branches of the same repo in parallel. No suffix = default.
+ID="$(safe_id "$REPO")"; [ -n "$INSTANCE" ] && ID="${ID}__$(safe_id "$INSTANCE")"
 NAME="$(basename "$REPO")"
 WS_VOL="dc-$ID-ws"; COPILOT_VOL="dc-$ID-copilot"
 WORKDIR="/workspaces/$NAME"
@@ -168,10 +188,12 @@ export GITHUB_USER="$(gh api user -q .login 2>/dev/null || true)"
 export GITHUB_TOKEN="$(gh auth token 2>/dev/null || true)"
 [ -n "${DC_SECRETS_ENV:-}" ] && [ -f "$DC_SECRETS_ENV" ] && { set -a; . "$DC_SECRETS_ENV"; set +a; }
 
-log "bringing up devcontainer for $REPO..."
+log "bringing up devcontainer for $REPO${INSTANCE:+ (instance $INSTANCE)}..."
+# Unique id-labels so `up`/`exec` target THIS instance's container.
+id_labels=(--id-label "dev-container=1" --id-label "dev-container-id=$ID"
+           --id-label "dev-container-repo=$REPO" --id-label "dev-container-instance=${INSTANCE:-default}")
 up_args=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
-         --docker-path podman --id-label "dev-container=1"
-         --id-label "dev-container-repo=$REPO")
+         --docker-path podman "${id_labels[@]}")
 [ -n "$REBUILD" ] && up_args+=(--remove-existing-container)
 # Inject the token into the container so lifecycle scripts / internal features
 # (e.g. goproxy, feature-management) can auth, exactly as Codespaces does.
@@ -188,7 +210,7 @@ devcontainer up "${up_args[@]}"
 
 # Shared args so `exec` can locate the container (same id-labels as `up`).
 exec_base=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
-           --docker-path podman --id-label "dev-container=1" --id-label "dev-container-repo=$REPO")
+           --docker-path podman "${id_labels[@]}")
 if [ -n "$SKIP_SETUP" ]; then
     log "running essential volume setup (chown, ~/.copilot, safe.directory)..."
     devcontainer exec "${exec_base[@]}" bash -lc "$DC_SETUP" || true
@@ -196,7 +218,7 @@ fi
 
 log "container up. entering ($FINAL)..."
 if [ "$FINAL" = none ]; then
-    log "ready. enter with:  dev-container ${REPO} --copilot   (or --shell)"
+    log "ready. enter with:  dev-container ${REPO}${INSTANCE:+ --name $INSTANCE} --copilot   (or --shell)"
 elif [ "$FINAL" = copilot ]; then
     devcontainer exec "${exec_base[@]}" \
         bash -lc 'command -v copilot >/dev/null && copilot || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
