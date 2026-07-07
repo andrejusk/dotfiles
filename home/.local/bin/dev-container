@@ -145,6 +145,14 @@ case "${1:-}" in
               fi
               exit 0 ;;
     --stop)   podman machine stop 2>/dev/null; log "podman machine stopped"; exit 0 ;;
+    --list)   # Machine-readable instance list for the picker widget (fast: reads
+              # the cache, no podman/VM needed). Emits: <repo>\t<instance>
+              for m in "$CACHE_DIR"/*/instance.meta; do
+                  [ -f "$m" ] || continue
+                  r=""; i=""; . "$m" 2>/dev/null
+                  [ -n "$r" ] && printf '%s\t%s\n' "$r" "$i"
+              done
+              exit 0 ;;
     --rm)     shift; repo="${1:?usage: dev-container --rm <owner/repo> [name]}"
               id="$(safe_id "$repo")"; [ -n "${2:-}" ] && id="${id}__$(safe_id "$2")"
               ensure_machine
@@ -186,6 +194,9 @@ podman run --rm -v "$WS_VOL:/vol" -v "$H:/out" alpine \
     sh -c "cp -r /vol/.devcontainer /out/ 2>/dev/null" \
     || die "$REPO has no .devcontainer/"
 build_override "$H" "$WS_VOL" "$WORKDIR" "$COPILOT_VOL"
+
+# Record instance metadata for the picker widget (`dev-container --list`).
+printf 'r=%q\ni=%q\n' "$REPO" "$INSTANCE" > "$H/instance.meta" 2>/dev/null || true
 
 # Secrets → the devcontainer reads ${localEnv:...}; supply from gh + local file.
 export GITHUB_USER="$(gh api user -q .login 2>/dev/null || true)"

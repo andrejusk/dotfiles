@@ -227,6 +227,45 @@ _dots_load_keybindings() {
     zle -N _dots_tmux_widget
     bindkey '^N' _dots_tmux_widget
 
+    # Ctrl+V: dev-container picker/creator (local devcontainers via podman).
+    # Mirrors ^S: lists existing instances to resume; ^n creates a new one from
+    # a git repo under $WORKSPACE. Auto-runs the chosen dev-container command.
+    _dots_devcontainer_widget() {
+        command -v dev-container >/dev/null || { zle reset-prompt; return; }
+        local ws="${WORKSPACE:-$HOME/Workspace}"
+        # Existing instances (fast: reads the cache, no VM). Rows: repo<TAB>instance
+        local list; list="$(dev-container --list 2>/dev/null)"
+        local sel key repo inst
+        if [[ -n "$list" ]]; then
+            sel="$(print -r -- "$list" | fzf --delimiter=$'\t' --with-nth=1,2 \
+                      --header '^n=new  enter=resume  ^d=remove' \
+                      --expect=ctrl-n,ctrl-d)" || { zle reset-prompt; return; }
+            key="$(sed -n 1p <<< "$sel")"
+            local line="$(sed -n 2p <<< "$sel")"
+            repo="$(cut -f1 <<< "$line")"
+            inst="$(cut -f2 <<< "$line")"
+        else
+            key=ctrl-n
+        fi
+        # ^n (or no instances yet) -> creator: pick a git repo under $WORKSPACE
+        if [[ "$key" == "ctrl-n" ]]; then
+            local picked
+            picked="$(cd "$ws" 2>/dev/null && print -rl -- */*/.git(N:h) \
+                | fzf --header 'pick a repo to spin up (owner/repo)')" \
+                || { zle reset-prompt; return; }
+            [[ -n "$picked" ]] || { zle reset-prompt; return; }
+            BUFFER="dev-container ${(q)picked} --skip-setup --copilot"
+        elif [[ "$key" == "ctrl-d" ]]; then
+            BUFFER="dev-container --rm ${(q)repo}${inst:+ ${(q)inst}}"
+        else
+            BUFFER="dev-container ${(q)repo}${inst:+ --name ${(q)inst}} --skip-setup --copilot"
+        fi
+        zle reset-prompt
+        zle accept-line
+    }
+    zle -N _dots_devcontainer_widget
+    bindkey '^V' _dots_devcontainer_widget
+
     # Ctrl+O: open in browser
     _dots_open_widget() {
         local choice
