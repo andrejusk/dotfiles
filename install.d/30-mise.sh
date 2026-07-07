@@ -18,7 +18,9 @@ if ! command -v mise &>/dev/null; then
             sudo install -dm 755 /etc/apt/keyrings
             wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | \
                 sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null
-            echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | \
+            # Derive the arch (amd64/arm64) so this works on both x86_64 CI and
+            # arm64 machines/containers rather than assuming amd64.
+            echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=$(dpkg --print-architecture)] https://mise.jdx.dev/deb stable main" | \
                 sudo tee /etc/apt/sources.list.d/mise.list
             sudo apt-get update -qq
             sudo apt-get install -qq mise
@@ -73,7 +75,11 @@ typeset -a MISE_APPS=(
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
     MISE_APPS+=(
-        "poetry@2.4.1"
+        # uv: self-contained static binary (mise core backend), so no Python
+        # interpreter/venv is needed to install it. This avoids poetry's
+        # official installer picking up the Command Line Tools python3.9,
+        # whose relocatable build cannot create venvs without symlinks.
+        "uv@latest"
         "gh@2.94.0"
         "terraform@1.15.6"
         "firebase@15.20.0"
@@ -104,11 +110,13 @@ MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote || true
 bat cache --build &>/dev/null || true
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
-    # Setup Poetry ZSH completions (XDG compliant)
+    # Setup uv ZSH completions (XDG compliant)
     COMPLETIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/completions"
     mkdir -p "$COMPLETIONS_DIR"
-    if [ ! -f "$COMPLETIONS_DIR/_poetry" ]; then
-        mise exec -- poetry completions zsh > "$COMPLETIONS_DIR/_poetry"
+    # Guard on uv actually being installed: a partial `mise use` (e.g. a tool
+    # with no build for this arch) shouldn't abort the whole install here.
+    if [ ! -f "$COMPLETIONS_DIR/_uv" ] && mise which uv &>/dev/null; then
+        mise exec -- uv generate-shell-completion zsh > "$COMPLETIONS_DIR/_uv"
     fi
 fi
 

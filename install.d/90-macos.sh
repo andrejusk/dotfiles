@@ -17,6 +17,17 @@ _defaults_set() {
     defaults write "$domain" "$key" "$type" "$value"
 }
 
+# Like _defaults_set, but for the per-host NSGlobalDomain (ByHost) mirror. The
+# trackpad/gesture engine reads these com.apple.trackpad.* keys (not just the
+# app domains), so gesture settings must be written here too.
+_defaults_set_ch() {
+    local key="$1" type="$2" value="$3"
+    local current
+    current=$(defaults -currentHost read -g "$key" 2>/dev/null) || current=""
+    [[ "$current" == "$value" ]] && return 0
+    defaults -currentHost write -g "$key" "$type" "$value"
+}
+
 # Keyboard
 _defaults_set -globalDomain NSAutomaticCapitalizationEnabled -bool false
 _defaults_set -globalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
@@ -73,8 +84,31 @@ _defaults_set com.apple.dock tilesize -int 62
 _defaults_set com.apple.dock wvous-bl-corner -int 5
 _defaults_set com.apple.dock wvous-bl-modifier -int 0
 
+# Window management: disable drag-to-edge tiling (conflicts with Rectangle).
+# Backs System Settings > Desktop & Dock > Windows >
+# "Drag windows to screen edges to tile".
+_defaults_set com.apple.WindowManager EnableTilingByEdgeDrag -bool false
+_defaults_set com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
+
+# Trackpad: three-finger drag (move windows, select text, etc.) on the built-in
+# and Bluetooth trackpads. Three-finger drag can't coexist with three-finger
+# swipes, so disable those — macOS keeps "swipe between full-screen apps" and
+# Mission Control on FOUR fingers (TrackpadFourFinger*SwipeGesture, left at 2).
+# The gesture engine reads the per-host mirror, so set both stores.
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 0
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 0
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerHorizSwipeGesture -int 0
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerVertSwipeGesture -int 0
+_defaults_set_ch com.apple.trackpad.threeFingerDragGesture -int 1
+_defaults_set_ch com.apple.trackpad.threeFingerHorizSwipeGesture -int 0
+_defaults_set_ch com.apple.trackpad.threeFingerVertSwipeGesture -int 0
+
 # Scrolling: traditional direction (i.e. "natural scrolling" off).
 _defaults_set NSGlobalDomain com.apple.swipescrolldirection -bool false
 
+# Tiling + trackpad changes require a logout (or WindowServer restart) to apply.
 log_info "Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
+log_info "Log out/in to apply tiling + trackpad changes"
 log_pass "macOS defaults configured"

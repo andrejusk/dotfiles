@@ -13,7 +13,9 @@ GH_EXTS=(
     "github/gh-shell"    # run shell commands via gh
 )
 
-installed="$(gh extension list 2>/dev/null)"
+# `|| true` so a non-zero exit (e.g. fresh/unauthenticated gh with no
+# extensions configured yet) does not abort under the runner's `set -e`.
+installed="$(gh extension list 2>/dev/null || true)"
 for ext in "${GH_EXTS[@]}"; do
     if echo "$installed" | grep -q "${ext}"; then
         log_skip "${ext} present"

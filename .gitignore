@@ -16,6 +16,12 @@ temp
 **/autoload
 **/pypoetry
 
+# XDG runtime state (safety net: 23-stow.sh mkdir's ~/.local/bin so stow links
+# only bin/ scripts and never folds ~/.local into the repo — but if a fold ever
+# recurs, keep mise/gh/zsh runtime writes out of version control)
+home/.local/share
+home/.local/state
+
 # vim plugins (installed via install script)
 home/.vim/pack
 

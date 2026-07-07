@@ -37,6 +37,16 @@ rm -f "$HOME/.ssh/config"
 
 mkdir -p "$HOME/.config"
 mkdir -p "$HOME/.ssh"
+# Ensure ~/.local (and its bin dir) exist as real dirs so stow links only the
+# tracked bin/ scripts, rather than folding the whole tree into the repo. On a
+# fresh machine ~/.local doesn't exist, so stow would otherwise create
+# ~/.local -> repo/home/.local and mise/gh/zsh would then write GBs of runtime
+# state (~/.local/share, ~/.local/state) straight into the working tree.
+mkdir -p "$HOME/.local/bin"
+# Ensure ~/.config/Code exists as a real dir so stow links only the tracked
+# settings.json; otherwise a fresh Linux box would fold ~/.config/Code into the
+# repo and VSCode would write its state (globalStorage, etc.) into the tree.
+mkdir -p "$HOME/.config/Code/User"
 # Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
 # the hooks file inside, rather than folding the whole state-heavy dir into the repo.
 mkdir -p "$HOME/.copilot/hooks"

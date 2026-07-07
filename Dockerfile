@@ -12,7 +12,6 @@ RUN apt-get -qq install --no-install-recommends \
     gnupg2 \
     lsb-release \
     openssh-client \
-    software-properties-common \
     sudo \
     wget
 

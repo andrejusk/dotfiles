@@ -1,17 +1,15 @@
-[tool.poetry]
-authors = ["andrejus <hi@andrejus.uk>"]
-description = "Verifies dotfiles install"
+[project]
 name = "dotfiles-test"
 version = "0.0.1"
-package-mode = false
+description = "Verifies dotfiles install"
+authors = [{ name = "andrejus", email = "hi@andrejus.uk" }]
+requires-python = ">=3.9"
+dependencies = ["pytest>=8.0.0"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-pytest = "^8.0.0"
+[dependency-groups]
+dev = ["black>=24.3"]
 
-[tool.poetry.dev-dependencies]
-black = "^24.3"
-
-[build-system]
-build-backend = "poetry.masonry.api"
-requires = ["poetry>=0.12"]
+[tool.uv]
+# Not an installable package (mirrors poetry's package-mode = false): uv only
+# provisions the dependency venv, it doesn't build/install this project.
+package = false

@@ -61,7 +61,7 @@ binaries: List[Text] = [
     "python3",
     "pip",
     "pip3",
-    "poetry",
+    "uv",
     # langauge: js
     "node",
     "npm",

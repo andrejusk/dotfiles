@@ -26,4 +26,9 @@ done
 wait
 
 log_pass "vim plugins configured"
-vim --version 2>/dev/null | sed -n '1p' | log_quote
+# The plugins target the system vim; it's always present on real machines
+# (macOS, Codespaces) but not in the minimal CI containers, so only echo the
+# version when vim actually exists — don't abort the install if it doesn't.
+if command -v vim &>/dev/null; then
+    vim --version 2>/dev/null | sed -n '1p' | log_quote
+fi
