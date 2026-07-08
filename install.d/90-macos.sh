@@ -28,6 +28,35 @@ _defaults_set_ch() {
     defaults -currentHost write -g "$key" "$type" "$value"
 }
 
+_app_present() {
+    local app="$1"
+    [[ -d "/Applications/${app}.app" || -d "$HOME/Applications/${app}.app" ]]
+}
+
+_defaults_set_system() {
+    local domain="$1" key="$2" type="$3" value="$4"
+    local current
+    current=$(defaults read "/Library/Preferences/${domain}" "$key" 2>/dev/null) || current=""
+    [[ "$current" == "$value" ]] && return 0
+    sudo defaults write "/Library/Preferences/${domain}" "$key" "$type" "$value"
+}
+
+_hide_app_menu_item() {
+    local app="$1"
+    shift
+
+    if ! _app_present "$app"; then
+        log_skip "$app not installed; skipping menu bar icon settings"
+        return 0
+    fi
+
+    local domain
+    for domain in "$@"; do
+        _defaults_set "$domain" "NSStatusItem Visible Item-0" -bool false
+        _defaults_set "$domain" "NSStatusItem VisibleCC Item-0" -bool false
+    done
+}
+
 # Keyboard
 _defaults_set -globalDomain NSAutomaticCapitalizationEnabled -bool false
 _defaults_set -globalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
@@ -52,6 +81,37 @@ _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Bluetoo
 _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist WiFi -int 24
 _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist NowPlaying -int 24
 _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Battery -int 24
+# Accessibility Shortcuts menu bar icon, for quick VoiceOver access.
+_defaults_set com.apple.controlcenter "NSStatusItem Visible AccessibilityShortcuts" -bool true
+_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist AccessibilityShortcuts -int 2
+
+# Third-party menu bar items. The generic NSStatusItem latch is what macOS
+# writes when a status item is removed from the menu bar; app-specific keys are
+# set where the app exposes one.
+_hide_app_menu_item "Microsoft Teams" com.microsoft.teams2 com.microsoft.teams2.agent
+
+if _app_present "Rectangle"; then
+    _defaults_set com.knollsoft.Rectangle hideMenubarIcon -bool true
+fi
+_hide_app_menu_item "Rectangle" com.knollsoft.Rectangle
+
+# 1Password 8 has no supported defaults key for its menu bar toggle, but the
+# AppKit status item latch keeps the icon hidden when macOS honors it.
+_hide_app_menu_item "1Password" com.1password.1password
+
+# Okta Verify has no documented menu bar preference key; use the AppKit latch.
+_hide_app_menu_item "Okta Verify" com.okta.mobile
+
+if _app_present "BetterDisplay"; then
+    _defaults_set pro.betterdisplay.BetterDisplay hideMenuIcon -bool true
+    _defaults_set pro.betterdisplay.BetterDisplay showInMenuBar -bool false
+fi
+_hide_app_menu_item "BetterDisplay" pro.betterdisplay.BetterDisplay
+
+if _app_present "Microsoft Defender"; then
+    _defaults_set_system com.microsoft.wdav hideStatusMenuIcon -bool true
+fi
+_hide_app_menu_item "Microsoft Defender" com.microsoft.wdav com.microsoft.wdav.tray
 
 # Finder
 _defaults_set com.apple.finder QuitMenuItem -bool true
@@ -101,25 +161,24 @@ _defaults_set com.apple.dock wvous-bl-modifier -int 0
 _defaults_set com.apple.WindowManager EnableTilingByEdgeDrag -bool false
 _defaults_set com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
 
-# Trackpad: three-finger drag (move windows, select text, etc.) on the built-in
-# and Bluetooth trackpads. Three-finger drag can't coexist with three-finger
-# swipes, so disable those — macOS keeps "swipe between full-screen apps" and
-# Mission Control on FOUR fingers (TrackpadFourFinger*SwipeGesture, left at 2).
+# Trackpad: keep macOS's default three-finger swipes for Mission Control,
+# App Expose, and full-screen apps; do not enable three-finger drag.
 # The gesture engine reads the per-host mirror, so set both stores.
-_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
-_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 0
-_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 0
-_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
-_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerHorizSwipeGesture -int 0
-_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerVertSwipeGesture -int 0
-_defaults_set_ch com.apple.trackpad.threeFingerDragGesture -int 1
-_defaults_set_ch com.apple.trackpad.threeFingerHorizSwipeGesture -int 0
-_defaults_set_ch com.apple.trackpad.threeFingerVertSwipeGesture -int 0
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 2
+_defaults_set com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 2
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool false
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerHorizSwipeGesture -int 2
+_defaults_set com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerVertSwipeGesture -int 2
+_defaults_set_ch com.apple.trackpad.threeFingerDragGesture -int 0
+_defaults_set_ch com.apple.trackpad.threeFingerHorizSwipeGesture -int 2
+_defaults_set_ch com.apple.trackpad.threeFingerVertSwipeGesture -int 2
 
 # Scrolling: traditional direction (i.e. "natural scrolling" off).
 _defaults_set NSGlobalDomain com.apple.swipescrolldirection -bool false
 
 # Tiling + trackpad changes require a logout (or WindowServer restart) to apply.
+log_info "Restart Control Center/SystemUIServer to refresh menu bar items"
 log_info "Restart Finder/Dock to apply: osascript -e 'quit app \"Finder\"'"
 log_info "Log out/in to apply tiling + trackpad changes"
 log_pass "macOS defaults configured"

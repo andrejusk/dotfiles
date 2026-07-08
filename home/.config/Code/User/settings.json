@@ -144,5 +144,6 @@
   "extensions.autoUpdate": false,
   "extensions.autoCheckUpdates": false,
   "extensions.ignoreRecommendations": true,
-  "yaml.extension.recommendations": false
+  "yaml.extension.recommendations": false,
+  "datadog.connection.notification.suppressSignInNotification": true
 }
