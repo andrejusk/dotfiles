@@ -6,15 +6,16 @@
 #   Hugging Face cache for use with mlx_lm.server (see 35-mlx.sh).
 #
 #   Opt-in only - model weights are large (GBs), so this is skipped unless
-#   requested. Choose one:
-#     DOTS_MLX_PULL=1 ./install mlx-models           # pull the default model
-#     DOTS_MLX_MODELS="repo/id repo/id" ./install mlx-models   # pull specific
+#   requested. Selection is driven by the shared inventory (stowed to
+#   ~/.config/dev-model/inventory.tsv), the same list `dev-model` serves from:
+#     DOTS_MLX_PULL=1        ./install mlx-models   # the default-tagged model
+#     DOTS_MLX_PULL=all      ./install mlx-models   # the entire inventory
+#     DOTS_MLX_TIER="s m"    ./install mlx-models   # everything in those tiers
+#     DOTS_MLX_TAGS=agentic  ./install mlx-models   # everything with a tag
+#     DOTS_MLX_MODELS="id …" ./install mlx-models   # explicit ids (wins)
 #
-#   Recommended models for this machine (M1 Max, 64GB):
-#     mlx-community/Qwen2.5-Coder-7B-Instruct-4bit     (~4GB,  fast)
-#     mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit  (~17GB, primary) [default]
-#     mlx-community/Qwen3-Coder-30B-A3B-Instruct-8bit  (~33GB, quality)
-#     mlx-community/Qwen2.5-Coder-32B-Instruct-4bit    (~18GB, dense alt)
+#   Tiers gauge RAM: s <8GB, m ~15-25GB, l ~35-70GB, xl >100GB. `agentic` = has
+#   a native mlx_lm tool-call parser (MCP/tool-use ready).
 #
 
 # Default model pulled when DOTS_MLX_PULL is set without an explicit list
@@ -32,17 +33,39 @@ fi
 # Skip in Codespaces (no local GPU / not the target environment)
 [[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
 
-# Resolve which models to pull (explicit list wins, else default if opted in)
+# Resolve which models to pull. Precedence: explicit list > all > tier/tags >
+# default-tagged. Driven by the shared inventory (stowed by 23-stow.sh).
+INV="${XDG_CONFIG_HOME:-$HOME/.config}/dev-model/inventory.tsv"
+_inv_rows() { grep -v '^[[:space:]]*#' "$INV" 2>/dev/null | grep -v '^[[:space:]]*$'; }
+
 typeset -a MLX_MODELS=()
-if [[ -n "$DOTS_MLX_MODELS" ]]; then
+if [[ -n "${DOTS_MLX_MODELS:-}" ]]; then
     read -ra MLX_MODELS <<< "$DOTS_MLX_MODELS"
-elif [[ -n "$DOTS_MLX_PULL" ]]; then
-    MLX_MODELS=("$DOTS_MLX_DEFAULT_MODEL")
+elif [[ "${DOTS_MLX_PULL:-}" == "all" ]]; then
+    while IFS='|' read -r id _rest; do [[ -n "$id" ]] && MLX_MODELS+=("$id"); done < <(_inv_rows)
+elif [[ -n "${DOTS_MLX_TIER:-}" || -n "${DOTS_MLX_TAGS:-}" ]]; then
+    while IFS='|' read -r id tier tags _rest; do
+        for t in ${DOTS_MLX_TIER:-}; do [[ "$tier" == "$t" ]] && MLX_MODELS+=("$id"); done
+        for g in ${DOTS_MLX_TAGS:-}; do [[ ",$tags," == *",$g,"* ]] && MLX_MODELS+=("$id"); done
+    done < <(_inv_rows)
+elif [[ -n "${DOTS_MLX_PULL:-}" ]]; then
+    while IFS='|' read -r id _tier tags _rest; do
+        [[ ",$tags," == *",default,"* ]] && MLX_MODELS+=("$id")
+    done < <(_inv_rows)
+    [[ ${#MLX_MODELS[@]} -eq 0 ]] && MLX_MODELS=("$DOTS_MLX_DEFAULT_MODEL")   # inventory missing
+fi
+
+# de-duplicate, preserving order
+if [[ ${#MLX_MODELS[@]} -gt 0 ]]; then
+    typeset -a _dedup=()
+    while IFS= read -r m; do [[ -n "$m" ]] && _dedup+=("$m"); done \
+        < <(printf '%s\n' "${MLX_MODELS[@]}" | awk '!seen[$0]++')
+    MLX_MODELS=("${_dedup[@]}")
 fi
 
 # Opt-in: nothing to do unless requested (weights are large)
 if [[ ${#MLX_MODELS[@]} -eq 0 ]]; then
-    log_skip "Set DOTS_MLX_PULL=1 or DOTS_MLX_MODELS to pull weights"
+    log_skip "No models selected — DOTS_MLX_PULL=1|all, DOTS_MLX_TIER=\"s m\", DOTS_MLX_TAGS=agentic, or DOTS_MLX_MODELS=\"id …\""
     return 0
 fi
 

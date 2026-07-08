@@ -35,5 +35,15 @@ log_info "Installing mlx-lm..."
 MISE_QUIET=1 mise use -g "uv@0.11.21" 2>&1 | log_quote || true
 MISE_QUIET=1 mise use -g "pipx:mlx-lm@0.31.3" 2>&1 | log_quote || true
 
+# mlx-lm 0.31.3 requires transformers>=5.0 but breaks importing on 5.12+ (a
+# tokenizer register-API change). If the server can't import, pin transformers
+# <5.12 inside the pipx venv. Idempotent: only runs when actually broken.
+# (dev-model runs the server in its own pinned uv env and is unaffected.)
+mlx_py="$(mise where pipx:mlx-lm 2>/dev/null)/mlx-lm/bin/python"
+if [[ -x "$mlx_py" ]] && ! "$mlx_py" -c 'import mlx_lm.server' &>/dev/null; then
+    log_info "Pinning transformers<5.12 (mlx-lm 0.31.3 incompatibility)..."
+    uv pip install --python "$mlx_py" 'transformers<5.12' 2>&1 | log_quote || true
+fi
+
 log_pass "MLX tooling installed"
 mise ls --current 2>/dev/null | grep "mlx-lm" | awk '{printf "%s %s\n", $1, $2}' | log_quote

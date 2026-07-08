@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+# dev-model — run local MLX models on the host (Apple Silicon) behind an
+# OpenAI-compatible endpoint, for in-container or native coding harnesses
+# (opencode, aider, …) and analysis work.
+#
+# The model runs on the HOST (needs the Metal GPU); dev-container harnesses reach
+# it at http://host.containers.internal:8080/v1 (gvproxy forwards even a
+# 127.0.0.1 bind, so the endpoint stays off the LAN). One server serves many
+# concurrent sessions via mlx_lm's continuous batching — no need for N servers.
+#
+# mlx_lm 0.31.3 pulls a broken transformers (5.13); we pin <5.12 via an isolated
+# uv env, so this works regardless of the (separately mise-managed) mlx-lm.
+#
+# Usage:
+#   dev-model [start] [--model ID] [--port N] [--warm]   # (re)start a server
+#   dev-model stop [--port N | --all]
+#   dev-model status | list
+#   dev-model logs [--port N] [-f]
+#   dev-model models [--ids] [--cached] [FILTER]         # inventory (FILTER=tier/tag)
+#   dev-model pick                                        # fzf-pick a model → serve
+#   dev-model current [--port N]                          # id served on a port
+#   dev-model warm [--port N]                             # preload weights
+set -euo pipefail
+
+: "${XDG_CONFIG_HOME:=$HOME/.config}"
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+INV="$XDG_CONFIG_HOME/dev-model/inventory.tsv"
+STATE="$XDG_CACHE_HOME/dev-model"; mkdir -p "$STATE"
+HOST="${DEV_MODEL_HOST:-127.0.0.1}"
+PORT_DEFAULT="${DEV_MODEL_PORT:-8080}"
+HF_HUB="${HF_HOME:-$HOME/.cache/huggingface}/hub"
+
+# Pinned inference stack (see header). Overridable via env.
+UV_PY="${DEV_MODEL_PY:-3.12}"
+MLX_LM_PIN="${DEV_MODEL_MLX_LM:-mlx-lm==0.31.3}"
+TF_PIN="${DEV_MODEL_TRANSFORMERS:-transformers==5.11.0}"
+FALLBACK_MODEL="mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit"
+
+log() { printf '\033[38;2;12;72;204m[dev-model]\033[0m %s\n' "$*" >&2; }
+die() { printf '\033[38;2;244;4;4m[dev-model]\033[0m %s\n' "$*" >&2; exit 1; }
+
+command -v uv >/dev/null 2>&1 || die "uv not found (mise use -g uv, or run ./install mlx)"
+
+# --- inventory helpers ---------------------------------------------------------
+# Rows: id|tier|tags|note . Prints "id|tier|tags|note" for non-comment lines.
+_inv() { [ -f "$INV" ] && grep -v '^[[:space:]]*#' "$INV" | grep -v '^[[:space:]]*$' || true; }
+_default_model() { _inv | awk -F'|' '$3 ~ /(^|,)default(,|$)/ {print $1; exit}'; }
+_cache_dir_for() { printf '%s/models--%s' "$HF_HUB" "$(printf '%s' "$1" | tr '/' '-' | sed 's/-/--/')"; }
+# HF cache dir is models--<owner>--<name>; owner/name → owner--name (single '/').
+_is_cached() { local d; d="$HF_HUB/models--$(printf '%s' "$1" | sed 's#/#--#')"; [ -d "$d" ]; }
+
+# --- server lifecycle ----------------------------------------------------------
+_port_pid() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null | head -1 || true; }
+
+start_server() {
+    local model="" port="$PORT_DEFAULT" warm=""
+    while [ $# -gt 0 ]; do case "$1" in
+        --model) shift; model="$1" ;;
+        --port)  shift; port="$1" ;;
+        --warm)  warm=1 ;;
+        *) die "start: unknown arg $1" ;;
+    esac; shift; done
+    [ -n "$model" ] || model="$(_default_model)"; [ -n "$model" ] || model="$FALLBACK_MODEL"
+
+    local cur; cur="$(cat "$STATE/$port.model" 2>/dev/null || true)"
+    if [ -n "$(_port_pid "$port")" ]; then
+        if [ "$cur" = "$model" ]; then log "already serving $model on :$port"; [ -n "$warm" ] && warm_server --port "$port"; return 0; fi
+        log "swapping model on :$port ($cur → $model)"; stop_server --port "$port"
+    fi
+
+    # Robustly pre-fetch weights first: mlx_lm.server's built-in downloader can
+    # stall on large models, so the first client request hangs and the harness
+    # (opencode/copilot) can crash. hf_transfer is fast and resumes; running it
+    # when already complete is a quick verify (idempotent).
+    : > "$STATE/$port.log"
+    if command -v uvx >/dev/null 2>&1; then
+        log "fetching weights for $model (resumes/verifies; tail: dev-model logs --port $port)..."
+        HF_HUB_ENABLE_HF_TRANSFER=1 uvx --from 'huggingface_hub[hf_transfer]' hf download "$model" \
+            >> "$STATE/$port.log" 2>&1 || log "hf download issues; falling back to mlx_lm's downloader"
+    fi
+    log "starting mlx_lm.server: $model on http://$HOST:$port/v1"
+    nohup uv run --quiet --python "$UV_PY" --with "$MLX_LM_PIN" --with "$TF_PIN" \
+        mlx_lm.server --model "$model" --host "$HOST" --port "$port" \
+        >> "$STATE/$port.log" 2>&1 &
+    local pid=$!; disown 2>/dev/null || true
+    echo "$pid"   > "$STATE/$port.pid"
+    echo "$model" > "$STATE/$port.model"
+
+    local i
+    for i in $(seq 1 25); do
+        kill -0 "$pid" 2>/dev/null || { die "server exited on startup — see: dev-model logs --port $port"; }
+        if curl -fsS --max-time 2 "http://$HOST:$port/v1/models" >/dev/null 2>&1; then
+            log "ready on :$port ($model). First request loads the weights."
+            [ -n "$warm" ] && warm_server --port "$port"
+            return 0
+        fi
+        sleep 1
+    done
+    log "server up on :$port but not answering yet (likely downloading weights) — dev-model logs --port $port"
+}
+
+stop_server() {
+    local port="$PORT_DEFAULT" all=""
+    while [ $# -gt 0 ]; do case "$1" in
+        --port) shift; port="$1" ;; --all) all=1 ;; *) die "stop: unknown arg $1" ;;
+    esac; shift; done
+    local ports=("$port")
+    [ -n "$all" ] && { ports=(); for f in "$STATE"/*.pid; do [ -f "$f" ] && ports+=("$(basename "$f" .pid)"); done; }
+    local p pid
+    for p in "${ports[@]:-}"; do
+        [ -n "$p" ] || continue
+        pid="$(cat "$STATE/$p.pid" 2>/dev/null || true)"
+        [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+        pid="$(_port_pid "$p")"; [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+        rm -f "$STATE/$p.pid" "$STATE/$p.model"
+        log "stopped :$p"
+    done
+}
+
+warm_server() {
+    local port="$PORT_DEFAULT"; [ "${1:-}" = "--port" ] && port="$2"
+    local model; model="$(cat "$STATE/$port.model" 2>/dev/null || true)"
+    [ -n "$model" ] || die "no server recorded on :$port"
+    log "warming $model on :$port (loading weights)…"
+    curl -fsS --max-time 900 "http://$HOST:$port/v1/chat/completions" \
+        -H 'Content-Type: application/json' \
+        -d "{\"model\":\"$model\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
+        >/dev/null 2>&1 && log "warm ✓" || log "warm request failed — see dev-model logs --port $port"
+}
+
+status() {
+    local any=""
+    printf '%-6s %-8s %-9s %s\n' "PORT" "PID" "STATE" "MODEL"
+    for f in "$STATE"/*.pid; do
+        [ -f "$f" ] || continue; any=1
+        local p; p="$(basename "$f" .pid)"
+        local pid; pid="$(cat "$f" 2>/dev/null)"
+        local model; model="$(cat "$STATE/$p.model" 2>/dev/null || echo '?')"
+        local st="dead"; [ -n "$(_port_pid "$p")" ] && st="up"
+        printf '%-6s %-8s %-9s %s\n' "$p" "${pid:-?}" "$st" "$model"
+    done
+    [ -n "$any" ] || echo "(no servers — start one with: dev-model)"
+}
+
+logs() {
+    local port="$PORT_DEFAULT" follow=""
+    while [ $# -gt 0 ]; do case "$1" in --port) shift; port="$1" ;; -f) follow=1 ;; *) die "logs: unknown arg $1";; esac; shift; done
+    local lf="$STATE/$port.log"; [ -f "$lf" ] || die "no log for :$port"
+    [ -n "$follow" ] && exec tail -f "$lf" || tail -n 60 "$lf"
+}
+
+models() {
+    local ids="" cached_only="" filter=""
+    while [ $# -gt 0 ]; do case "$1" in --ids) ids=1 ;; --cached) cached_only=1 ;; *) filter="$1" ;; esac; shift; done
+    _inv | while IFS='|' read -r id tier tags note; do
+        [ -n "$id" ] || continue
+        if [ -n "$filter" ]; then case ",$tier,$tags," in *",$filter,"*) : ;; *) continue ;; esac; fi
+        local c="-"; _is_cached "$id" && c="✓"
+        [ -n "$cached_only" ] && [ "$c" != "✓" ] && continue
+        if [ -n "$ids" ]; then echo "$id"; else
+            printf '%s [%s] %-55s %s\n' "$c" "$tier" "$id" "$note"
+        fi
+    done
+}
+
+pick() {
+    command -v fzf >/dev/null 2>&1 || die "fzf not found"
+    local row id
+    row="$(_inv | awk -F'|' '{c="-"; printf "%s\t[%s]\t%s\t%s\n",$1,$2,$3,$4}' \
+        | fzf --with-nth=1,2,4 --delimiter='\t' \
+              --header 'pick a model to serve on :'"$PORT_DEFAULT"'  (enter=serve)')" || return 1
+    id="$(printf '%s' "$row" | cut -f1)"; [ -n "$id" ] || return 1
+    start_server --model "$id"
+    echo "mlx/$id"   # opencode model reference
+}
+
+current() {
+    local port="$PORT_DEFAULT"; [ "${1:-}" = "--port" ] && port="$2"
+    cat "$STATE/$port.model" 2>/dev/null || die "no server on :$port"
+}
+
+# --- dispatch ------------------------------------------------------------------
+case "${1:-start}" in
+    start)   shift 2>/dev/null || true; start_server "$@" ;;
+    stop)    shift; stop_server "$@" ;;
+    status|list) shift 2>/dev/null || true; status ;;
+    logs)    shift; logs "$@" ;;
+    models)  shift; models "$@" ;;
+    pick)    shift 2>/dev/null || true; pick ;;
+    current) shift; current "$@" ;;
+    warm)    shift; warm_server "$@" ;;
+    --model|--port|--warm) start_server "$@" ;;   # bare flags → start
+    -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//' | head -n 25 ;;
+    *) die "unknown command: $1 (try: dev-model --help)" ;;
+esac
