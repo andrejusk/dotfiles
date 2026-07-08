@@ -1,0 +1,39 @@
+{
+  // Zed settings — managed by andrejusk/dotfiles (stowed to ~/.config/zed).
+  //
+  // Local MLX model (served on the host by `dev-model`) for Zed's own Agent
+  // Panel / Inline Assistant. Zed's model calls run on the LOCAL machine even in
+  // remote/SSH sessions, so 127.0.0.1 is correct here (in a dev-container the
+  // in-container opencode agent uses host.containers.internal instead).
+  //
+  // NOTE: a local server needs no real key; if Zed asks for one, enter any
+  // non-empty string (e.g. "local") in the provider UI — MLX ignores it.
+  "language_models": {
+    "openai_compatible": {
+      "MLX": {
+        "api_url": "http://127.0.0.1:8080/v1",
+        "available_models": [
+          {
+            "name": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit",
+            "display_name": "Qwen3-Coder 30B (MLX)",
+            "max_tokens": 262144,
+            "supports_tools": true
+          },
+          {
+            "name": "mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit",
+            "display_name": "Devstral 24B (MLX)",
+            "max_tokens": 131072,
+            "supports_tools": true
+          }
+        ]
+      }
+    }
+  },
+
+  // Dev Containers via podman. For the Defender-managed machine, prefer
+  // `dev-container <repo> --zed` (Zed over SSH into the in-VM volume workspace)
+  // rather than Zed's native "Open in Container", which bind-mounts the host
+  // folder and would be re-scanned by Defender.
+  "use_podman": true,
+  "dev_container_use_buildkit": false
+}
