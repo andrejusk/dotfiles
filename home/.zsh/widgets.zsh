@@ -238,7 +238,7 @@ _dots_load_keybindings() {
         local sel key repo inst
         if [[ -n "$list" ]]; then
             sel="$(print -r -- "$list" | fzf --delimiter=$'\t' --with-nth=1,2 \
-                      --header '^n=new  enter=resume  ^d=remove' \
+                      --header '^n=new  enter=open  ^d=remove' \
                       --expect=ctrl-n,ctrl-d)" || { zle reset-prompt; return; }
             key="$(sed -n 1p <<< "$sel")"
             local line="$(sed -n 2p <<< "$sel")"
@@ -247,19 +247,49 @@ _dots_load_keybindings() {
         else
             key=ctrl-n
         fi
-        # ^n (or no instances yet) -> creator: pick a git repo under $WORKSPACE
+        # Resolve the target container: create (^n), remove (^d), or an existing one.
+        local target_repo="" target_inst=""
         if [[ "$key" == "ctrl-n" ]]; then
             local picked
             picked="$(cd "$ws" 2>/dev/null && print -rl -- */*/.git(N:h) \
                 | fzf --header 'pick a repo to spin up (owner/repo)')" \
                 || { zle reset-prompt; return; }
             [[ -n "$picked" ]] || { zle reset-prompt; return; }
-            BUFFER="dev-container ${(q)picked} --skip-setup --copilot"
+            target_repo="$picked"
         elif [[ "$key" == "ctrl-d" ]]; then
             BUFFER="dev-container --rm ${(q)repo}${inst:+ ${(q)inst}}"
+            zle reset-prompt; zle accept-line; return
         else
-            BUFFER="dev-container ${(q)repo}${inst:+ --name ${(q)inst}} --skip-setup --copilot"
+            target_repo="$repo"; target_inst="$inst"
         fi
+
+        # Step 2: pick harness + session action for this container.
+        local action
+        action="$(printf '%s\n' \
+            'opencode — resume last' \
+            'opencode — new (pick model)' \
+            'copilot — resume last' \
+            'copilot — new' \
+            'zed — open GUI (opencode + MLX)' \
+            | fzf --header "container: ${target_repo}${target_inst:+ [$target_inst]}   (enter=go)")" \
+            || { zle reset-prompt; return; }
+        [[ -n "$action" ]] || { zle reset-prompt; return; }
+
+        local base="dev-container ${(q)target_repo}${target_inst:+ --name ${(q)target_inst}} --skip-setup"
+        local flags=""
+        case "$action" in
+            'opencode — resume last') flags="--opencode --continue" ;;
+            'copilot — resume last')  flags="--copilot" ;;
+            'copilot — new')          flags="--copilot --new" ;;
+            'zed — open GUI (opencode + MLX)') flags="--zed" ;;
+            'opencode — new (pick model)')
+                local mid=""
+                command -v dev-model >/dev/null 2>&1 && mid="$(dev-model models 2>/dev/null \
+                    | fzf --header 'pick an MLX model to serve on :8080' | awk '{print $3}')"
+                [[ -n "$mid" ]] || { zle reset-prompt; return; }
+                flags="--opencode --model mlx/${mid}" ;;
+        esac
+        BUFFER="$base $flags"
         zle reset-prompt
         zle accept-line
     }

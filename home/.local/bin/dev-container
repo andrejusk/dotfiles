@@ -13,10 +13,18 @@
 # here (this dotfiles repo is public).
 #
 # Usage:
-#   dev-container <owner/repo> [--rebuild] [--copilot|--shell] [--branch B]
+#   dev-container <owner/repo> [--rebuild] [--copilot|--opencode|--zed|--shell]
+#                              [--model mlx/ID] [--continue] [--new] [--branch B]
 #                              [--name INSTANCE] [--skip-setup] [--up-only]
 #                              [--exec CMD]
 #   dev-container --stop | --status | --rm <owner/repo> [name]
+#
+#   Harness: --copilot (cloud, default) or --opencode (local MLX model on the
+#   host via dev-model, reached at host.containers.internal:8080). --zed opens the
+#   Zed GUI over SSH into the in-VM workspace (Defender bypass preserved).
+#   --continue
+#   resumes the last session; --new forces a fresh one; --model picks the MLX
+#   model to serve (e.g. --model mlx/mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit).
 #
 #   --name runs an independent instance (own clone + volumes + container) so you
 #   can work on several branches of the same repo in parallel. --exec CMD runs
@@ -76,7 +84,7 @@ clone_into_volume() {
         b=""; [ -n "$BRANCH" ] && b="--branch $BRANCH"
         git clone --depth 1 $b \
           "https://${GH_USER}:${GH_TOKEN}@github.com/${REPO}.git" /vol
-    ' || die "clone failed (for internal repos: gh auth refresh -s read:packages)"
+    ' || die "clone failed (for private repos: gh auth refresh -s read:packages)"
 }
 
 # build_override <hostcfg> <vol> <workdir> <copilotvol> — write override.json that
@@ -166,9 +174,14 @@ esac
 REPO="${1:-${DC_DEFAULT_REPO:-}}"; [ -n "$REPO" ] || die "usage: dev-container <owner/repo>"
 [ "$REPO" = "${REPO#-}" ] || die "usage: dev-container <owner/repo> [flags]"
 shift || true
-FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE="" EXEC_CMD=""
+FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE="" EXEC_CMD="" OC_MODEL="" RESUME="" NEWSESS=""
 while [ $# -gt 0 ]; do case "$1" in
     --rebuild) REBUILD=1 ;; --shell) FINAL=shell ;; --copilot) FINAL=copilot ;;
+    --opencode) FINAL=opencode ;;
+    --zed) FINAL=zed ;;
+    --model) shift; OC_MODEL="$1" ;;
+    --continue) RESUME=1 ;;
+    --new) NEWSESS=1 ;;
     --up-only) FINAL=none ;;
     --skip-setup) SKIP_SETUP=1 ;;
     --name) shift; INSTANCE="$1" ;;
@@ -203,6 +216,15 @@ export GITHUB_USER="$(gh api user -q .login 2>/dev/null || true)"
 export GITHUB_TOKEN="$(gh auth token 2>/dev/null || true)"
 [ -n "${DC_SECRETS_ENV:-}" ] && [ -f "$DC_SECRETS_ENV" ] && { set -a; . "$DC_SECRETS_ENV"; set +a; }
 
+# Authenticate the host to ghcr.io so private devcontainer Features/base images
+# resolve. The @devcontainers/cli Feature resolver reads ~/.docker/config.json;
+# podman uses its own store — write both. Needs a token with read:packages
+# (if a private Feature 401s: gh auth refresh -h github.com -s read:packages).
+if [ -n "${GITHUB_TOKEN:-}" ] && command -v podman >/dev/null 2>&1; then
+    printf '%s' "$GITHUB_TOKEN" | podman login ghcr.io -u "${GITHUB_USER:-x}" --password-stdin >/dev/null 2>&1 || true
+    printf '%s' "$GITHUB_TOKEN" | podman login ghcr.io -u "${GITHUB_USER:-x}" --password-stdin --authfile "$HOME/.docker/config.json" >/dev/null 2>&1 || true
+fi
+
 log "bringing up devcontainer for $REPO${INSTANCE:+ (instance $INSTANCE)}..."
 # Unique id-labels so `up`/`exec` target THIS instance's container.
 id_labels=(--id-label "dev-container=1" --id-label "dev-container-id=$ID"
@@ -210,13 +232,13 @@ id_labels=(--id-label "dev-container=1" --id-label "dev-container-id=$ID"
 up_args=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
          --docker-path podman "${id_labels[@]}")
 [ -n "$REBUILD" ] && up_args+=(--remove-existing-container)
-# Inject the token into the container so lifecycle scripts / internal features
-# (e.g. goproxy, feature-management) can auth, exactly as Codespaces does.
+# Inject the token into the container so lifecycle scripts / private package
+# and feature integrations can auth, matching Codespaces behavior.
 [ -n "${GITHUB_TOKEN:-}" ] && up_args+=(--remote-env "GITHUB_TOKEN=$GITHUB_TOKEN"
                                         --remote-env "GH_TOKEN=$GITHUB_TOKEN")
 # --skip-setup brings the container up with the built image (all tools present)
-# but skips lifecycle scripts — use for repos whose bootstrap needs internal
-# network/VPN (the essential volume setup is then done via exec, below).
+# but skips lifecycle scripts — use for repos whose bootstrap needs private
+# network/VPN access (the essential volume setup is then done via exec, below).
 DC_SETUP="sudo chown -R \$(id -u):\$(id -g) $WORKDIR /dc-persist 2>/dev/null || true; \
 mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot \$HOME/.copilot; \
 git config --global --add safe.directory $WORKDIR"
@@ -226,19 +248,143 @@ devcontainer up "${up_args[@]}"
 # Shared args so `exec` can locate the container (same id-labels as `up`).
 exec_base=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
            --docker-path podman "${id_labels[@]}")
+# Carry the host GitHub token into every exec session (not just `up`), so the
+# in-container Copilot CLI auto-authenticates (it honours GH_TOKEN — no /login),
+# and gh/git operations work. Uses the host's `gh` credentials.
+[ -n "${GITHUB_TOKEN:-}" ] && exec_base+=(--remote-env "GITHUB_TOKEN=$GITHUB_TOKEN"
+                                          --remote-env "GH_TOKEN=$GITHUB_TOKEN")
+# Advertise truecolor so in-container TUIs (Copilot, opencode) render full-colour
+# themes rather than degrading to a washed-out / light fallback.
+exec_base+=(--remote-env "COLORTERM=truecolor")
 if [ -n "$SKIP_SETUP" ]; then
     log "running essential volume setup (chown, ~/.copilot, safe.directory)..."
     devcontainer exec "${exec_base[@]}" bash -lc "$DC_SETUP" || true
 fi
 
+# Mirror the host's Copilot preferences (theme, model, effort, …) into the
+# container's persisted ~/.copilot, so the in-container Copilot looks/behaves like
+# your native one. Without this the container Copilot auto-detects the terminal
+# background, often mis-fires to a white theme. Host is the source of truth.
+if [ -f "$HOME/.copilot/settings.json" ]; then
+    host_cp_b64="$(base64 < "$HOME/.copilot/settings.json" | tr -d '\n')"
+    devcontainer exec "${exec_base[@]}" bash -lc \
+        "mkdir -p \$HOME/.copilot; printf %s '$host_cp_b64' | base64 -d > \$HOME/.copilot/settings.json" \
+        >/dev/null 2>&1 || true
+fi
+
+# Local-model wiring shared by the opencode and zed harnesses (host side).
+if [ "$FINAL" = opencode ] || [ "$FINAL" = zed ]; then
+    OPENCODE_VERSION="${OPENCODE_VERSION:-1.17.13}"
+    oc_id="${OC_MODEL#mlx/}"
+    if [ -z "$oc_id" ] && command -v dev-model >/dev/null 2>&1; then oc_id="$(dev-model current 2>/dev/null || true)"; fi
+    [ -n "$oc_id" ] || oc_id="mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit"
+    if command -v dev-model >/dev/null 2>&1; then
+        log "ensuring host MLX server: $oc_id"
+        dev-model start --model "$oc_id" || log "dev-model start failed — start an MLX server on :8080 yourself"
+    else
+        log "note: 'dev-model' not on host PATH — the harness needs an MLX server on :8080 (see dev-model)"
+    fi
+    oc_ref="mlx/$oc_id"
+    oc_endpoint="http://host.containers.internal:8080/v1"
+    # opencode config, built on the host (dodges in-container quoting), shipped as base64.
+    oc_b64="$(python3 - "$oc_id" "$oc_endpoint" "$oc_ref" <<'PY' | base64 | tr -d '\n'
+import json, sys
+mid, endpoint, ref = sys.argv[1:4]
+print(json.dumps({
+    "$schema": "https://opencode.ai/config.json",
+    "provider": {"mlx": {"npm": "@ai-sdk/openai-compatible", "name": "MLX (host)",
+        "options": {"baseURL": endpoint, "apiKey": "local"},
+        "models": {mid: {"name": mid}}}},
+    "model": ref}, indent=2))
+PY
+)"
+    # opencode's theme lives in tui.json (a fixed dark theme; else it renders white).
+    oc_tui_b64="$(printf '{"$schema":"https://opencode.ai/tui.json","theme":"%s"}' "${OC_THEME:-tokyonight}" | base64 | tr -d '\n')"
+fi
+
 log "container up. entering ($FINAL)..."
 if [ "$FINAL" = none ]; then
-    log "ready. enter with:  dev-container ${REPO}${INSTANCE:+ --name $INSTANCE} --copilot   (or --shell)"
+    log "ready. enter with:  dev-container ${REPO}${INSTANCE:+ --name $INSTANCE} --copilot|--opencode|--zed   (or --shell)"
 elif [ "$FINAL" = exec ]; then
     devcontainer exec "${exec_base[@]}" bash -lc "$EXEC_CMD"
+elif [ "$FINAL" = opencode ]; then
+    # Harness = opencode (in-container), model = local MLX (host). See dev-model.
+    oc_resume=""; [ -n "$RESUME" ] && oc_resume="-c"
+    devcontainer exec "${exec_base[@]}" bash -lc "
+        set -e
+        export PATH=\"\$HOME/.opencode/bin:\$PATH\"
+        mkdir -p /dc-persist/opencode /dc-persist/opencode-share \"\$HOME/.config/opencode\" \"\$HOME/.local/share\"
+        ln -sfn /dc-persist/opencode \"\$HOME/.opencode\"
+        ln -sfn /dc-persist/opencode-share \"\$HOME/.local/share/opencode\"
+        if ! command -v opencode >/dev/null 2>&1; then
+            echo '[dev-container] installing opencode ${OPENCODE_VERSION} (persisted in volume)...'
+            curl -fsSL https://opencode.ai/install | VERSION='${OPENCODE_VERSION}' bash -s -- --no-modify-path \
+              || { echo '[dev-container] opencode install failed (image needs curl + unzip/tar)'; exec bash -l; }
+        fi
+        printf %s '${oc_b64}' | base64 -d > \"\$HOME/.config/opencode/opencode.json\"
+        printf %s '${oc_tui_b64}' | base64 -d > \"\$HOME/.config/opencode/tui.json\"
+        echo '[dev-container] opencode -> ${oc_endpoint} (${oc_ref})'
+        exec opencode --auto ${oc_resume} -m '${oc_ref}'
+    "
+elif [ "$FINAL" = zed ]; then
+    # Zed GUI over SSH into the in-VM workspace: files stay in the named volume,
+    # so the Defender open() scan is bypassed like the terminal harnesses. opencode
+    # is also set up in-container so Zed's OpenCode ACP agent + host MLX are ready.
+    zed_bin="$(command -v zed || true)"; [ -n "$zed_bin" ] || zed_bin="/Applications/Zed.app/Contents/MacOS/cli"
+    [ -x "$zed_bin" ] || die "zed not found (brew install --cask zed)"
+    podman_bin="$(command -v podman)" || die "podman not found"
+    keydir="$CACHE_DIR/zed"; mkdir -p "$keydir"; zkey="$keydir/id_ed25519"
+    [ -f "$zkey" ] || ssh-keygen -q -t ed25519 -N '' -C dev-container-zed -f "$zkey"
+    zpub="$(cat "$zkey.pub")"
+    ruser="$(devcontainer exec "${exec_base[@]}" bash -lc 'whoami' 2>/dev/null | tr -d '\r\n')"; [ -n "$ruser" ] || ruser=root
+    log "preparing in-container sshd + opencode for Zed..."
+    devcontainer exec "${exec_base[@]}" bash -lc "
+        set -e
+        if ! command -v sshd >/dev/null 2>&1 && [ ! -x /usr/sbin/sshd ]; then
+            if   command -v apt-get >/dev/null 2>&1; then sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-server >/dev/null;
+            elif command -v apk     >/dev/null 2>&1; then sudo apk add --no-cache openssh >/dev/null;
+            elif command -v dnf     >/dev/null 2>&1; then sudo dnf install -y -q openssh-server >/dev/null; fi
+        fi
+        sudo ssh-keygen -A >/dev/null 2>&1 || true
+        # Unlock the account so pubkey login is allowed (random, unusable password).
+        echo \"\$(whoami):\$(head -c18 /dev/urandom | base64)\" | sudo chpasswd >/dev/null 2>&1 || true
+        mkdir -p \"\$HOME/.ssh\"; printf '%s\n' '${zpub}' >> \"\$HOME/.ssh/authorized_keys\"
+        sort -u \"\$HOME/.ssh/authorized_keys\" -o \"\$HOME/.ssh/authorized_keys\" 2>/dev/null || true
+        chmod 700 \"\$HOME/.ssh\"; chmod 600 \"\$HOME/.ssh/authorized_keys\"
+        printf '%s\n' 'HostKey /etc/ssh/ssh_host_ed25519_key' 'PubkeyAuthentication yes' \
+            'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PermitRootLogin no' \
+            'StrictModes no' 'AuthorizedKeysFile /home/%u/.ssh/authorized_keys' | sudo tee /etc/ssh/sshd_config.zed >/dev/null
+        export PATH=\"\$HOME/.opencode/bin:\$PATH\"
+        mkdir -p /dc-persist/opencode /dc-persist/opencode-share \"\$HOME/.config/opencode\" \"\$HOME/.local/share\"
+        ln -sfn /dc-persist/opencode \"\$HOME/.opencode\"; ln -sfn /dc-persist/opencode-share \"\$HOME/.local/share/opencode\"
+        command -v opencode >/dev/null 2>&1 || curl -fsSL https://opencode.ai/install | VERSION='${OPENCODE_VERSION}' bash -s -- --no-modify-path >/dev/null 2>&1 || true
+        printf %s '${oc_b64}' | base64 -d > \"\$HOME/.config/opencode/opencode.json\"
+        printf %s '${oc_tui_b64}' | base64 -d > \"\$HOME/.config/opencode/tui.json\"
+        echo '[dev-container] zed remote prepared'
+    "
+    # Machine-local SSH host entry (Included by the stowed ~/.ssh/config via config.d/*).
+    # Absolute podman path + no env, so it works from Zed's minimal GUI PATH.
+    mkdir -p "$HOME/.ssh/config.d"; halias="dc-${ID}-zed"
+    cat > "$HOME/.ssh/config.d/${halias}.conf" <<SSHCFG
+Host ${halias}
+  User ${ruser}
+  IdentityFile ${zkey}
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  ProxyCommand ${podman_bin} exec -u root -i dc-${ID} /usr/sbin/sshd -i -f /etc/ssh/sshd_config.zed
+SSHCFG
+    log "opening Zed → ${halias}:${WORKDIR}  (files stay in-VM; opencode ACP + MLX ready)"
+    "$zed_bin" "ssh://${ruser}@${halias}${WORKDIR}" >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+    log "if Zed didn't open:  zed 'ssh://${ruser}@${halias}${WORKDIR}'"
 elif [ "$FINAL" = copilot ]; then
-    devcontainer exec "${exec_base[@]}" \
-        bash -lc 'command -v copilot >/dev/null && { copilot --continue 2>/dev/null || copilot; } || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
+    if [ -n "$NEWSESS" ]; then
+        devcontainer exec "${exec_base[@]}" \
+            bash -lc 'command -v copilot >/dev/null && exec copilot || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
+    else
+        devcontainer exec "${exec_base[@]}" \
+            bash -lc 'command -v copilot >/dev/null && { copilot --continue 2>/dev/null || copilot; } || { echo "copilot CLI not in image; opening shell"; exec bash -l; }'
+    fi
 else
     devcontainer exec "${exec_base[@]}" bash -l
 fi
