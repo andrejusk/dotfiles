@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@0.0.77",
+        "--browser",
+        "chrome",
+        "--isolated",
+        "--block-service-workers",
+        "--viewport-size",
+        "1440x1000"
+      ],
+      "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@1.5.0",
+        "--isolated",
+        "--viewport",
+        "1440x1000",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--screenshot-format",
+        "webp",
+        "--screenshot-quality",
+        "80",
+        "--screenshot-max-width",
+        "1600"
+      ],
+      "environment": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1",
+        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+      },
+      "enabled": true
+    }
+  }
+}

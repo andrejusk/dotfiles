@@ -47,6 +47,12 @@ mkdir -p "$HOME/.local/bin"
 # settings.json; otherwise a fresh Linux box would fold ~/.config/Code into the
 # repo and VSCode would write its state (globalStorage, etc.) into the tree.
 mkdir -p "$HOME/.config/Code/User"
+# Ensure ~/.config/zed is a real dir so stow links only settings.json, not the
+# whole dir (Zed also writes keymap.json / other state there).
+mkdir -p "$HOME/.config/zed"
+# Ensure ~/.config/opencode is a real dir so stow links only opencode.json;
+# auth/session state belongs in ~/.local/share/opencode, not the repo.
+mkdir -p "$HOME/.config/opencode"
 # Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
 # the hooks file inside, rather than folding the whole state-heavy dir into the repo.
 mkdir -p "$HOME/.copilot/hooks"
@@ -78,4 +84,3 @@ rm -f "${XDG_CACHE_HOME:-$HOME/.cache}"/dots/{fzf,mise,zoxide}.zsh{,.zwc}
 
 log_pass "stow linked"
 stow --version | log_quote
-

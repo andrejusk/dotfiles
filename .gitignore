@@ -1,11 +1,16 @@
 # ide
 .vscode
 
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
 # install artefacts
 tmp
 temp
 **/logs
 **/*.deb
+.playwright-mcp/
 
 # ssh env
 **/id_*
@@ -15,6 +20,10 @@ temp
 # setup files
 **/autoload
 **/pypoetry
+
+# machine-local MCP overlays / generated configs
+home/.copilot/mcp-config.json
+home/.copilot/mcp-config.local.json
 
 # XDG runtime state (safety net: 23-stow.sh mkdir's ~/.local/bin so stow links
 # only bin/ scripts and never folds ~/.local into the repo — but if a fold ever

@@ -1,0 +1,47 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "tools": [
+        "*"
+      ],
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@0.0.77",
+        "--browser",
+        "chrome",
+        "--isolated",
+        "--block-service-workers",
+        "--viewport-size",
+        "1440x1000"
+      ]
+    },
+    "chrome-devtools": {
+      "tools": [
+        "*"
+      ],
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@1.5.0",
+        "--isolated",
+        "--viewport",
+        "1440x1000",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--screenshot-format",
+        "webp",
+        "--screenshot-quality",
+        "80",
+        "--screenshot-max-width",
+        "1600"
+      ],
+      "env": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1",
+        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+      }
+    }
+  }
+}

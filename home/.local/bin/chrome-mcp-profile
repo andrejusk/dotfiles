@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "${1:-}" in
+  work) name="work"; label="MCP Work"; port=9223 ;;
+  test) name="test"; label="MCP Test"; port=9224 ;;
+  test2) name="test2"; label="MCP Test 2"; port=9225 ;;
+  *) echo "usage: chrome-mcp-profile work|test|test2 [url]" >&2; exit 2 ;;
+esac
+
+profile_dir="${HOME}/.cache/dots/chrome-mcp-${name}"
+url="${2:-about:blank}"
+mkdir -p "$profile_dir"
+
+python3 - "$profile_dir" "$label" "$name" <<'PY'
+import json
+import os
+import sys
+
+root, label, name = sys.argv[1:4]
+colors = {
+    "work": {
+        "avatar_index": 18,
+        "avatar_icon": "chrome://theme/IDR_PROFILE_AVATAR_18",
+        "profile_color_seed": -15584170,
+        "profile_highlight_color": -13794492,
+        "default_avatar_fill_color": -13794492,
+        "default_avatar_stroke_color": -15584170,
+    },
+    "test": {
+        "avatar_index": 24,
+        "avatar_icon": "chrome://theme/IDR_PROFILE_AVATAR_24",
+        "profile_color_seed": -5046011,
+        "profile_highlight_color": -26368,
+        "default_avatar_fill_color": -26368,
+        "default_avatar_stroke_color": -5046011,
+    },
+    "test2": {
+        "avatar_index": 28,
+        "avatar_icon": "chrome://theme/IDR_PROFILE_AVATAR_28",
+        "profile_color_seed": -9823334,
+        "profile_highlight_color": -10177034,
+        "default_avatar_fill_color": -10177034,
+        "default_avatar_stroke_color": -9823334,
+    },
+}
+spec = colors[name]
+
+local_state_path = os.path.join(root, "Local State")
+if os.path.exists(local_state_path):
+    with open(local_state_path) as fh:
+        local_state = json.load(fh)
+else:
+    local_state = {}
+info = local_state.setdefault("profile", {}).setdefault("info_cache", {}).setdefault("Default", {})
+info.update({
+    "name": label,
+    "is_using_default_name": False,
+    "is_using_default_avatar": False,
+    **{k: v for k, v in spec.items() if k != "avatar_index"},
+})
+tmp = f"{local_state_path}.tmp"
+with open(tmp, "w") as fh:
+    json.dump(local_state, fh)
+os.replace(tmp, local_state_path)
+
+prefs_path = os.path.join(root, "Default", "Preferences")
+if os.path.exists(prefs_path):
+    with open(prefs_path) as fh:
+        prefs = json.load(fh)
+else:
+    os.makedirs(os.path.dirname(prefs_path), exist_ok=True)
+    prefs = {}
+profile = prefs.setdefault("profile", {})
+profile.update({
+    "name": label,
+    "avatar_index": spec["avatar_index"],
+    "using_default_name": False,
+    "using_default_avatar": False,
+})
+tmp = f"{prefs_path}.tmp"
+with open(tmp, "w") as fh:
+    json.dump(prefs, fh)
+os.replace(tmp, prefs_path)
+PY
+
+open -na "Google Chrome" --args \
+  "--user-data-dir=${profile_dir}" \
+  "--remote-debugging-port=${port}" \
+  "--no-first-run" \
+  "$url"
+
+echo "Chrome MCP ${label} profile: ${profile_dir}"
+echo "DevTools endpoint: http://127.0.0.1:${port}"
