@@ -1,0 +1,12 @@
+{
+  "logLevel": "all",
+  "theme": "colorblind",
+  "contextTier": "long_context",
+  "showReasoning": true,
+  "model": "gpt-5.5",
+  "effortLevel": "xhigh",
+  "banner": "never",
+  "showTipsOnStartup": false,
+  "terminalProgress": false,
+  "updateTerminalTitle": false
+}
