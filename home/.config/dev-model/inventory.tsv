@@ -1,37 +1,34 @@
 # dev-model model inventory — curated MLX (Apple Silicon) models for local dev/analysis.
 #
-# Consumed by `dev-model` (picker/serve) and install.d/36-mlx-models.sh (pull).
+# Consumed by `dev-model` (picker/serve/pull) and install.d/36-mlx-models.sh.
 # Pipe-delimited: id | tier | tags | note        (lines starting with # are ignored)
 #
-# tier  = rough RAM class (weights + KV headroom):
-#   s  < 8 GB   — any Mac; instant; good for parallel/quick edits
-#   m  ~15-25GB — daily driver; fine on 32 GB+
-#   l  ~35-70GB — needs 64 GB+ (comfortable on 96 GB+)
-#   xl > 100GB  — needs 128 GB+
+# CURATED FOR A 64 GB MAC — you can realistically give ~40 GB to weights, so
+# nothing here needs more. tier = rough RAM class:
+#   s  < 8 GB    — instant; great for parallel/quick edits
+#   m  ~12-20 GB — daily driver; comfortable on 64 GB
+#   l  ~30-35 GB — tight on 64 GB (raise iogpu.wired_limit_mb, close apps, less context)
 # tags: agentic = has a native mlx_lm tool-call parser (MCP/tool-use ready);
 #       coder | reasoning | general | fast | default (the served default).
 #
+# Excluded — won't run (well) on 64 GB, need 96-128 GB: gpt-oss-120b (~63 GB),
+# GLM-4.7 full (~180 GB), Qwen3-235B (~118 GB), Qwen3-Next-80B (~40 GB),
+# Llama-3.3-70B (~40 GB dense), Qwen2.5-Coder-32B-8bit (~35 GB, 4-bit suffices).
 # Verified available on mlx-community (huggingface.co/mlx-community).
 
 ## ── Agentic coders (MCP/tool-calling ready) ──────────────────────────────────
 mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit|m|coder,agentic,default|Fast MoE (3B active); qwen3_coder tool parser — great all-round default
-mlx-community/Qwen3-Coder-30B-A3B-Instruct-8bit|l|coder,agentic|8-bit of the default — higher quality, more RAM
+mlx-community/Qwen3-Coder-30B-A3B-Instruct-8bit|l|coder,agentic|8-bit of the default — best-quality coder that still fits (tight)
 mlx-community/Qwen3-Coder-Next-4bit|m|coder,agentic|Newer Qwen3-Coder generation
 mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit|m|coder,agentic|Newest Devstral (Dec-2025); mistral tool parser — top agentic coder for harnesses
 mlx-community/GLM-4.7-Flash-4bit|m|coder,agentic|GLM-4.7 Flash; glm47 tool parser — fast agentic
 mlx-community/Qwen2.5-Coder-32B-Instruct-4bit|m|coder|Dense 32B — strongest pure-coding quality at this size
-mlx-community/Qwen2.5-Coder-32B-Instruct-8bit|l|coder|8-bit dense 32B
 
-## ── Reasoning / analysis (big MoE, fast due to low active params) ─────────────
-mlx-community/Qwen3-Next-80B-A3B-Instruct-4bit|l|reasoning,agentic|80B MoE, only 3B active — fast big-context analysis
-mlx-community/Qwen3.6-35B-A3B-4bit|m|reasoning,agentic|Newest Qwen MoE (3B active)
-mlx-community/gpt-oss-20b-MXFP4-Q8|m|reasoning|OpenAI open 20B MoE — fast reasoning (tool-calling less certain on mlx)
-mlx-community/gpt-oss-120b-MXFP4-Q8|xl|reasoning|Frontier open reasoning (~65 GB) — 128 GB machines
-mlx-community/GLM-4.7-4bit|l|reasoning,agentic|Full GLM-4.7 (bigger, stronger than Flash)
-mlx-community/Qwen3-235B-A22B-Instruct-2507-4bit|xl|reasoning|235B MoE, 22B active — max quality, 128 GB+
-mlx-community/Llama-3.3-70B-Instruct-4bit|l|general|Reliable 70B generalist (~40 GB)
+## ── Reasoning / general ──────────────────────────────────────────────────────
+mlx-community/Qwen3.6-35B-A3B-4bit|m|reasoning,agentic|Newest Qwen MoE (3B active) — fast big-brain generalist
+mlx-community/gpt-oss-20b-MXFP4-Q8|m|reasoning|OpenAI open 20B MoE — fast reasoning
+mlx-community/gemma-4-12B-it-8bit|m|general|Google Gemma 4 — strong writing / analysis
 
-## ── Fast / small (quick tasks, many parallel sessions, personal M1) ───────────
+## ── Fast / small (quick tasks, high parallelism) ─────────────────────────────
 mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit-mlx|s|coder|16B MoE (2.4B active) — fast coder
 mlx-community/Qwen3-4B-Instruct-2507-4bit|s|fast,general|Tiny, near-instant — quick edits / high parallelism
-mlx-community/gemma-4-12B-it-8bit|m|general|Google Gemma 4 — strong writing / analysis

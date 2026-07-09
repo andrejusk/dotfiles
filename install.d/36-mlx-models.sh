@@ -84,7 +84,7 @@ for model in "${MLX_MODELS[@]}"; do
         continue
     fi
     log_info "Pulling $model..."
-    uvx --from huggingface_hub hf download "$model" 2>&1 | log_quote
+    HF_HUB_DISABLE_XET=1 uvx --from huggingface_hub hf download "$model" 2>&1 | log_quote
 done
 
 log_pass "MLX models ready"

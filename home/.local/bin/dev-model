@@ -70,12 +70,12 @@ start_server() {
 
     # Robustly pre-fetch weights first: mlx_lm.server's built-in downloader can
     # stall on large models, so the first client request hangs and the harness
-    # (opencode/copilot) can crash. hf_transfer is fast and resumes; running it
-    # when already complete is a quick verify (idempotent).
+    # (opencode/copilot) can crash. hf download resumes and verifies (idempotent);
+    # HF_HUB_DISABLE_XET=1 because Xet transfer stalls on some (corporate) networks.
     : > "$STATE/$port.log"
     if command -v uvx >/dev/null 2>&1; then
         log "fetching weights for $model (resumes/verifies; tail: dev-model logs --port $port)..."
-        HF_HUB_ENABLE_HF_TRANSFER=1 uvx --from 'huggingface_hub[hf_transfer]' hf download "$model" \
+        HF_HUB_DISABLE_XET=1 uvx --from huggingface_hub hf download "$model" \
             >> "$STATE/$port.log" 2>&1 || log "hf download issues; falling back to mlx_lm's downloader"
     fi
     log "starting mlx_lm.server: $model on http://$HOST:$port/v1"
@@ -143,9 +143,9 @@ status() {
 }
 
 logs() {
-    local port="$PORT_DEFAULT" follow=""
-    while [ $# -gt 0 ]; do case "$1" in --port) shift; port="$1" ;; -f) follow=1 ;; *) die "logs: unknown arg $1";; esac; shift; done
-    local lf="$STATE/$port.log"; [ -f "$lf" ] || die "no log for :$port"
+    local port="$PORT_DEFAULT" follow="" lf=""
+    while [ $# -gt 0 ]; do case "$1" in --port) shift; port="$1" ;; --pull) lf="$STATE/pull.log" ;; -f) follow=1 ;; *) die "logs: unknown arg $1";; esac; shift; done
+    [ -n "$lf" ] || lf="$STATE/$port.log"; [ -f "$lf" ] || die "no log ($lf)"
     [ -n "$follow" ] && exec tail -f "$lf" || tail -n 60 "$lf"
 }
 
@@ -179,6 +179,40 @@ current() {
     cat "$STATE/$port.model" 2>/dev/null || die "no server on :$port"
 }
 
+# pull [FILTER] — download inventory models sequentially (resumable), ordered by
+# tier (s,m,l) so the smaller/most-useful land first. FILTER = a tier or tag; else all.
+# Serial by design: parallel downloads split bandwidth and stall. Logs to pull.log.
+pull() {
+    command -v uvx >/dev/null 2>&1 || die "uvx not found"
+    local filter="${1:-all}" tier id t tags note
+    typeset -a ids=()
+    for tier in s m l xl; do
+        while IFS='|' read -r id t tags note; do
+            [ -n "$id" ] && [ "$t" = "$tier" ] || continue
+            if [ "$filter" != all ]; then case ",$t,$tags," in *",$filter,"*) : ;; *) continue ;; esac; fi
+            ids+=("$id")
+        done < <(_inv)
+    done
+    [ ${#ids[@]} -gt 0 ] || die "no models match '$filter'"
+    local n=${#ids[@]} i=0 ok=0 pull_log="$STATE/pull.log"
+    : > "$pull_log"
+    _pull_log() { log "$@"; printf '[dev-model] %s\n' "$*" >> "$pull_log"; }
+    _pull_log "pulling $n model(s) sequentially (resumable) — $(date)"
+    for id in "${ids[@]}"; do
+        i=$((i+1))
+        # Always run hf download: it verifies + completes missing shards (idempotent,
+        # quick when already complete). Don't trust local .incomplete markers — a
+        # failed/partial download may leave none, which would wrongly look "complete".
+        _pull_log "[$i/$n] ↓ $id  ($(date +%H:%M))"
+        if HF_HUB_DISABLE_XET=1 uvx --from huggingface_hub hf download "$id" 2>&1 | tee -a "$pull_log"; then
+            _pull_log "[$i/$n] ✓ done: $id"; ok=$((ok+1))
+        else
+            _pull_log "[$i/$n] ✗ failed: $id (retry next run)"
+        fi
+    done
+    _pull_log "pull complete: $ok/$n models ready — $(date)"
+}
+
 # --- dispatch ------------------------------------------------------------------
 case "${1:-start}" in
     start)   shift 2>/dev/null || true; start_server "$@" ;;
@@ -186,6 +220,7 @@ case "${1:-start}" in
     status|list) shift 2>/dev/null || true; status ;;
     logs)    shift; logs "$@" ;;
     models)  shift; models "$@" ;;
+    pull)    shift 2>/dev/null || true; pull "$@" ;;
     pick)    shift 2>/dev/null || true; pick ;;
     current) shift; current "$@" ;;
     warm)    shift; warm_server "$@" ;;
