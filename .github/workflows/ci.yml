@@ -10,7 +10,7 @@ jobs:
       matrix:
         dockerfile: [Dockerfile, Dockerfile.arch, Dockerfile.alpine]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Run the tests
       - name: Run tests (${{ matrix.dockerfile }})
