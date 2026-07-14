@@ -125,7 +125,7 @@ export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-# GitHub Copilot CLI
+# GitHub Copilot CLI (updated explicitly by install.d/31-gh.sh).
 export COPILOT_AUTO_UPDATE=false
 
 # PATH setup with caching (invalidates when base PATH or .profile changes)
