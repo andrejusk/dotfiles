@@ -145,5 +145,7 @@
   "extensions.autoCheckUpdates": false,
   "extensions.ignoreRecommendations": true,
   "yaml.extension.recommendations": false,
-  "datadog.connection.notification.suppressSignInNotification": true
+  "datadog.connection.notification.suppressSignInNotification": true,
+  "chat.viewSessions.orientation": "stacked",
+  "@azure.argTenant": ""
 }

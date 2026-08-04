@@ -32,10 +32,9 @@ auto-update = off
 background-opacity = 0.96
 background-blur = true
 
-# Reclaim the titlebar for a full-bleed window. tmux already provides tabs and a
-# status line, so the native title bar / traffic-light buttons aren't needed
-# (use Cmd+W / Cmd+M / Cmd+Q, or set this back to `transparent` to restore them).
-macos-titlebar-style = hidden
+# Keep the native title bar and traffic-light buttons while allowing the
+# terminal background to extend beneath them.
+macos-titlebar-style = transparent
 
 # Breathing room around the grid, balanced so opposite edges match.
 window-padding-x = 8

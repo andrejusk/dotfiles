@@ -77,13 +77,13 @@ _defaults_set -globalDomain AppleAquaColorVariant -int 6
 _defaults_set -globalDomain AppleHighlightColor -string "0.172549 0.705882 0.580392"
 
 # Control Center
-_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Bluetooth -int 24
-_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist WiFi -int 24
+_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Bluetooth -int 18
+_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist WiFi -int 18
 _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist NowPlaying -int 24
-_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Battery -int 24
-# Accessibility Shortcuts menu bar icon, for quick VoiceOver access.
-_defaults_set com.apple.controlcenter "NSStatusItem Visible AccessibilityShortcuts" -bool true
-_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist AccessibilityShortcuts -int 2
+_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Battery -int 18
+_defaults_set com.apple.controlcenter "NSStatusItem Visible AccessibilityShortcuts" -bool false
+_defaults_set com.apple.controlcenter "NSStatusItem VisibleCC AccessibilityShortcuts" -bool false
+_defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist AccessibilityShortcuts -int 24
 
 # Third-party menu bar items. The generic NSStatusItem latch is what macOS
 # writes when a status item is removed from the menu bar; app-specific keys are
