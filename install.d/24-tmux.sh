@@ -5,9 +5,6 @@
 #   Install and configure tmux.
 #
 
-# skip if in Codespaces
-[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
-
 if ! command -v tmux &> /dev/null; then
     case "$DOTS_PKG" in
         apt)
@@ -80,4 +77,3 @@ if command -v git &> /dev/null; then
 else
     log_warn "Skipping tmux plugins: git not found"
 fi
-

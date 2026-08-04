@@ -197,7 +197,6 @@ _dots_load_keybindings() {
 
     # Ctrl+N: tmux session
     _dots_tmux_widget() {
-        [[ -n "${CODESPACES:-}" ]] && { zle reset-prompt; return; }
         local sessions
         sessions="$(tmux list-sessions -F '#{session_name}' 2>/dev/null)"
         if [[ -z "$sessions" ]]; then
