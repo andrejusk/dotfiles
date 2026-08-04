@@ -21,9 +21,25 @@ temp
 **/autoload
 **/pypoetry
 
-# machine-local MCP overlays / generated configs
+# Copilot CLI runtime/private state. These normally live in the real
+# ~/.copilot directory, but keep them out of Git if Stow ever folds it.
+home/.copilot/chats
+home/.copilot/command-history-state.json
+home/.copilot/config.json
+home/.copilot/data.db*
+home/.copilot/history-session-state
+home/.copilot/ide
+home/.copilot/installed-plugins
 home/.copilot/mcp-config.json
 home/.copilot/mcp-config.local.json
+home/.copilot/mcp-oauth-config
+home/.copilot/repos
+home/.copilot/restart
+home/.copilot/servers
+home/.copilot/session-state
+home/.copilot/session-store.db*
+home/.copilot/sidebar-sessions-state
+home/.copilot/vscode.session.metadata.cache.json
 
 # XDG runtime state (safety net: 23-stow.sh mkdir's ~/.local/bin so stow links
 # only bin/ scripts and never folds ~/.local into the repo — but if a fold ever
