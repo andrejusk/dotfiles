@@ -19,7 +19,7 @@
 #
 
 # Default model pulled when DOTS_MLX_PULL is set without an explicit list
-DOTS_MLX_DEFAULT_MODEL="mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit"
+DOTS_MLX_DEFAULT_MODEL="mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit"
 
 # macOS only
 [[ "$DOTS_OS" != "macos" ]] && { log_skip "Not macOS"; return 0; }

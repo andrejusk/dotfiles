@@ -14,12 +14,6 @@
         "api_url": "http://127.0.0.1:8080/v1",
         "available_models": [
           {
-            "name": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit",
-            "display_name": "Qwen3-Coder 30B (MLX)",
-            "max_tokens": 262144,
-            "supports_tools": true
-          },
-          {
             "name": "mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit",
             "display_name": "Devstral 24B (MLX)",
             "max_tokens": 131072,

@@ -24,7 +24,7 @@
 #   Zed GUI over SSH into the in-VM workspace (Defender bypass preserved).
 #   --continue
 #   resumes the last session; --new forces a fresh one; --model picks the MLX
-#   model to serve (e.g. --model mlx/mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit).
+#   model to serve (e.g. --model mlx/mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit).
 #
 #   --name runs an independent instance (own clone + volumes + container) so you
 #   can work on several branches of the same repo in parallel. --exec CMD runs
@@ -277,7 +277,7 @@ if [ "$FINAL" = opencode ] || [ "$FINAL" = zed ]; then
     OPENCODE_VERSION="${OPENCODE_VERSION:-1.17.13}"
     oc_id="${OC_MODEL#mlx/}"
     if [ -z "$oc_id" ] && command -v dev-model >/dev/null 2>&1; then oc_id="$(dev-model current 2>/dev/null || true)"; fi
-    [ -n "$oc_id" ] || oc_id="mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit"
+    [ -n "$oc_id" ] || oc_id="mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit"
     if command -v dev-model >/dev/null 2>&1; then
         log "ensuring host MLX server: $oc_id"
         dev-model start --model "$oc_id" || log "dev-model start failed — start an MLX server on :8080 yourself"

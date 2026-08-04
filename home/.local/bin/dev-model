@@ -34,7 +34,7 @@ HF_HUB="${HF_HOME:-$HOME/.cache/huggingface}/hub"
 UV_PY="${DEV_MODEL_PY:-3.12}"
 MLX_LM_PIN="${DEV_MODEL_MLX_LM:-mlx-lm==0.31.3}"
 TF_PIN="${DEV_MODEL_TRANSFORMERS:-transformers==5.11.0}"
-FALLBACK_MODEL="mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit"
+FALLBACK_MODEL="mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit"
 
 log() { printf '\033[38;2;12;72;204m[dev-model]\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[38;2;244;4;4m[dev-model]\033[0m %s\n' "$*" >&2; exit 1; }

@@ -7,9 +7,9 @@
 #   models. Tooling only - models are downloaded on first use.
 #
 #   Recommended model for this machine (M1 Max, 64GB):
-#     mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit
+#     mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit
 #   First run, e.g.:
-#     mlx_lm.server --model mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit
+#     mlx_lm.server --model mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit
 #
 
 # macOS only
