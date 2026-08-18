@@ -185,11 +185,11 @@ _dots_git_info_sync() {
     # Branch pill: grey for main/master, inverted teal for feature, amber for detached
     local branch_pill
     if (( detached )); then
-        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[orange]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+        branch_pill="${_dots_pc[dark]}${_dots_pc[dark_bg]}${_dots_pc[orange]}${branch}${_dots_pc[reset]}${_dots_pc[dark]}${_dots_pc[reset]}"
     elif [[ "$branch" == (main|master) ]]; then
-        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[grey]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+        branch_pill="${_dots_pc[dark]}${_dots_pc[dark_bg]}${_dots_pc[grey]}${branch}${_dots_pc[reset]}${_dots_pc[dark]}${_dots_pc[reset]}"
     else
-        branch_pill="${_dots_pc[dark_bg]}${_dots_pc[dark]}(${_dots_pc[purple]}${branch}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]})${_dots_pc[reset]}"
+        branch_pill="${_dots_pc[dark]}${_dots_pc[dark_bg]}${_dots_pc[purple]}${branch}${_dots_pc[reset]}${_dots_pc[dark]}${_dots_pc[reset]}"
     fi
     local info="$branch_pill"
     
@@ -272,10 +272,10 @@ _dots_git_async_start() {
 _dots_build_dots_prompt_base() {
     _dots_abbrev_path
     local dir_path="$REPLY"
-    local symbol="${_dots_pc[grey]}${_dots_prompt_symbol}${_dots_pc[reset]}"
+    local symbol="${_dots_pc[teal]}${_dots_prompt_symbol}${_dots_pc[reset]}"
     (( EUID == 0 )) && symbol="${_dots_pc[orange]}${_dots_pc[bold]}#${_dots_pc[reset]}"
     
-    local line1="${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[teal]}${dir_path}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}#${_dots_pc[reset]}"
+    local line1="${_dots_pc[dark]}${_dots_pc[dark_bg]}${_dots_pc[teal]}${dir_path}${_dots_pc[reset]}${_dots_pc[dark]}${_dots_pc[reset]}"
     [[ -n "$_dots_git_info_result" ]] && line1+=" ${_dots_git_info_result}"
     
     _dots_prompt_base=$'\n'"${line1}"$'\n'"${symbol} "
@@ -310,7 +310,7 @@ _dots_precmd() {
     (( e )) && rp_parts+=("${_dots_pc[orange]}[${e}]${_dots_pc[reset]}")
     
     local session="$_dots_session_cache"
-    [[ -n "$session" ]] && rp_parts+=("${_dots_pc[dark_bg]}${_dots_pc[dark]}[${_dots_pc[orange]}${session}${_dots_pc[reset]}${_dots_pc[dark_bg]}${_dots_pc[dark]}]${_dots_pc[reset]}")
+    [[ -n "$session" ]] && rp_parts+=("${_dots_pc[dark]}${_dots_pc[dark_bg]}${_dots_pc[orange]}${session}${_dots_pc[reset]}${_dots_pc[dark]}${_dots_pc[reset]}")
     
     RPROMPT="${(j: :)rp_parts}"
     
