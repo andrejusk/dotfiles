@@ -16,6 +16,8 @@
 #   dev-container <owner/repo> [--rebuild] [--copilot|--opencode|--zed|--shell]
 #                              [--model mlx/ID] [--continue] [--new] [--branch B]
 #                              [--name INSTANCE] [--skip-setup] [--up-only]
+#                              [--setup-command CMD] [--publish PORT]
+#                              [--sibling-repo OWNER/REPO=/workspaces/NAME]
 #                              [--exec CMD]
 #   dev-container --stop | --status | --rm <owner/repo> [name]
 #
@@ -87,13 +89,13 @@ clone_into_volume() {
     ' || die "clone failed (for private repos: gh auth refresh -s read:packages)"
 }
 
-# build_override <hostcfg> <vol> <workdir> <copilotvol> — write override.json that
-# swaps the workspace to the volume, persists ~/.copilot, and makes setup idempotent.
+# build_override <hostcfg> <vol> <workdir> <copilotvol> <ports> <mounts> — write
+# override.json that swaps the workspace to the volume and adds persistent mounts.
 build_override() {
-    local H="$1" vol="$2" workdir="$3" cvol="$4"
-    python3 - "$H" "$vol" "$workdir" "$cvol" <<'PY'
+    local H="$1" vol="$2" workdir="$3" cvol="$4" ports="${5:-}" extra_mounts="${6:-}"
+    python3 - "$H" "$vol" "$workdir" "$cvol" "$ports" "$extra_mounts" <<'PY'
 import json, re, sys, os
-H, vol, workdir, cvol = sys.argv[1:5]
+H, vol, workdir, cvol, ports_csv, extra_mounts_raw = sys.argv[1:7]
 raw = open(os.path.join(H, ".devcontainer", "devcontainer.json")).read()
 
 def strip_jsonc(s):
@@ -126,8 +128,19 @@ cfg["workspaceFolder"] = workdir
 # forwardPorts (incl. privileged <1024 like 80) fails under rootless podman.
 for k in ("forwardPorts", "appPort", "portsAttributes"):
     cfg.pop(k, None)
+ports = [int(port) for port in ports_csv.split(",") if port]
+if ports:
+    run_args = cfg.get("runArgs") or []
+    for port in ports:
+        arg = f"--publish=127.0.0.1:{port}:{port}"
+        if arg not in run_args:
+            run_args.append(arg)
+    cfg["runArgs"] = run_args
 mounts = cfg.get("mounts") or []
 mounts.append(f"source={cvol},target=/dc-persist,type=volume")
+for mount in extra_mounts_raw.splitlines():
+    if mount and mount not in mounts:
+        mounts.append(mount)
 cfg["mounts"] = mounts
 setup = (f"sudo chown -R $(id -u):$(id -g) {workdir} /dc-persist 2>/dev/null || true; "
          "mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot $HOME/.copilot; "
@@ -167,6 +180,8 @@ case "${1:-}" in
               podman rm -f "dc-$id" 2>/dev/null || true
               podman ps -a --filter "label=dev-container-id=$id" --format '{{.ID}}' \
                 | while read -r c; do podman rm -f "$c"; done 2>/dev/null || true
+              podman volume ls --filter "label=dev-container-id=$id" --format '{{.Name}}' \
+                | while read -r v; do [ -n "$v" ] && podman volume rm -f "$v"; done 2>/dev/null || true
               podman volume rm -f "dc-$id-ws" "dc-$id-copilot" 2>/dev/null || true
               rm -rf "${CACHE_DIR:?}/$id"; log "removed $repo${2:+ (instance $2)} — container + volumes"; exit 0 ;;
 esac
@@ -174,7 +189,8 @@ esac
 REPO="${1:-${DC_DEFAULT_REPO:-}}"; [ -n "$REPO" ] || die "usage: dev-container <owner/repo>"
 [ "$REPO" = "${REPO#-}" ] || die "usage: dev-container <owner/repo> [flags]"
 shift || true
-FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE="" EXEC_CMD="" OC_MODEL="" RESUME="" NEWSESS=""
+FINAL=copilot REBUILD="" BRANCH="" SKIP_SETUP="" INSTANCE="" EXEC_CMD="" SETUP_CMD="" OC_MODEL="" RESUME="" NEWSESS=""
+PUBLISH_PORTS="" SIBLING_REPOS=""
 while [ $# -gt 0 ]; do case "$1" in
     --rebuild) REBUILD=1 ;; --shell) FINAL=shell ;; --copilot) FINAL=copilot ;;
     --opencode) FINAL=opencode ;;
@@ -184,6 +200,14 @@ while [ $# -gt 0 ]; do case "$1" in
     --new) NEWSESS=1 ;;
     --up-only) FINAL=none ;;
     --skip-setup) SKIP_SETUP=1 ;;
+    --setup-command) shift; SETUP_CMD="$1"; SKIP_SETUP=1 ;;
+    --publish) shift
+               [[ "$1" =~ ^[0-9]+$ ]] && (( 1 <= $1 && $1 <= 65535 )) \
+                   || die "invalid publish port: $1"
+               PUBLISH_PORTS="${PUBLISH_PORTS:+$PUBLISH_PORTS,}$1" ;;
+    --sibling-repo) shift
+                    SIBLING_REPOS="${SIBLING_REPOS:+$SIBLING_REPOS
+}$1" ;;
     --name) shift; INSTANCE="$1" ;;
     --exec) shift; EXEC_CMD="$1"; FINAL=exec ;;
     --branch) shift; BRANCH="$1" ;; *) die "unknown flag: $1" ;;
@@ -193,20 +217,93 @@ esac; shift; done
 # can run several branches of the same repo in parallel. No suffix = default.
 ID="$(safe_id "$REPO")"; [ -n "$INSTANCE" ] && ID="${ID}__$(safe_id "$INSTANCE")"
 NAME="$(basename "$REPO")"
-WS_VOL="dc-$ID-ws"; COPILOT_VOL="dc-$ID-copilot"
+WS_VOL="dc-$ID-ws"; COPILOT_VOL="dc-$ID-copilot"; WORKSPACES_VOL="dc-$ID-workspaces"
 WORKDIR="/workspaces/$NAME"
 H="$CACHE_DIR/$ID"
+
+[ -f "$CFG_DIR/repos/$ID.conf" ] && . "$CFG_DIR/repos/$ID.conf"
+if [ -n "${DC_SIBLING_REPOS:-}" ]; then
+    SIBLING_REPOS="${SIBLING_REPOS:+$SIBLING_REPOS
+}$DC_SIBLING_REPOS"
+fi
 
 command -v devcontainer >/dev/null 2>&1 || die "devcontainer CLI missing (npm i -g @devcontainers/cli)"
 ensure_machine
 clone_into_volume "$REPO" "$WS_VOL" "$BRANCH"
+
+if ! podman volume inspect "$WORKSPACES_VOL" >/dev/null 2>&1; then
+    podman volume create --label "dev-container-id=$ID" \
+        --label "dev-container-role=workspaces" "$WORKSPACES_VOL" >/dev/null
+fi
+# Feature lifecycle hooks may create sibling workspace directories before the
+# helper can exec into the container. Prepare the parent mount up front.
+podman run --rm -v "$WORKSPACES_VOL:/workspaces" alpine \
+    sh -c 'chmod 1777 /workspaces && chmod -R a+rwX /workspaces/* 2>/dev/null || true'
+if [ -n "${DC_EPHEMERAL_WORKSPACE_DIRS:-}" ]; then
+    container_uid="${DC_CONTAINER_UID:-1000}"
+    container_gid="${DC_CONTAINER_GID:-1000}"
+    [[ "$container_uid" =~ ^[0-9]+$ && "$container_gid" =~ ^[0-9]+$ ]] \
+        || die "invalid container UID/GID"
+    for workspace_dir in $DC_EPHEMERAL_WORKSPACE_DIRS; do
+        [[ "$workspace_dir" =~ ^[^/[:space:]]+$ ]] \
+            || die "invalid ephemeral workspace directory: $workspace_dir"
+        podman run --rm -e WORKSPACE_DIR="$workspace_dir" \
+            -e CONTAINER_UID="$container_uid" -e CONTAINER_GID="$container_gid" \
+            -v "$WORKSPACES_VOL:/workspaces" alpine sh -c \
+            'rm -rf "/workspaces/$WORKSPACE_DIR" &&
+             mkdir -p "/workspaces/$WORKSPACE_DIR" &&
+             chown "$CONTAINER_UID:$CONTAINER_GID" "/workspaces/$WORKSPACE_DIR" &&
+             chmod 0755 "/workspaces/$WORKSPACE_DIR"'
+    done
+fi
+if [ -n "${DC_WRITABLE_WORKSPACE_DIRS:-}" ]; then
+    container_uid="${DC_CONTAINER_UID:-1000}"
+    container_gid="${DC_CONTAINER_GID:-1000}"
+    [[ "$container_uid" =~ ^[0-9]+$ && "$container_gid" =~ ^[0-9]+$ ]] \
+        || die "invalid container UID/GID"
+    for workspace_dir in $DC_WRITABLE_WORKSPACE_DIRS; do
+        [[ "$workspace_dir" =~ ^[^,[:space:]]+$ && "$workspace_dir" != /* && "$workspace_dir" != *..* ]] \
+            || die "invalid writable workspace directory: $workspace_dir"
+        podman run --rm -e WORKSPACE_DIR="$workspace_dir" \
+            -e CONTAINER_UID="$container_uid" -e CONTAINER_GID="$container_gid" \
+            -v "$WORKSPACES_VOL:/workspaces" alpine sh -c \
+            'mkdir -p "/workspaces/$WORKSPACE_DIR" &&
+             chown -R "$CONTAINER_UID:$CONTAINER_GID" "/workspaces/$WORKSPACE_DIR"'
+    done
+fi
+
+EXTRA_MOUNTS="source=$WORKSPACES_VOL,target=/workspaces,type=volume"
+SIBLING_TARGETS=""
+if [ -n "$SIBLING_REPOS" ]; then
+    while IFS= read -r spec; do
+        [ -n "$spec" ] || continue
+        sibling_repo="${spec%%=*}"; sibling_target="${spec#*=}"
+        [ "$sibling_repo" != "$spec" ] || die "invalid sibling repo (expected owner/repo=/workspaces/name): $spec"
+        [[ "$sibling_repo" =~ ^[^/=[:space:]]+/[^/=[:space:]]+$ ]] \
+            || die "invalid sibling repository: $sibling_repo"
+        [[ "$sibling_target" =~ ^/workspaces/[^/=,[:space:]]+$ ]] \
+            || die "invalid sibling target: $sibling_target"
+        [ "$sibling_target" != "$WORKDIR" ] || die "sibling target conflicts with workspace: $sibling_target"
+        sibling_vol="dc-$ID-sibling-$(safe_id "$sibling_repo")-ws"
+        if ! podman volume inspect "$sibling_vol" >/dev/null 2>&1; then
+            podman volume create --label "dev-container-id=$ID" \
+                --label "dev-container-role=sibling" "$sibling_vol" >/dev/null
+        fi
+        clone_into_volume "$sibling_repo" "$sibling_vol"
+        EXTRA_MOUNTS="$EXTRA_MOUNTS
+source=$sibling_vol,target=$sibling_target,type=volume"
+        SIBLING_TARGETS="$SIBLING_TARGETS $sibling_target"
+    done <<EOF
+$SIBLING_REPOS
+EOF
+fi
 
 log "extracting .devcontainer to $H..."
 rm -rf "$H"; mkdir -p "$H"
 podman run --rm -v "$WS_VOL:/vol" -v "$H:/out" alpine \
     sh -c "cp -r /vol/.devcontainer /out/ 2>/dev/null" \
     || die "$REPO has no .devcontainer/"
-build_override "$H" "$WS_VOL" "$WORKDIR" "$COPILOT_VOL"
+build_override "$H" "$WS_VOL" "$WORKDIR" "$COPILOT_VOL" "$PUBLISH_PORTS" "$EXTRA_MOUNTS"
 
 # Record instance metadata for the picker widget (`dev-container --list`).
 printf 'r=%q\ni=%q\n' "$REPO" "$INSTANCE" > "$H/instance.meta" 2>/dev/null || true
@@ -231,19 +328,15 @@ id_labels=(--id-label "dev-container=1" --id-label "dev-container-id=$ID"
            --id-label "dev-container-repo=$REPO" --id-label "dev-container-instance=${INSTANCE:-default}")
 up_args=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
          --docker-path podman "${id_labels[@]}")
-[ -n "$REBUILD" ] && up_args+=(--remove-existing-container)
+# Podman's layered builder can reset /tmp from 1777 to 0755 after the bind
+# mounts generated for Features, which makes apt fail as its _apt user.
+# BUILDAH_LAYERS=false avoids that upstream bug; callers can override it.
+export BUILDAH_LAYERS="${BUILDAH_LAYERS:-false}"
 # Inject the token into the container so lifecycle scripts / private package
 # and feature integrations can auth, matching Codespaces behavior.
 [ -n "${GITHUB_TOKEN:-}" ] && up_args+=(--remote-env "GITHUB_TOKEN=$GITHUB_TOKEN"
                                         --remote-env "GH_TOKEN=$GITHUB_TOKEN")
-# --skip-setup brings the container up with the built image (all tools present)
-# but skips lifecycle scripts — use for repos whose bootstrap needs private
-# network/VPN access (the essential volume setup is then done via exec, below).
-DC_SETUP="sudo chown -R \$(id -u):\$(id -g) $WORKDIR /dc-persist 2>/dev/null || true; \
-mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot \$HOME/.copilot; \
-git config --global --add safe.directory $WORKDIR"
-[ -n "$SKIP_SETUP" ] && up_args+=(--skip-post-create)
-devcontainer up "${up_args[@]}"
+[ -n "${GITHUB_USER:-}" ] && up_args+=(--remote-env "GITHUB_USER=$GITHUB_USER")
 
 # Shared args so `exec` can locate the container (same id-labels as `up`).
 exec_base=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.json"
@@ -253,12 +346,44 @@ exec_base=(--workspace-folder "$H" --override-config "$H/.devcontainer/override.
 # and gh/git operations work. Uses the host's `gh` credentials.
 [ -n "${GITHUB_TOKEN:-}" ] && exec_base+=(--remote-env "GITHUB_TOKEN=$GITHUB_TOKEN"
                                           --remote-env "GH_TOKEN=$GITHUB_TOKEN")
+[ -n "${GITHUB_USER:-}" ] && exec_base+=(--remote-env "GITHUB_USER=$GITHUB_USER")
 # Advertise truecolor so in-container TUIs (Copilot, opencode) render full-colour
 # themes rather than degrading to a washed-out / light fallback.
 exec_base+=(--remote-env "COLORTERM=truecolor")
-if [ -n "$SKIP_SETUP" ]; then
-    log "running essential volume setup (chown, ~/.copilot, safe.directory)..."
-    devcontainer exec "${exec_base[@]}" bash -lc "$DC_SETUP" || true
+
+# Bring the container up without lifecycle hooks first. Feature hooks can run
+# before the config's onCreateCommand, so a root-owned named volume must be
+# made writable before either set of hooks starts.
+prepare_args=("${up_args[@]}" --skip-post-create)
+[ -n "$REBUILD" ] && prepare_args+=(--remove-existing-container)
+devcontainer up "${prepare_args[@]}"
+
+log "running essential volume setup (ownership, credentials, safe.directory)..."
+DC_SETUP="workspace_root=\${PWD%/*}; setup_paths='$WORKDIR /dc-persist$SIBLING_TARGETS'; \
+if [[ ! -w \$workspace_root ]]; then sudo chown \$(id -u):\$(id -g) \$workspace_root; fi; \
+for path in \$setup_paths; do \
+[[ -e \$path ]] || continue; \
+if [[ ! -w \$path ]]; then sudo chown -R \$(id -u):\$(id -g) \$path; fi; \
+[[ -d \$path/.git ]] && git config --global --add safe.directory \$path; \
+done; \
+[[ -w \$workspace_root && -w $WORKDIR && -w $WORKDIR/.git ]] \
+|| { echo 'workspace is not writable' >&2; exit 1; }; \
+mkdir -p /dc-persist/copilot && ln -sfn /dc-persist/copilot \$HOME/.copilot; \
+if [[ -n \${GITHUB_TOKEN:-} ]] && command -v npm >/dev/null 2>&1; then \
+touch \$HOME/.npmrc; \
+grep -q '^//npm\.pkg\.github\.com/:_authToken=' \$HOME/.npmrc \
+|| printf '%s\n' '//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}' >> \$HOME/.npmrc; \
+chmod 0600 \$HOME/.npmrc; \
+fi; \
+git config --global --add safe.directory $WORKDIR"
+devcontainer exec "${exec_base[@]}" bash -lc "$DC_SETUP"
+
+if [ -n "$SETUP_CMD" ]; then
+    log "running custom setup command..."
+    devcontainer exec "${exec_base[@]}" bash -lc "$SETUP_CMD"
+elif [ -z "$SKIP_SETUP" ]; then
+    log "running devcontainer lifecycle commands..."
+    devcontainer up "${up_args[@]}"
 fi
 
 # Mirror the host's Copilot preferences (theme, model, effort, …) into the

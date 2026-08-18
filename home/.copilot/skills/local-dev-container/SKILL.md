@@ -26,6 +26,12 @@ Prerequisites (installed by the dotfiles on macOS/Apple Silicon): `podman`, the
 automatically on first use. If `dev-container` is not on PATH, the toolchain is
 not installed on this machine — fall back to working on the host.
 
+The helper passes the current `gh` token at runtime and adds a token-placeholder
+entry for `npm.pkg.github.com` to the container user's npm config. Repositories
+can therefore keep npmjs as their default registry while package-lock entries
+fetch private GitHub Packages. No token value is written to this repository or
+to the container filesystem.
+
 ## Mental model — what persists
 
 - **Container = disposable.** It runs until stopped, removed, or the VM stops
@@ -45,9 +51,18 @@ dev-container <owner>/<repo> --shell      # open a shell instead of copilot
 dev-container <owner>/<repo> --up-only    # bring it up, don't attach
 dev-container <owner>/<repo> --branch B   # clone a specific branch (first time only)
 dev-container <owner>/<repo> --skip-setup # skip lifecycle scripts (use when the
-                                          # repo's bootstrap needs a VPN/network
-                                          # it can't reach; still gives the repo
-                                          # + toolchain for code work)
+                                          # image already contains the required
+                                          # toolchain but setup needs unavailable
+                                          # services or network access)
+dev-container <owner>/<repo> --setup-command CMD
+                                         # skip the standard lifecycle and run a
+                                         # code-only, repository-provided setup
+dev-container <owner>/<repo> --rebuild --publish 6006
+                                         # publish one container port on host
+                                         # loopback; repeat --publish as needed
+dev-container <owner>/<repo> --sibling-repo owner/other=/workspaces/other
+                                         # clone and mount another persistent
+                                         # workspace volume
 dev-container --status                    # list instances (container / state / repo / instance)
 dev-container --rm <owner>/<repo> [name]  # remove a container + its volumes
 ```
