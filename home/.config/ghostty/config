@@ -32,6 +32,11 @@ auto-update = off
 background-opacity = 0.96
 background-blur = true
 
+# Custom post-processing shader (warm risograph paper grain + subtle vignette).
+# Animation is off so it renders on screen updates without idle GPU battery drain.
+custom-shader = shaders/paper.glsl
+custom-shader-animation = false
+
 # Keep the native title bar and traffic-light buttons while allowing the
 # terminal background to extend beneath them.
 macos-titlebar-style = transparent
@@ -45,9 +50,14 @@ window-padding-balance = true
 mouse-hide-while-typing = true
 
 # --- Typography ---
-# A little extra line spacing for readability, plus slightly thicker glyphs.
+# Primary font with full Nerd Font symbol support & ligatures
+font-family = "FiraCode Nerd Font"
+font-feature = +calt, +zero, +ss01, +ss03, +ss05
+
+# A little extra line spacing for readability, plus slightly thicker glyph strokes
 adjust-cell-height = 8%
 font-thicken = true
+adjust-underline-position = 2
 
 # --- Shell integration ---
 # Add SSH support to the auto-detected zsh integration: ssh-terminfo installs the
