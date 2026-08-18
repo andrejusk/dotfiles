@@ -13,7 +13,10 @@
 
 SCORE_CAP=100
 
-state="${TMPDIR:-/tmp}/.tmux_heartbeat"
+state_dir="${XDG_RUNTIME_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/tmux}"
+umask 077
+mkdir -p "$state_dir" 2>/dev/null || exit 0
+state="$state_dir/heartbeat"
 read client_act win_act in_mode tmux_pid <<< \
     "$(tmux display-message -p '#{client_activity} #{window_activity} #{pane_in_mode} #{pid}')"
 now=$(date +%s)
@@ -21,7 +24,14 @@ now=$(date +%s)
 # Load previous state
 prev_client="" prev_win="" score=0 active_total=0 srv_pid=""
 return_at="" return_show=0
-[[ -f "$state" ]] && source "$state"
+if [[ -r "$state" ]]; then
+    while IFS='=' read -r key value; do
+        case "$key" in
+            prev_client|prev_win|score|active_total|srv_pid|return_at|return_show)
+                [[ -z "$value" || "$value" =~ ^[0-9]{1,19}$ ]] && printf -v "$key" '%s' "$value" ;;
+        esac
+    done < "$state"
+fi
 
 # Reset if tmux server restarted
 if [[ "$srv_pid" != "$tmux_pid" ]]; then
@@ -64,8 +74,10 @@ if [[ -n "$return_at" ]] && (( now - return_at >= 4 )); then
 fi
 
 # Persist
+state_tmp="$state.$$.tmp"
 printf 'prev_client=%s\nprev_win=%s\nscore=%s\nactive_total=%s\nsrv_pid=%s\nreturn_at=%s\nreturn_show=%s\n' \
-    "$client_act" "$win_act" "$score" "$active_total" "$tmux_pid" "$return_at" "$return_show" > "$state"
+    "$client_act" "$win_act" "$score" "$active_total" "$tmux_pid" "$return_at" "$return_show" > "$state_tmp" \
+    && mv -f "$state_tmp" "$state"
 
 # Output: tmux color code that fades teal (#2CB494) → gray (#808080)
 # Interpolate RGB channels based on score (0-100)
