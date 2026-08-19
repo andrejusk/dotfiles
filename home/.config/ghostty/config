@@ -58,12 +58,24 @@ font-family = "Monaspace Neon NF"
 font-family-bold = "Monaspace Krypton NF"
 font-family-italic = "Monaspace Radon NF"
 font-family-bold-italic = "Monaspace Radon NF"
+
+# Authentic Medium optical weight for rich, sharp stroke weight without rasterizer dilation
+font-style = Medium
+font-style-bold = Bold
+font-style-italic = Medium Italic
+font-style-bold-italic = Bold Italic
+font-thicken = false
+
 font-size = 14
-font-feature = +calt, +liga, +dlig, +ss01, +ss02, +ss03, +ss04, +ss05, +ss06, +ss07, +ss08
+
+# Curated OpenType character variants:
+# +calt (Texture Healing), +liga/+dlig (ligatures), +ss01 (equals ligature styling),
+# +ss02 (arrow ligatures), +ss03 (classic ampersand &), +ss05 (dotted zero 0),
+# +ss07 (double-storey a), +ss08 (double-storey g)
+font-feature = +calt, +liga, +dlig, +ss01, +ss02, +ss03, +ss05, +ss07, +ss08
 
 # Balanced line spacing with natural stroke weight
 adjust-cell-height = 16%
-font-thicken = true
 adjust-underline-position = 2
 
 # --- Shell integration ---
