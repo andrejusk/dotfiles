@@ -59,11 +59,11 @@ font-family-bold = "Monaspace Krypton NF"
 font-family-italic = "Monaspace Radon NF"
 font-family-bold-italic = "Monaspace Radon NF"
 
-# Pure typography: native SemiBold optical weight for crisp, solid body text
-font-style = SemiBold
-font-style-bold = Bold
-font-style-italic = SemiBold Italic
-font-style-bold-italic = Bold Italic
+# Pure typography: native Bold optical weight for substantial, crisp body text
+font-style = Bold
+font-style-bold = ExtraBold
+font-style-italic = Bold Italic
+font-style-bold-italic = ExtraBold Italic
 font-thicken = false
 
 font-size = 14
