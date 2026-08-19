@@ -11,6 +11,7 @@
 fonts_list=(
     font-fira-mono-nerd-font
     font-fira-code-nerd-font
+    font-monaspace-nf
 )
 
 # Check if any fonts are missing

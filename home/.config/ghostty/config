@@ -50,13 +50,19 @@ window-padding-balance = true
 mouse-hide-while-typing = true
 
 # --- Typography ---
-# Primary font with full Nerd Font symbol support & ligatures
-font-family = "FiraCode Nerd Font"
+# GitHub Monaspace superfamily (Mona Sans & Hubot Sans coding edition):
+# - Regular: Monaspace Neon NF (Neo-Grotesque / Mona Sans with Texture Healing)
+# - Bold: Monaspace Krypton NF (Mechanical / Hubot Sans geometric impact)
+# - Italic: Monaspace Radon NF (Editorial handwriting script for comments & docs)
+font-family = "Monaspace Neon NF"
+font-family-bold = "Monaspace Krypton NF"
+font-family-italic = "Monaspace Radon NF"
+font-family-bold-italic = "Monaspace Radon NF"
 font-size = 14
-font-feature = +calt, +zero, +ss01, +ss03, +ss05
+font-feature = +calt, +liga, +dlig, +ss01, +ss02, +ss03, +ss04, +ss05, +ss06, +ss07, +ss08
 
-# Generous line spacing so Fira Code breathes vertically on ultrawides
-adjust-cell-height = 20%
+# Balanced line spacing with natural stroke weight
+adjust-cell-height = 16%
 font-thicken = true
 adjust-underline-position = 2
 
