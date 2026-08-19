@@ -162,7 +162,7 @@ else
 fi
 
 # Debounce traffic indicator for 3s after activity ceases, showing -B/idle rate
-speed_str=""
+show_traffic=0
 if (( now - last_active <= 3 && last_active > 0 )); then
     show_rx=$rx_active
     show_tx=$tx_active
@@ -170,32 +170,53 @@ if (( now - last_active <= 3 && last_active > 0 )); then
         show_rx=$last_active_rx
         show_tx=$last_active_tx
     fi
-
-    if (( show_rx && show_tx )); then
-        speed_str="${c_rx}↓$(format_speed "$rx_rate") ${c_tx}↑$(format_speed "$tx_rate")"
-    elif (( show_rx )); then
-        speed_str="${c_rx}↓$(format_speed "$rx_rate")"
-    elif (( show_tx )); then
-        speed_str="${c_tx}↑$(format_speed "$tx_rate")"
-    fi
+    (( show_rx || show_tx )) && show_traffic=1
 fi
 
 warn=""
 if [[ -z "$ms" ]]; then
-    text="󰤭 --"
     warn=1
 else
+    (( ms > 150 )) && warn=1
+fi
+
+if [[ -n "$warn" ]]; then
+    # Warning mode (amber): revert all text & arrows to uniform high-contrast foreground
+    speed_str=""
+    if (( show_traffic )); then
+        if (( show_rx && show_tx )); then
+            speed_str="↓$(format_speed "$rx_rate") ↑$(format_speed "$tx_rate")"
+        elif (( show_rx )); then
+            speed_str="↓$(format_speed "$rx_rate")"
+        elif (( show_tx )); then
+            speed_str="↑$(format_speed "$tx_rate")"
+        fi
+    fi
+    if [[ -z "$ms" ]]; then
+        text="󰤭 --"
+    elif [[ -n "$speed_str" ]]; then
+        text="${speed_str}  ${icon} ${ms}ms"
+    else
+        text="${icon} ${ms}ms"
+    fi
+    result="#[fg=${c_warn_bg}]#[bg=${c_warn_bg}]${c_warn_fg} ${text} #[fg=${c_warn_bg}]#[bg=default] "
+else
+    # Normal mode: semantic colored arrows and styled base text
+    speed_str=""
+    if (( show_traffic )); then
+        if (( show_rx && show_tx )); then
+            speed_str="${c_rx}↓$(format_speed "$rx_rate") ${c_tx}↑$(format_speed "$tx_rate")"
+        elif (( show_rx )); then
+            speed_str="${c_rx}↓$(format_speed "$rx_rate")"
+        elif (( show_tx )); then
+            speed_str="${c_tx}↑$(format_speed "$tx_rate")"
+        fi
+    fi
     if [[ -n "$speed_str" ]]; then
         text="${speed_str}  ${c_base}${icon} ${ms}ms"
     else
         text="${c_base}${icon} ${ms}ms"
     fi
-    (( ms > 150 )) && warn=1
-fi
-
-if [[ -n "$warn" ]]; then
-    result="#[fg=${c_warn_bg}]#[bg=${c_warn_bg}]${c_warn_fg} ${text} #[fg=${c_warn_bg}]#[bg=default] "
-else
     result="#[fg=${c_bg}]#[bg=${c_bg}] ${text} #[fg=${c_bg}]#[bg=default] "
 fi
 
