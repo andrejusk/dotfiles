@@ -52,10 +52,11 @@ mouse-hide-while-typing = true
 # --- Typography ---
 # Primary font with full Nerd Font symbol support & ligatures
 font-family = "FiraCode Nerd Font"
+font-size = 14
 font-feature = +calt, +zero, +ss01, +ss03, +ss05
 
-# A little extra line spacing for readability, plus slightly thicker glyph strokes
-adjust-cell-height = 8%
+# Generous line spacing so Fira Code breathes vertically on ultrawides
+adjust-cell-height = 20%
 font-thicken = true
 adjust-underline-position = 2
 

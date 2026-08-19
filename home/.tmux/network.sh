@@ -144,6 +144,23 @@ else
     icon="󰤨"
 fi
 
+# Theme palette colors
+if [[ "$theme" == "light" ]]; then
+    c_bg="#E0D8C0"
+    c_base="#[fg=#506888]"
+    c_rx="#[fg=#1A8A72]"
+    c_tx="#[fg=#3C5C94]"
+    c_warn_bg="#B46400"
+    c_warn_fg="#[fg=#F6F0DE]#[bold]"
+else
+    c_bg="#1A1A1A"
+    c_base="#[fg=#808080]"
+    c_rx="#[fg=#2CB494]"
+    c_tx="#[fg=#7290B8]"
+    c_warn_bg="#F88C14"
+    c_warn_fg="#[fg=#1A1A1A]#[bold]"
+fi
+
 # Debounce traffic indicator for 3s after activity ceases, showing -B/idle rate
 speed_str=""
 if (( now - last_active <= 3 && last_active > 0 )); then
@@ -155,11 +172,11 @@ if (( now - last_active <= 3 && last_active > 0 )); then
     fi
 
     if (( show_rx && show_tx )); then
-        speed_str="↓$(format_speed "$rx_rate") ↑$(format_speed "$tx_rate")"
+        speed_str="${c_rx}↓$(format_speed "$rx_rate") ${c_tx}↑$(format_speed "$tx_rate")"
     elif (( show_rx )); then
-        speed_str="↓$(format_speed "$rx_rate")"
+        speed_str="${c_rx}↓$(format_speed "$rx_rate")"
     elif (( show_tx )); then
-        speed_str="↑$(format_speed "$tx_rate")"
+        speed_str="${c_tx}↑$(format_speed "$tx_rate")"
     fi
 fi
 
@@ -169,25 +186,17 @@ if [[ -z "$ms" ]]; then
     warn=1
 else
     if [[ -n "$speed_str" ]]; then
-        text="${speed_str}  ${icon} ${ms}ms"
+        text="${speed_str}  ${c_base}${icon} ${ms}ms"
     else
-        text="${icon} ${ms}ms"
+        text="${c_base}${icon} ${ms}ms"
     fi
     (( ms > 150 )) && warn=1
 fi
 
-if [[ "$theme" == "light" ]]; then
-    if [[ -n "$warn" ]]; then
-        result="#[fg=#B46400]#[bg=#B46400]#[fg=#F6F0DE]#[bold] ${text} #[fg=#B46400]#[bg=default] "
-    else
-        result="#[fg=#E0D8C0]#[bg=#E0D8C0]#[fg=#506888] ${text} #[fg=#E0D8C0]#[bg=default] "
-    fi
+if [[ -n "$warn" ]]; then
+    result="#[fg=${c_warn_bg}]#[bg=${c_warn_bg}]${c_warn_fg} ${text} #[fg=${c_warn_bg}]#[bg=default] "
 else
-    if [[ -n "$warn" ]]; then
-        result="#[fg=#F88C14]#[bg=#F88C14]#[fg=#1A1A1A]#[bold] ${text} #[fg=#F88C14]#[bg=default] "
-    else
-        result="#[fg=#1A1A1A]#[bg=#1A1A1A]#[fg=#808080] ${text} #[fg=#1A1A1A]#[bg=default] "
-    fi
+    result="#[fg=${c_bg}]#[bg=${c_bg}] ${text} #[fg=${c_bg}]#[bg=default] "
 fi
 
 echo "$result"
