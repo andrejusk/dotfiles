@@ -43,10 +43,6 @@ mkdir -p "$HOME/.ssh"
 # ~/.local -> repo/home/.local and mise/gh/zsh would then write GBs of runtime
 # state (~/.local/share, ~/.local/state) straight into the working tree.
 mkdir -p "$HOME/.local/bin"
-# Ensure ~/.config/Code exists as a real dir so stow links only the tracked
-# settings.json; otherwise a fresh Linux box would fold ~/.config/Code into the
-# repo and VSCode would write its state (globalStorage, etc.) into the tree.
-mkdir -p "$HOME/.config/Code/User"
 # Ensure ~/.config/zed is a real dir so stow links only settings.json, not the
 # whole dir (Zed also writes keymap.json / other state there).
 mkdir -p "$HOME/.config/zed"

@@ -39,7 +39,6 @@ home/.copilot/servers
 home/.copilot/session-state
 home/.copilot/session-store.db*
 home/.copilot/sidebar-sessions-state
-home/.copilot/vscode.session.metadata.cache.json
 
 # XDG runtime state (safety net: 23-stow.sh mkdir's ~/.local/bin so stow links
 # only bin/ scripts and never folds ~/.local into the repo — but if a fold ever
