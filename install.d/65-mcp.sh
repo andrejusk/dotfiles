@@ -58,24 +58,6 @@ if os.path.exists(local_path):
         if key != "mcpServers":
             cfg[key] = value
 
-if os.environ.get("DOTS_ENV") == "codespaces":
-    servers = cfg.get("mcpServers", {})
-    playwright = servers.get("playwright")
-    if playwright:
-        playwright = dict(playwright)
-        playwright["args"] = [
-            "-y",
-            "@playwright/mcp@0.0.77",
-            "--browser",
-            "chromium",
-            "--headless",
-            "--isolated",
-            "--block-service-workers",
-            "--viewport-size",
-            "1440x1000",
-        ]
-        cfg["mcpServers"] = {"playwright": playwright}
-
 tmp = f"{out_path}.tmp"
 with open(tmp, "w") as fh:
     json.dump(cfg, fh, indent=2)
@@ -107,16 +89,6 @@ PY
     else
         log_skip "Slack MCP local overlay not configured"
     fi
-fi
-
-if command -v npx &>/dev/null; then
-    log_info "Priming pinned host MCP packages..."
-    npx -y @playwright/mcp@0.0.77 --version 2>&1 | log_quote || true
-    if [[ "$DOTS_ENV" != "codespaces" ]]; then
-        npx -y chrome-devtools-mcp@1.5.0 --version 2>&1 | log_quote || true
-    fi
-else
-    log_warn "npx not found; skipping MCP package warm-up (run ./install mise)"
 fi
 
 if command -v gh &>/dev/null; then
