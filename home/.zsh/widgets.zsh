@@ -363,7 +363,8 @@ for line in sys.stdin:
     except: pass
 " 2>/dev/null
         ' --ansi --delimiter="|" --with-nth="$with_nth" \
-           --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted' \
+           --no-sort \
+           --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted | newest first' \
            --bind "ctrl-l:reload(copilot-sessions --cwd ${(q)PWD})+change-with-nth(1,3)+first" \
            --bind "ctrl-g:reload(copilot-sessions)+change-with-nth(1,4,3)+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"

@@ -25,6 +25,7 @@ import glob
 import json
 import os
 import sys
+from datetime import datetime, timezone
 
 SD = os.path.expanduser("~/.copilot/session-state")
 HOME = os.path.expanduser("~")
@@ -34,6 +35,7 @@ CACHE_DIR = os.path.join(
 CACHE = os.path.join(CACHE_DIR, "index.tsv")
 
 GREY, RST = "\033[90m", "\033[0m"
+CACHE_VERSION = "3"
 
 
 def _mtime(path):
@@ -44,24 +46,50 @@ def _mtime(path):
         return None
 
 
-def _first_user_message(path):
-    """First user.message content (first line, capped), or '' if none/unreadable.
+def _event_info(path):
+    """Return the first user message and last conversational timestamp.
 
-    Breaks at the first match so we rarely read past the top of the file, but
-    the open() itself is what Defender scans — hence the mtime cache around it.
+    The cache means this runs only for new or changed sessions. Reading both
+    values in one pass avoids opening large event logs twice under Defender.
+    Lifecycle events such as session.shutdown do not count as recent work.
     """
+    message = ""
+    activity_timestamp = ""
     try:
         with open(path) as f:
             for line in f:
-                if '"user.message"' in line:
-                    try:
-                        content = json.loads(line)["data"]["content"]
-                        return content.strip().split("\n")[0][:60]
-                    except Exception:
-                        return ""
+                if '"user.message"' not in line and '"assistant.message"' not in line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except (TypeError, ValueError):
+                    continue
+                event_type = event.get("type")
+                if not message and event_type == "user.message":
+                    content = event.get("data", {}).get("content")
+                    if isinstance(content, str):
+                        message = content.strip().split("\n")[0][:60]
+                if event_type in ("user.message", "assistant.message"):
+                    timestamp = event.get("timestamp")
+                    if timestamp:
+                        activity_timestamp = timestamp
     except OSError:
         pass
-    return ""
+    return message, activity_timestamp
+
+
+def _mtime_timestamp(path):
+    """UTC ISO timestamp from mtime, or '' if the path is missing."""
+    try:
+        return datetime.fromtimestamp(os.stat(path).st_mtime, timezone.utc).isoformat()
+    except OSError:
+        return ""
+
+
+def _latest_timestamp(*timestamps):
+    """Latest ISO timestamp, normalized to the minute for display and sorting."""
+    valid = [timestamp for timestamp in timestamps if timestamp and timestamp != "?"]
+    return max(valid, default="?")[:16]
 
 
 def _sanitize(s):
@@ -95,8 +123,13 @@ def _scan_dir_session(ws):
                         d[k[:-1]] = line.split(": ", 1)[1].strip()
     except OSError:
         return None
-    ts = (d.get("updated_at", "?") or "?")[:16]
-    msg = _first_user_message(os.path.join(os.path.dirname(ws), "events.jsonl"))
+    events = os.path.join(os.path.dirname(ws), "events.jsonl")
+    msg, event_ts = _event_info(events)
+    ts = _latest_timestamp(
+        d.get("updated_at"),
+        event_ts,
+        _mtime_timestamp(events) if not event_ts else "",
+    )
     ok = "1" if msg else "0"  # sessions with no user message are hidden (as before)
     text = _sanitize(d.get("summary") or msg)
     return ts, ok, text, d.get("cwd", "")
@@ -104,13 +137,8 @@ def _scan_dir_session(ws):
 
 def _scan_loose_session(jf):
     """(ts, ok, text, cwd) for a bare <id>.jsonl session (no workspace dir)."""
-    ts = "?"
-    try:
-        with open(jf) as f:
-            ts = (json.loads(f.readline())["data"]["startTime"] or "?")[:16]
-    except Exception:
-        pass
-    msg = _first_user_message(jf)
+    msg, event_ts = _event_info(jf)
+    ts = _latest_timestamp(event_ts, _mtime_timestamp(jf) if not event_ts else "")
     return ts, ("1" if msg else "0"), _sanitize(msg), ""
 
 
@@ -129,7 +157,13 @@ def build():
         wm = _mtime(ws)
         if wm is None:
             continue
-        key = wm + ":" + (_mtime(os.path.join(os.path.dirname(ws), "events.jsonl")) or "-")
+        key = (
+            CACHE_VERSION
+            + ":"
+            + wm
+            + ":"
+            + (_mtime(os.path.join(os.path.dirname(ws), "events.jsonl")) or "-")
+        )
         cached = old.get(sid)
         if cached and cached[0] == key:
             new[sid] = cached
@@ -146,9 +180,10 @@ def build():
         sid = os.path.basename(jf)[: -len(".jsonl")]
         if sid in new:
             continue  # a workspace dir for this id wins (it carries a cwd)
-        key = _mtime(jf)
-        if key is None:
+        mtime = _mtime(jf)
+        if mtime is None:
             continue
+        key = CACHE_VERSION + ":" + mtime
         cached = old.get(sid)
         if cached and cached[0] == key:
             new[sid] = cached
@@ -171,7 +206,7 @@ def build():
         for sid, (key, ok, ts, text, cwd) in new.items()
         if ok == "1"
     ]
-    rows.sort(key=lambda r: r[0], reverse=True)
+    rows.sort(key=lambda r: (r[0] != "?", r[0]), reverse=True)
     return rows
 
 
