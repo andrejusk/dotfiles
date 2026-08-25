@@ -53,7 +53,6 @@ binaries: List[Text] = [
     "hyperfine",
     "cmatrix",
     "az",
-    "firebase",
     "redis-cli",
     "redis-server",
     # language: python

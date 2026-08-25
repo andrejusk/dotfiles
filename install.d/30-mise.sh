@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # Description:
 #   Install mise runtime manager and all development tools.
-#   Consolidated installation of Python, Node.js, GitHub CLI, Terraform, Firebase, etc.
+#   Consolidated installation of Python, Node.js, GitHub CLI, Terraform, etc.
 #
 
 typeset -a MISE_APPS=()
@@ -123,7 +123,6 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
         "uv@latest"
         "gh@2.94.0"
         "terraform@1.15.6"
-        "firebase@15.20.0"
         "ubi:sharkdp/hyperfine@1.20.0"
         "fastfetch@latest"
         "glow@latest"
