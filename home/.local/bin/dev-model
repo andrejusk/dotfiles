@@ -3,10 +3,9 @@
 # OpenAI-compatible endpoint, for in-container or native coding harnesses
 # (opencode, aider, …) and analysis work.
 #
-# The model runs on the HOST (needs the Metal GPU); dev-container harnesses reach
-# it at http://host.containers.internal:8080/v1 (gvproxy forwards even a
-# 127.0.0.1 bind, so the endpoint stays off the LAN). One server serves many
-# concurrent sessions via mlx_lm's continuous batching — no need for N servers.
+# The model runs on the host (needs the Metal GPU) and binds to loopback so the
+# endpoint stays off the LAN. One server serves many concurrent sessions via
+# mlx_lm's continuous batching — no need for N servers.
 #
 # mlx_lm 0.31.3 pulls a broken transformers (5.13); we pin <5.12 via an isolated
 # uv env, so this works regardless of the (separately mise-managed) mlx-lm.
