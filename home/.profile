@@ -125,7 +125,7 @@ export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-# GitHub Copilot CLI (updated explicitly by install.d/31-gh.sh).
+# GitHub Copilot CLI updates are managed by the host environment.
 export COPILOT_AUTO_UPDATE=false
 
 # PATH setup with caching (invalidates when base PATH or .profile changes)
@@ -145,3 +145,10 @@ if [[ "$_dots_path_hit" != true ]]; then
     unset _dots_base_path
 fi
 unset _dots_path_cache _dots_path_hit
+
+# Codespaces keeps platform tools first. Mise shims are only a fallback for
+# required commands absent from the image.
+if [[ -n "${CODESPACES:-}" && -d "$HOME/.local/share/mise/shims" ]]; then
+    [[ ":$PATH:" != *":$HOME/.local/share/mise/shims:"* ]] && \
+        export PATH="$PATH:$HOME/.local/share/mise/shims"
+fi

@@ -5,6 +5,8 @@
 #   Install vim plugins using native vim packages (pack/).
 #
 
+[[ "$DOTS_ENV" == "codespaces" ]] && { log_skip "Codespaces"; return 0; }
+
 vim_pack_dir="$HOME/.vim/pack/plugins/start"
 mkdir -p "$HOME/.vim/pack/plugins/start"
 

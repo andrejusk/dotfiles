@@ -91,12 +91,5 @@ PY
     fi
 fi
 
-if command -v gh &>/dev/null; then
-    log_info "Configured Copilot MCP servers..."
-    gh copilot -- mcp list 2>&1 | log_quote || true
-else
-    log_warn "gh not found; skipping Copilot MCP listing"
-fi
-
 log_info "Private Copilot MCP overlay path: $COPILOT_MCP_LOCAL"
 log_pass "Host MCP config ready"

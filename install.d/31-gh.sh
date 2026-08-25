@@ -23,10 +23,4 @@ for ext in "${GH_EXTS[@]}"; do
     fi
 done
 
-gh extension upgrade --all 2>&1 | log_quote || true
-
-# The Copilot CLI downloaded by `gh copilot` is not a gh extension. Update it
-# through this managed pipeline because interactive auto-updates are disabled.
-gh copilot -- update 2>&1 | log_quote || true
-
 log_pass "gh extensions installed"

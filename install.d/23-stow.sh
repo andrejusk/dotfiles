@@ -8,7 +8,15 @@
 if ! command -v stow &> /dev/null; then
     case "$DOTS_PKG" in
         apt)
-            sudo apt-get install -qq stow
+            if [[ "$DOTS_ENV" == "codespaces" ]]; then
+                if ! sudo apt-get install -qq stow; then
+                    log_warn "Cached apt indexes could not install Stow; refreshing"
+                    sudo apt-get update -qq
+                    sudo apt-get install -qq stow
+                fi
+            else
+                sudo apt-get install -qq stow
+            fi
             ;;
         pacman)
             sudo pacman -S --noconfirm stow
@@ -52,10 +60,6 @@ mkdir -p "$HOME/.config/opencode"
 # Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
 # the hooks file inside, rather than folding the whole state-heavy dir into the repo.
 mkdir -p "$HOME/.copilot/hooks"
-# Same for the skills tree: mkdir the leaf so stow links only SKILL.md, leaving
-# ~/.copilot/skills writable for locally-added skills (`copilot skill add`).
-mkdir -p "$HOME/.copilot/skills/local-dev-container"
-
 stow --dir="$root_dir" --target="$HOME" home
 
 # In Codespaces, remove .gitconfig.local so the auto-provisioned identity is used

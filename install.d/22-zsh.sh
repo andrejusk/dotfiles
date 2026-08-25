@@ -24,16 +24,22 @@ if ! command -v zsh &> /dev/null; then
     esac
 fi
 
-# change default shell to zsh. chsh works on macOS and Linux; usermod is a
-# Linux-only fallback (absent on macOS — an unguarded call aborts ./install
-# under set -e) and may be missing on minimal distros (busybox/Alpine/iSH).
-if [[ "$SHELL" != *zsh ]]; then
-    sudo chsh -s "$(command -v zsh)" "$(whoami)"
+# Change the default shell once using the platform-native command. Running both
+# chsh and usermod repeats the same account database update on Linux.
+current_shell="${SHELL:-}"
+if [[ "$DOTS_OS" == "linux" ]] && command -v getent &>/dev/null; then
+    current_shell=$(getent passwd "$(whoami)" | cut -d: -f7)
+fi
+
+if [[ "$current_shell" != *zsh ]]; then
     if [[ "$DOTS_OS" == "linux" ]] && command -v usermod &>/dev/null; then
         sudo usermod -s "$(command -v zsh)" "$(whoami)"
+    else
+        sudo chsh -s "$(command -v zsh)" "$(whoami)"
     fi
 fi
 
+unset current_shell
+
 log_pass "zsh configured"
 zsh --version | log_quote
-

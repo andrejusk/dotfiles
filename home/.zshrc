@@ -168,7 +168,7 @@ _dots_load_zoxide() {
     _dots_cached_eval zoxide "$bin" zoxide init zsh
 }
 
-_dots_load_mise
+[[ -z "${CODESPACES:-}" ]] && _dots_load_mise
 _dots_load_zoxide
 
 # --- Interactive shell ---

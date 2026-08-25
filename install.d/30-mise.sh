@@ -6,6 +6,39 @@
 #   Consolidated installation of Python, Node.js, GitHub CLI, Terraform, Firebase, etc.
 #
 
+typeset -a MISE_APPS=()
+
+# Codespaces only needs tools required by the shell configuration. Optional
+# convenience tools stay platform-managed or absent, and mise itself is skipped
+# when the image already provides everything required.
+if [[ "$DOTS_ENV" == "codespaces" ]]; then
+    typeset -a codespaces_specs=(
+        "bat@latest"
+        "fzf@latest"
+        "zoxide@latest"
+        "ripgrep@latest"
+        "delta@latest"
+    )
+    typeset -a codespaces_bins=(bat fzf zoxide rg delta)
+
+    for i in "${!codespaces_specs[@]}"; do
+        if command -v "${codespaces_bins[$i]}" &>/dev/null; then
+            log_skip "${codespaces_bins[$i]} provided by Codespaces"
+        else
+            MISE_APPS+=("${codespaces_specs[$i]}")
+        fi
+    done
+
+    unset codespaces_specs codespaces_bins i
+
+    if (( ${#MISE_APPS[@]} == 0 )); then
+        bat cache --build &>/dev/null || true
+        log_skip "Required CLI tools provided by Codespaces; skipping mise"
+        unset MISE_APPS
+        return 0
+    fi
+fi
+
 # Install mise
 if ! command -v mise &>/dev/null; then
     log_info "Installing mise..."
@@ -22,7 +55,12 @@ if ! command -v mise &>/dev/null; then
             # arm64 machines/containers rather than assuming amd64.
             echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=$(dpkg --print-architecture)] https://mise.jdx.dev/deb stable main" | \
                 sudo tee /etc/apt/sources.list.d/mise.list
-            sudo apt-get update -qq
+            # Refresh only the newly added repository; the distro indexes were
+            # already refreshed by 11-apt.sh.
+            sudo apt-get update -qq \
+                -o Dir::Etc::sourcelist="sources.list.d/mise.list" \
+                -o Dir::Etc::sourceparts="-" \
+                -o APT::Get::List-Cleanup="0"
             sudo apt-get install -qq mise
             ;;
         pacman)
@@ -55,26 +93,29 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
     MISE_QUIET=1 mise use -g "${MISE_RUNTIMES[@]}" 2>&1 | log_quote || true
 fi
 
-# Activate mise shims so runtimes (e.g. python3) are available for app installers
-eval "$(mise activate bash)"
-export PATH="$HOME/.local/share/mise/shims:$PATH"
-
-typeset -a MISE_APPS=(
-    "bat@latest"
-    "fzf@latest"
-    "zoxide@latest"
-    "ripgrep@latest"
-    "delta@latest"
-    "eza@latest"
-    "fd@latest"
-    "sd@latest"
-    "bottom@0.14.1"
-    "ubi:dalance/procs@latest"
-    "cargo:tealdeer@latest"
-)
+# Codespaces should prefer its platform-managed tools and runtimes. Keep mise
+# shims as a fallback rather than allowing the repo-local mise.toml to shadow
+# the image's Node.js.
+if [[ "$DOTS_ENV" == "codespaces" ]]; then
+    export PATH="$PATH:$HOME/.local/share/mise/shims"
+else
+    eval "$(mise activate bash)"
+    export PATH="$HOME/.local/share/mise/shims:$PATH"
+fi
 
 if [[ "$DOTS_ENV" != "codespaces" ]]; then
-    MISE_APPS+=(
+    MISE_APPS=(
+        "bat@latest"
+        "fzf@latest"
+        "zoxide@latest"
+        "ripgrep@latest"
+        "delta@latest"
+        "eza@latest"
+        "fd@latest"
+        "sd@latest"
+        "bottom@0.14.1"
+        "ubi:dalance/procs@latest"
+        "aqua:tealdeer-rs/tealdeer@1.9.0"
         # uv: self-contained static binary (mise core backend), so no Python
         # interpreter/venv is needed to install it. This avoids poetry's
         # official installer picking up the Command Line Tools python3.9,
@@ -104,7 +145,17 @@ if [[ -n "$DOTS_DEFENDER" ]]; then
 fi
 
 log_info "Installing apps..."
-MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote || true
+if (( ${#MISE_APPS[@]} )); then
+    if [[ "$DOTS_ENV" == "codespaces" ]]; then
+        # Run outside the checkout so its mise.toml does not install a
+        # repo-specific Node.js over the Codespaces-provided runtime.
+        (cd "$HOME" && MISE_QUIET=1 mise use -g "${MISE_APPS[@]}") 2>&1 | log_quote
+    else
+        MISE_QUIET=1 mise use -g "${MISE_APPS[@]}" 2>&1 | log_quote || true
+    fi
+else
+    log_skip "All apps provided by Codespaces"
+fi
 
 # Rebuild bat theme cache with mise-installed bat (must match delta's syntect version)
 bat cache --build &>/dev/null || true
@@ -121,4 +172,8 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
 fi
 
 log_pass "mise tools installed"
-mise ls --current 2>/dev/null | awk '{printf "%s %s\n", $1, $2}' | log_quote
+if [[ "$DOTS_ENV" == "codespaces" ]]; then
+    (cd "$HOME" && mise ls --current 2>/dev/null) | awk '{printf "%s %s\n", $1, $2}' | log_quote
+else
+    mise ls --current 2>/dev/null | awk '{printf "%s %s\n", $1, $2}' | log_quote
+fi
