@@ -2,21 +2,13 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   Install and run stow.
+#   Link dotfiles with GNU Stow, or a lightweight equivalent in Codespaces.
 #
 
-if ! command -v stow &> /dev/null; then
+if [[ "$DOTS_ENV" != "codespaces" ]] && ! command -v stow &> /dev/null; then
     case "$DOTS_PKG" in
         apt)
-            if [[ "$DOTS_ENV" == "codespaces" ]]; then
-                if ! sudo apt-get install -qq stow; then
-                    log_warn "Cached apt indexes could not install Stow; refreshing"
-                    sudo apt-get update -qq
-                    sudo apt-get install -qq stow
-                fi
-            else
-                sudo apt-get install -qq stow
-            fi
+            sudo apt-get install -qq stow
             ;;
         pacman)
             sudo pacman -S --noconfirm stow
@@ -32,6 +24,37 @@ if ! command -v stow &> /dev/null; then
 fi
 
 root_dir=${DOTFILES:-$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")}
+
+_dots_link_tree() {
+    local source_dir=$1
+    local target_dir=$2
+    local source_path target_path
+    local -a entries
+
+    shopt -s dotglob nullglob
+    entries=("$source_dir"/*)
+    shopt -u dotglob nullglob
+
+    for source_path in "${entries[@]}"; do
+        case "${source_path##*/}" in
+            .git|.gitignore|.gitmodules) continue ;;
+        esac
+
+        target_path="$target_dir/${source_path##*/}"
+
+        if [[ -L "$target_path" ]]; then
+            [[ "$(readlink "$target_path")" == "$source_path" ]] || \
+                ln -sfn "$source_path" "$target_path"
+        elif [[ ! -e "$target_path" ]]; then
+            ln -s "$source_path" "$target_path"
+        elif [[ -d "$source_path" && -d "$target_path" ]]; then
+            _dots_link_tree "$source_path" "$target_path"
+        else
+            log_error "Cannot link $target_path: existing path is not managed by dotfiles"
+            return 1
+        fi
+    done
+}
 
 rm -f "$HOME/.bash_profile"
 rm -f "$HOME/.bashrc"
@@ -60,7 +83,14 @@ mkdir -p "$HOME/.config/opencode"
 # Ensure ~/.copilot (and the hooks dir) exist as real dirs so stow links only
 # the hooks file inside, rather than folding the whole state-heavy dir into the repo.
 mkdir -p "$HOME/.copilot/hooks"
-stow --dir="$root_dir" --target="$HOME" home
+if [[ "$DOTS_ENV" == "codespaces" ]]; then
+    # Codespaces is ephemeral and installing Stow can spend over a minute in
+    # apt/dpkg. This implements the subset used by the single `home` package:
+    # fold absent directories into symlinks and descend into existing ones.
+    _dots_link_tree "$root_dir/home" "$HOME"
+else
+    stow --dir="$root_dir" --target="$HOME" home
+fi
 
 # In Codespaces, remove .gitconfig.local so the auto-provisioned identity is used
 if [[ "$DOTS_ENV" == "codespaces" ]]; then
@@ -70,8 +100,9 @@ fi
 # Bust PATH cache to force rebuild with new profile
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/dots/path"
 
-# Compile zsh dotfiles for faster shell startup
-if command -v zsh &>/dev/null; then
+# Compile zsh dotfiles for faster shell startup. Codespaces uses the tracked
+# caches and lets Zsh ignore them if stale rather than writing into the clone.
+if [[ "$DOTS_ENV" != "codespaces" ]] && command -v zsh &>/dev/null; then
     zsh -c '
         for f in ~/.zsh/*.zsh ~/.aliases ~/.profile(N); do
             [[ $f.zwc -nt $f ]] || zcompile "$f" 2>/dev/null
@@ -82,5 +113,11 @@ fi
 # Bust tool init caches so they regenerate with new PATH/tools
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}"/dots/{fzf,mise,zoxide}.zsh{,.zwc}
 
-log_pass "stow linked"
-stow --version | log_quote
+unset -f _dots_link_tree
+
+if [[ "$DOTS_ENV" == "codespaces" ]]; then
+    log_pass "dotfiles linked"
+else
+    log_pass "stow linked"
+    stow --version | log_quote
+fi
