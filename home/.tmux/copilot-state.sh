@@ -17,7 +17,9 @@
 #
 # Idempotent. Inside a local tmux it sets the window option; outside one (e.g.
 # over SSH in a codespace) it instead rings the terminal bell on turn handover
-# so the local tmux can flash the tab. Set COPILOT_STATE_DEBUG=<file> to trace.
+# so the local tmux can flash the tab. An unread local handover also plays a
+# sound; set COPILOT_SOUND=off to disable it or COPILOT_SOUND_FILE to override
+# the default. Set COPILOT_STATE_DEBUG=<file> to trace.
 
 [ -n "$COPILOT_STATE_DEBUG" ] && \
     printf '%s state=%-8s pane=%s\n' "$(date '+%H:%M:%S')" "${1:-?}" "${TMUX_PANE:-none}" \
@@ -34,6 +36,46 @@ if [ -z "$TMUX" ] || [ -z "$TMUX_PANE" ]; then
     exit 0
 fi
 
+_dots_copilot_sound() {
+    case "${COPILOT_SOUND:-on}" in
+        0|off|false|no) return ;;
+    esac
+
+    sound_file="${COPILOT_SOUND_FILE:-}"
+    if command -v afplay >/dev/null 2>&1; then
+        [ -n "$sound_file" ] || sound_file="/System/Library/Sounds/Glass.aiff"
+        [ -r "$sound_file" ] && {
+            afplay -v 0.5 "$sound_file" >/dev/null 2>&1 &
+            return
+        }
+    elif command -v canberra-gtk-play >/dev/null 2>&1; then
+        if [ -n "$sound_file" ] && [ -r "$sound_file" ]; then
+            canberra-gtk-play -f "$sound_file" >/dev/null 2>&1 &
+        else
+            canberra-gtk-play -i complete >/dev/null 2>&1 &
+        fi
+        return
+    elif command -v paplay >/dev/null 2>&1; then
+        if [ -z "$sound_file" ]; then
+            for candidate in \
+                /usr/share/sounds/freedesktop/stereo/complete.oga \
+                /usr/share/sounds/freedesktop/stereo/message.oga
+            do
+                [ -r "$candidate" ] && {
+                    sound_file="$candidate"
+                    break
+                }
+            done
+        fi
+        [ -n "$sound_file" ] && [ -r "$sound_file" ] && {
+            paplay "$sound_file" >/dev/null 2>&1 &
+            return
+        }
+    fi
+
+    printf '\a' > /dev/tty 2>/dev/null
+}
+
 case "$1" in
     ''|clear)
         tmux set-option -wu -t "$TMUX_PANE" @copilot_state  2>/dev/null
@@ -47,8 +89,10 @@ case "$1" in
         tmux set-option -w -t "$TMUX_PANE" @copilot_state "$1" 2>/dev/null
         # Flag as unread only when you're not already looking at this window;
         # otherwise pane-focus-in never fires to clear it and the tab sticks amber.
-        [ "$(tmux display-message -p -t "$TMUX_PANE" '#{window_active}' 2>/dev/null)" = "1" ] || \
+        if [ "$(tmux display-message -p -t "$TMUX_PANE" '#{window_active}' 2>/dev/null)" != "1" ]; then
             tmux set-option -w -t "$TMUX_PANE" @copilot_unread 1 2>/dev/null
+            _dots_copilot_sound
+        fi
         ;;
     *)
         tmux set-option -w -t "$TMUX_PANE" @copilot_state "$1" 2>/dev/null
