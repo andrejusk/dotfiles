@@ -1,7 +1,7 @@
 #
 # alpine-base: Base Alpine image with sudo user
 #
-FROM alpine:3.21 AS base
+FROM alpine:3.24 AS base
 
 RUN apk update --quiet && \
     apk add --quiet --no-cache \
