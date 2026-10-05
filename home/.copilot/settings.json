@@ -8,6 +8,7 @@
   "enabledMcpServers": [
     "computer-use"
   ],
+  "autoUpdatesChannel": "stable",
   "enabledPlugins": {
     "computer-use": true
   }
