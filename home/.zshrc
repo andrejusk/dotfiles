@@ -185,3 +185,10 @@ _dots_lazy_widgets() {
 add-zle-hook-widget zle-line-init _dots_lazy_widgets
 
 [[ -n "$ZSH_BENCH" ]] && zprof || true
+
+# Agency is optional and only added on persistent macOS hosts.
+if [[ "$OSTYPE" == darwin* && -z "${CODESPACES:-}" &&
+      -d "$XDG_CONFIG_HOME/agency/CurrentVersion" &&
+      ":$PATH:" != *":$XDG_CONFIG_HOME/agency/CurrentVersion:"* ]]; then
+    export PATH="$XDG_CONFIG_HOME/agency/CurrentVersion:$PATH"
+fi
