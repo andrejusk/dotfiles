@@ -4,5 +4,11 @@
   "banner": "never",
   "showTipsOnStartup": false,
   "terminalProgress": false,
-  "updateTerminalTitle": false
+  "updateTerminalTitle": false,
+  "enabledMcpServers": [
+    "computer-use"
+  ],
+  "enabledPlugins": {
+    "computer-use": true
+  }
 }
