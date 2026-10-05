@@ -17,10 +17,12 @@ scanned by Defender, so unchanged sessions are served from the cache for free
 and only genuinely new/changed sessions are re-opened. After the first build,
 ^S is effectively instant.
 
-Usage: copilot-sessions [--cwd DIR]
+Usage: copilot-sessions [--cwd DIR] [--hide-cwd]
   --cwd DIR   only emit sessions whose cwd == DIR (the full cache is still
               refreshed regardless, so ^g/^l reloads stay instant).
+  --hide-cwd  preserve the cwd column but leave it empty for a fixed fzf layout.
 """
+import argparse
 import glob
 import json
 import os
@@ -223,20 +225,27 @@ def _write_cache(new):
         pass
 
 
+def _format_row(ts, sid, text, cwd, hide_cwd=False):
+    display_cwd = "" if hide_cwd else cwd
+    grey = f"{GREY}{display_cwd.replace(HOME, '~')}{RST}" if display_cwd else ""
+    return f"{ts} | {sid} | {text} | {grey}"
+
+
 def main():
-    filter_cwd = None
-    args = sys.argv[1:]
-    if args and args[0] == "--cwd":
-        filter_cwd = args[1] if len(args) > 1 else None
+    parser = argparse.ArgumentParser(description="List resumable Copilot sessions.")
+    parser.add_argument("--cwd", metavar="DIR", help="only emit sessions in DIR")
+    parser.add_argument(
+        "--hide-cwd", action="store_true", help="leave the cwd column empty"
+    )
+    args = parser.parse_args()
 
     rows = build()
 
     try:
         for ts, sid, text, cwd in rows:
-            if filter_cwd is not None and cwd != filter_cwd:
+            if args.cwd is not None and cwd != args.cwd:
                 continue
-            grey = f"{GREY}{cwd.replace(HOME, '~')}{RST}" if cwd else ""
-            print(f"{ts} | {sid} | {text} | {grey}")
+            print(_format_row(ts, sid, text, cwd, args.hide_cwd))
     except BrokenPipeError:
         # fzf closed early (e.g. Esc); cache is already written, so just exit.
         try:

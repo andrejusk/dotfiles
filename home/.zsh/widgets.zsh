@@ -274,10 +274,9 @@ _dots_load_keybindings() {
         # the dir column (before the message, so it stays readable), ^l re-scopes
         # to the current directory and hides it again.
         local cache="${XDG_CACHE_HOME:-$HOME/.cache}/copilot-sessions/index.tsv"
-        local with_nth='1,4,3' scope=()
+        local scope=()
         if [[ "$PWD" != "$HOME" && -f "$cache" ]] && grep -qF -- "$PWD" "$cache"; then
-            with_nth='1,3'
-            scope=(--cwd "$PWD")
+            scope=(--cwd "$PWD" --hide-cwd)
         fi
         session="$(copilot-sessions "${scope[@]}" | fzf --preview '
             id=$(echo {} | cut -d"|" -f2 | tr -d " ")
@@ -293,11 +292,11 @@ for line in sys.stdin:
         print(\">\", msg)
     except: pass
 " 2>/dev/null
-        ' --ansi --delimiter="|" --with-nth="$with_nth" \
+        ' --ansi --delimiter="|" --with-nth='1,4,3' \
            --no-sort \
            --header '^n=new ^s=latest enter=resume ^g=global ^l=cwd ^d=del ^r=restricted ⌥n=new restricted | newest first' \
-           --bind "ctrl-l:reload(copilot-sessions --cwd ${(q)PWD})+change-with-nth(1,3)+first" \
-           --bind "ctrl-g:reload(copilot-sessions)+change-with-nth(1,4,3)+first" \
+           --bind "ctrl-l:reload(copilot-sessions --cwd ${(q)PWD} --hide-cwd)+first" \
+           --bind "ctrl-g:reload(copilot-sessions)+first" \
            --expect=ctrl-r,ctrl-s,ctrl-n,ctrl-d,alt-n)"
         local fzf_rc=$?
         [[ $fzf_rc -ne 0 && "$session" != ctrl-s* && "$session" != ctrl-n* && "$session" != alt-n* ]] && { zle reset-prompt; return; }
