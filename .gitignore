@@ -38,6 +38,7 @@ home/.copilot/restart
 home/.copilot/servers
 home/.copilot/session-state
 home/.copilot/session-store.db*
+home/.copilot/settings.json.lock
 home/.copilot/sidebar-sessions-state
 
 # XDG runtime state (safety net: 23-stow.sh mkdir's ~/.local/bin so stow links
