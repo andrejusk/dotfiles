@@ -42,12 +42,12 @@ preview_image() {
         h="$(tput lines)"
     fi
     # Combined terminal fingerprint. Inside tmux, TERM/TERM_PROGRAM describe tmux
-    # itself, so terminal-specific vars are the reliable signal: LC_TERMINAL for
-    # iTerm2/WezTerm, GHOSTTY_*/KITTY_* for the kitty graphics protocol.
+    # itself, so terminal-specific vars are the reliable signal: TERM_PROGRAM
+    # for WezTerm, GHOSTTY_*/KITTY_* for the kitty graphics protocol.
     local term="${LC_TERMINAL:-}${TERM_PROGRAM:-}${TERM:-}"
 
-    if [[ "$term" == *iTerm* || "$term" == *WezTerm* ]]; then
-        # iTerm2/WezTerm: native inline image protocol (works through tmux passthrough)
+    if [[ "$term" == *WezTerm* ]]; then
+        # WezTerm: native inline image protocol (works through tmux passthrough)
         local data
         data="$(base64 < "$file")"
         if [[ -n "${TMUX:-}" ]]; then
