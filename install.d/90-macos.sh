@@ -88,7 +88,6 @@ _defaults_set ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Accessi
 # Third-party menu bar items. The generic NSStatusItem latch is what macOS
 # writes when a status item is removed from the menu bar; app-specific keys are
 # set where the app exposes one.
-_hide_app_menu_item "Microsoft Teams" com.microsoft.teams2 com.microsoft.teams2.agent
 
 if _app_present "Rectangle"; then
     _defaults_set com.knollsoft.Rectangle hideMenubarIcon -bool true
