@@ -10,6 +10,6 @@
   ],
   "autoUpdatesChannel": "stable",
   "enabledPlugins": {
-    "computer-use": true
+    "computer-use": false
   }
 }
