@@ -1,6 +1,8 @@
 /*
  * Spinning donut screensaver with matrix rain.
  * Compile: cc -O2 -o donut donut.c -lm
+ * DONUT_WEIGHT=off disables intensity-based faint/normal/bold rendering.
+ * DONUT_FLICKER=1 restores random Matrix-style glyph substitutions.
  * Press any key to quit.
  */
 #include <math.h>
@@ -18,6 +20,8 @@
 static struct termios orig_termios;
 static volatile sig_atomic_t running = 1;
 static int light_mode = 0;
+static int weight_shading = 1;
+static int sparse_flicker = 0;
 
 static void restore_tmux(void) {
     system("tmux set-option status on 2>/dev/null");
@@ -43,7 +47,7 @@ static void write_all(int fd, const char *buf, int len) {
     }
 }
 
-/* 64 foreground-color escapes: teal color ramp. */
+/* 64 foreground-color and weight escapes: teal intensity ramp. */
 #define N_SHADES 64
 /* Shades below this cutoff render as blank cells so the real terminal
  * background shows through, making the donut/rain fade theme-agnostic
@@ -136,7 +140,15 @@ static void init_palette(float dim) {
             }
         }
         r = (int)(r * dim); g = (int)(g * dim); b = (int)(b * dim);
-        SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[38;2;%d;%d;%dm", r, g, b);
+        if (!weight_shading) {
+            SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[22;38;2;%d;%d;%dm", r, g, b);
+        } else if (i < N_SHADES / 3) {
+            SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[2;38;2;%d;%d;%dm", r, g, b);
+        } else if (i < N_SHADES * 2 / 3) {
+            SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[22;38;2;%d;%d;%dm", r, g, b);
+        } else {
+            SHADE_LEN[i] = sprintf(SHADE_ESC[i], "\033[1;38;2;%d;%d;%dm", r, g, b);
+        }
     }
 }
 
@@ -193,11 +205,14 @@ static void mat_update(int W, int H, float dt) {
         if (hr >= 0 && hr < H)
             mat_grid[hr][c] = MCHARS[rand() % N_MCHARS];
     }
-    /* Sparse flicker across grid */
-    int flickers = W * H / 200;
-    for (int i = 0; i < flickers; i++) {
-        int r = rand() % H, c = rand() % W;
-        mat_grid[r][c] = MCHARS[rand() % N_MCHARS];
+    /* Optional Matrix-style flicker. Disabled by default because changing
+     * glyph silhouettes makes the rotating surface appear to wobble. */
+    if (sparse_flicker) {
+        int flickers = W * H / 200;
+        for (int i = 0; i < flickers; i++) {
+            int r = rand() % H, c = rand() % W;
+            mat_grid[r][c] = MCHARS[rand() % N_MCHARS];
+        }
     }
 }
 
@@ -258,6 +273,10 @@ static int clock_shadow(int row, int col, const int hhmm[4], int blink_on) {
 int main(int argc, char **argv) {
     const char *theme = getenv("DOTS_THEME");
     light_mode = (theme && strcmp(theme, "light") == 0);
+    const char *weight = getenv("DONUT_WEIGHT");
+    weight_shading = !(weight && strcmp(weight, "off") == 0);
+    const char *flicker = getenv("DONUT_FLICKER");
+    sparse_flicker = (flicker && strcmp(flicker, "1") == 0);
 
     init_palette(1.0f);
     init_clock_colors();
