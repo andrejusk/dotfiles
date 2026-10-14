@@ -10,15 +10,20 @@
 #
 # Counter ticks while score > 0. Resets on tmux restart.
 # Outputs a tmux fg color that fades from teal to gray with activity.
+#
+# Also drives the tmux screensaver timer. A focused Copilot window in the
+# "working" state pauses the timer; leaving it or reaching an idle Copilot
+# state starts a fresh countdown instead of counting the agent's run time.
 
 SCORE_CAP=100
+LOCK_AFTER=300
 
 state_dir="${XDG_RUNTIME_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/tmux}"
 umask 077
 mkdir -p "$state_dir" 2>/dev/null || exit 0
 state="$state_dir/heartbeat"
-read client_act win_act in_mode tmux_pid <<< \
-    "$(tmux display-message -p '#{client_activity} #{window_activity} #{pane_in_mode} #{pid}')"
+read session_act win_act in_mode tmux_pid session_id copilot_state <<< \
+    "$(tmux display-message -p '#{session_activity} #{window_activity} #{pane_in_mode} #{pid} #{session_id} #{@copilot_state}')"
 now=$(date +%s)
 
 # Load previous state
@@ -50,7 +55,7 @@ if [[ -f "$state" ]]; then
 fi
 
 # Score: check activity signals
-if [[ -n "$prev_client" && "$client_act" != "$prev_client" ]]; then
+if [[ -n "$prev_client" && "$session_act" != "$prev_client" ]]; then
     (( score += 5 ))
 fi
 
@@ -76,8 +81,44 @@ fi
 # Persist
 state_tmp="$state.$$.tmp"
 printf 'prev_client=%s\nprev_win=%s\nscore=%s\nactive_total=%s\nsrv_pid=%s\nreturn_at=%s\nreturn_show=%s\n' \
-    "$client_act" "$win_act" "$score" "$active_total" "$tmux_pid" "$return_at" "$return_show" > "$state_tmp" \
+    "$session_act" "$win_act" "$score" "$active_total" "$tmux_pid" "$return_at" "$return_show" > "$state_tmp" \
     && mv -f "$state_tmp" "$state"
+
+# Keep screensaver state per session so independently attached sessions do not
+# reset or inhibit one another.
+lock_session=0
+if [[ "$session_id" =~ ^\$[0-9]+$ && "$session_act" =~ ^[0-9]+$ ]]; then
+    screensaver_state="$state_dir/screensaver.${session_id#\$}"
+    idle_since=0
+    was_inhibited=0
+    if [[ -r "$screensaver_state" ]]; then
+        while IFS='=' read -r key value; do
+            case "$key" in
+                idle_since|was_inhibited)
+                    [[ "$value" =~ ^[0-9]+$ ]] && printf -v "$key" '%s' "$value" ;;
+            esac
+        done < "$screensaver_state"
+    fi
+
+    if [[ "$copilot_state" == "working" ]]; then
+        idle_since=$now
+        was_inhibited=1
+    else
+        if (( was_inhibited || idle_since == 0 )); then
+            idle_since=$now
+        elif (( session_act > idle_since )); then
+            idle_since=$session_act
+        fi
+        was_inhibited=0
+        (( now - idle_since >= LOCK_AFTER )) && lock_session=1
+    fi
+
+    screensaver_tmp="$screensaver_state.$$.tmp"
+    printf 'idle_since=%s\nwas_inhibited=%s\n' "$idle_since" "$was_inhibited" > "$screensaver_tmp" \
+        && mv -f "$screensaver_tmp" "$screensaver_state"
+fi
+
+(( lock_session )) && tmux lock-session -t "$session_id"
 
 # Output: tmux color code that fades teal (#2CB494) → gray (#808080)
 # Interpolate RGB channels based on score (0-100)
