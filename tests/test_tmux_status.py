@@ -372,6 +372,28 @@ def test_tmux_refreshes_theme_without_polling():
     assert "tmux set-option -p @dots_theme_listener 1" in zshrc
 
 
+def test_network_pill_has_a_leading_cell_margin():
+    status_right = re.findall(
+        r'^\s*set -g status-right "(.*)"$',
+        CONFIG.read_text(),
+        re.MULTILINE,
+    )
+
+    assert len(status_right) == 2
+    assert all(
+        "#{?#{e|>=|:#{client_width},120}, #(~/.tmux/network.sh)"
+        in value
+        for value in status_right
+    )
+
+
+def test_window_overflow_markers_do_not_touch_pills():
+    config = CONFIG.read_text()
+
+    assert "list=left-marker fg=#808080,bg=default]‹ " in config
+    assert "list=right-marker fg=#808080,bg=default] ›" in config
+
+
 def test_shell_theme_environment_can_switch_both_ways():
     command = f"""
         source {PROFILE!s}
