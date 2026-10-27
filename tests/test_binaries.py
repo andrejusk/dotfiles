@@ -7,6 +7,7 @@ from typing import List, Text
 from subprocess import run
 import pytest
 import os
+import platform
 
 
 # --------------------------------------------------------------------------- #
@@ -69,6 +70,7 @@ binaries: List[Text] = [
     "zoxide",
     "rg",
     "tmux",
+    "macmon" if platform.system() == "Darwin" and platform.machine() == "arm64" else None,
 ]
 binaries = [binary for binary in binaries if binary is not None]
 

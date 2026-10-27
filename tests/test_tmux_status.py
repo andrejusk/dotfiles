@@ -17,6 +17,96 @@ def _write_command(bin_dir, name, body):
     command.chmod(0o755)
 
 
+def _run_battery(
+    tmp_path,
+    now,
+    pmset_output,
+    system_power,
+    all_power,
+    voltage_mv=13000,
+    current_ma=0,
+):
+    bin_dir = tmp_path / "battery-bin"
+    runtime_dir = tmp_path / "battery-runtime"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    _write_command(bin_dir, "date", 'printf "%s\\n" "$MOCK_NOW"')
+    _write_command(bin_dir, "uname", 'printf "Darwin\\n"')
+    _write_command(bin_dir, "pmset", 'printf "%s\\n" "$MOCK_PMSET"')
+    _write_command(
+        bin_dir,
+        "curl",
+        'printf "macmon_all_power_watts{chip=\\"Apple M5 Max\\"} %s\\n'
+        'macmon_sys_power_watts{chip=\\"Apple M5 Max\\"} %s\\n" '
+        '"$MOCK_ALL_POWER" "$MOCK_SYSTEM_POWER"',
+    )
+    _write_command(
+        bin_dir,
+        "ioreg",
+        'printf "  |   \\"Voltage\\" = %s\\n'
+        '  |   \\"InstantAmperage\\" = %s\\n" "$MOCK_VOLTAGE" "$MOCK_CURRENT"',
+    )
+    env = os.environ.copy()
+    env.update(
+        {
+            "DOTS_THEME": "dark",
+            "MOCK_ALL_POWER": str(all_power),
+            "MOCK_CURRENT": str(current_ma),
+            "MOCK_NOW": str(now),
+            "MOCK_PMSET": pmset_output,
+            "MOCK_SYSTEM_POWER": str(system_power),
+            "MOCK_VOLTAGE": str(voltage_mv),
+            "PATH": f"{bin_dir}:{env['PATH']}",
+            "XDG_RUNTIME_DIR": str(runtime_dir),
+        }
+    )
+    return subprocess.run(
+        [str(BATTERY)],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=env,
+    ).stdout
+
+
+def test_battery_charging_shows_percentage_and_adapter_output(tmp_path):
+    output = _run_battery(
+        tmp_path,
+        now=100,
+        pmset_output="Now drawing from 'AC Power'\nBattery 80%; charging;",
+        system_power=5,
+        all_power=3,
+        current_ma=1000,
+    )
+
+    assert "󰂄 80% 18W" in output
+
+
+def test_battery_full_shows_only_system_power(tmp_path):
+    output = _run_battery(
+        tmp_path,
+        now=100,
+        pmset_output="Now drawing from 'AC Power'\nBattery 100%; charged;",
+        system_power=5,
+        all_power=3,
+    )
+
+    assert "󰚥 5W" in output
+    assert "100%" not in output
+
+
+def test_battery_discharging_shows_percentage_and_system_power(tmp_path):
+    output = _run_battery(
+        tmp_path,
+        now=100,
+        pmset_output="Now drawing from 'Battery Power'\nBattery 70%; discharging;",
+        system_power=5,
+        all_power=3,
+    )
+
+    assert "󰂀 70% 5W" in output
+
+
 def _run_theme(tmp_path, appearance, **env_overrides):
     bin_dir = tmp_path / "theme-bin"
     bin_dir.mkdir(exist_ok=True)

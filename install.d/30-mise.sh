@@ -127,6 +127,10 @@ if [[ "$DOTS_ENV" != "codespaces" ]]; then
         "fastfetch@latest"
         "glow@latest"
     )
+
+    if [[ "$DOTS_OS" == "macos" && "$(uname -m)" == "arm64" ]]; then
+        MISE_APPS+=("cargo:macmon@0.10.0")
+    fi
 fi
 
 # Trigram code search — only where endpoint AV (Microsoft Defender) makes rg
