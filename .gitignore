@@ -56,6 +56,7 @@ home/.tmux/plugins
 # compiled binaries
 home/.tmux/donut
 home/.tmux/theme-watcher
+home/.tmux/wifi-rssi
 
 *.zwc
 

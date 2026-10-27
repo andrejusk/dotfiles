@@ -41,6 +41,15 @@ if [[ "$DOTS_OS" == "macos" ]] && command -v swiftc &>/dev/null \
     fi
 fi
 
+# Compile the CoreWLAN RSSI helper (skip if binary is newer than source).
+if [[ "$DOTS_OS" == "macos" ]] && command -v swiftc &>/dev/null \
+    && [[ -f "$HOME/.tmux/wifi-rssi.swift" ]]; then
+    if [[ ! -f "$HOME/.tmux/wifi-rssi" \
+        || "$HOME/.tmux/wifi-rssi.swift" -nt "$HOME/.tmux/wifi-rssi" ]]; then
+        swiftc -O "$HOME/.tmux/wifi-rssi.swift" -o "$HOME/.tmux/wifi-rssi"
+    fi
+fi
+
 log_pass "tmux configured"
 tmux -V | log_quote
 

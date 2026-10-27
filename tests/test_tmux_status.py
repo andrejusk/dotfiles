@@ -17,6 +17,64 @@ def _write_command(bin_dir, name, body):
     command.chmod(0o755)
 
 
+def _run_network(
+    tmp_path,
+    now,
+    ping_succeeds,
+    latency_ms=42.1,
+    rx_bytes=1000,
+    tx_bytes=1000,
+):
+    bin_dir = tmp_path / "bin"
+    runtime_dir = tmp_path / "runtime"
+    bin_dir.mkdir(exist_ok=True)
+    runtime_dir.mkdir(exist_ok=True)
+    _write_command(bin_dir, "date", 'printf "%s\\n" "$MOCK_NOW"')
+    _write_command(bin_dir, "uname", 'printf "Darwin\\n"')
+    _write_command(
+        bin_dir,
+        "route",
+        'printf "   interface: en0\\n"',
+    )
+    _write_command(
+        bin_dir,
+        "networksetup",
+        'printf "Hardware Port: Wi-Fi\\nDevice: en0\\n"',
+    )
+    _write_command(
+        bin_dir,
+        "ping",
+        (
+            f'printf "64 bytes from 1.1.1.1: time={latency_ms} ms\\n"'
+            if ping_succeeds
+            else "exit 1"
+        ),
+    )
+    _write_command(
+        bin_dir,
+        "netstat",
+        'printf "Name Mtu Network Address Ipkts Ierrs Ibytes Opkts Oerrs Obytes\\n'
+        f'en0 1500 link x 0 0 {rx_bytes} 0 0 {tx_bytes}\\n"',
+    )
+    env = os.environ.copy()
+    env.update(
+        {
+            "DOTS_THEME": "dark",
+            "DOTS_WIFI_RSSI": "",
+            "MOCK_NOW": str(now),
+            "PATH": f"{bin_dir}:{env['PATH']}",
+            "XDG_RUNTIME_DIR": str(runtime_dir),
+        }
+    )
+    return subprocess.run(
+        [str(NETWORK)],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=env,
+    ).stdout
+
+
 def _run_battery(
     tmp_path,
     now,
@@ -105,6 +163,156 @@ def test_battery_discharging_shows_percentage_and_system_power(tmp_path):
     )
 
     assert "󰂀 70% 5W" in output
+
+
+def test_network_offline_warning_waits_for_sustained_failure(tmp_path):
+    settling = _run_network(tmp_path, now=100, ping_succeeds=False)
+    still_settling = _run_network(tmp_path, now=120, ping_succeeds=False)
+    offline = _run_network(tmp_path, now=130, ping_succeeds=False)
+    recovered = _run_network(tmp_path, now=140, ping_succeeds=True)
+
+    assert "#[bg=#F88C14]" not in settling
+    assert "#[bg=#F88C14]" not in still_settling
+    assert "󰤭 --" in settling
+    assert "#[bg=#F88C14]" in offline
+    assert "#[bg=#F88C14]" not in recovered
+    assert "󰤨 42ms" in recovered
+
+
+def test_network_latency_waits_for_twelve_sample_warmup(tmp_path):
+    for index in range(11):
+        collecting = _run_network(
+            tmp_path,
+            now=100 + index * 10,
+            ping_succeeds=True,
+            latency_ms=40,
+        )
+        assert "󰤨 40ms" in collecting
+        assert "#[bg=#F88C14]" not in collecting
+
+    ready = _run_network(tmp_path, now=210, ping_succeeds=True, latency_ms=40)
+
+    assert "40ms" in ready
+    assert "#[bg=#F88C14]" not in ready
+
+
+def test_network_icon_blinks_during_latency_warmup(tmp_path):
+    visible = _run_network(tmp_path, now=100, ping_succeeds=True, latency_ms=40)
+    hidden = _run_network(tmp_path, now=101, ping_succeeds=True, latency_ms=40)
+
+    assert "󰤨 40ms" in visible
+    assert "󰤨" not in hidden
+    assert "  40ms" in hidden
+
+
+def test_network_wifi_icon_reflects_cached_rssi(tmp_path):
+    runtime_dir = tmp_path / "runtime"
+    runtime_dir.mkdir()
+    (runtime_dir / "network").write_text(
+        "ping_time=100\nms=40\nlatency_samples=40\n"
+        "offline_since=0\nwired=\niface=en0\nrssi=-80\n"
+    )
+
+    weak = _run_network(tmp_path, now=102, ping_succeeds=True, latency_ms=40)
+
+    assert "󰤟 40ms" in weak
+
+
+def test_network_latency_locks_after_warmup_despite_variance(tmp_path):
+    for index in range(11):
+        _run_network(
+            tmp_path,
+            now=100 + index * 10,
+            ping_succeeds=True,
+            latency_ms=40,
+        )
+
+    _run_network(tmp_path, now=210, ping_succeeds=True, latency_ms=200)
+    locked = _run_network(tmp_path, now=211, ping_succeeds=True, latency_ms=200)
+
+    assert "󰤨 53ms" in locked
+    assert "#[bg=#F88C14]" not in locked
+
+
+def test_network_latency_keeps_using_thirty_sample_rolling_mean(tmp_path):
+    runtime_dir = tmp_path / "runtime"
+    runtime_dir.mkdir()
+    samples = (
+        "16:36:16:22:22:24:19:43:17:16:20:16:46:15:31:"
+        "18:16:19:32:22:27:30:38:51:16:17:16:17:16:19"
+    )
+    (runtime_dir / "network").write_text(
+        f"ping_time=390\nms=19\nlatency_samples={samples}\n"
+        "offline_since=0\nwired=\niface=en0\n"
+    )
+
+    stable = _run_network(tmp_path, now=391, ping_succeeds=True)
+
+    assert "󰤨 24ms" in stable
+    assert "#[bg=#F88C14]" not in stable
+
+
+def test_network_latency_warns_only_after_warmup(tmp_path):
+    for index in range(11):
+        collecting = _run_network(
+            tmp_path,
+            now=100 + index * 10,
+            ping_succeeds=True,
+            latency_ms=200,
+        )
+        assert "󰤨 200ms" in collecting
+        assert "#[bg=#F88C14]" not in collecting
+
+    ready = _run_network(tmp_path, now=210, ping_succeeds=True, latency_ms=200)
+
+    assert "200ms" in ready
+    assert "#[bg=#F88C14]" in ready
+
+
+def test_network_traffic_arrows_stay_visible_and_color_active_direction(tmp_path):
+    idle = _run_network(tmp_path, now=100, ping_succeeds=True)
+    receiving = _run_network(
+        tmp_path,
+        now=110,
+        ping_succeeds=True,
+        rx_bytes=601000,
+        tx_bytes=1000,
+    )
+    sending = _run_network(
+        tmp_path,
+        now=120,
+        ping_succeeds=True,
+        rx_bytes=601000,
+        tx_bytes=601000,
+    )
+
+    assert "#[bold]#[fg=#808080]⇃#[fg=#808080]↾#[nobold]" in idle
+    assert "#[bold]#[fg=#2CB494]⇃#[fg=#808080]↾#[nobold]" in receiving
+    assert "#[bold]#[fg=#808080]⇃#[fg=#7290B8]↾#[nobold]" in sending
+    assert receiving.index("42ms") < receiving.index("⇃")
+    assert "K" not in receiving
+
+
+def test_network_indicator_is_hidden_in_codespaces(tmp_path):
+    env = os.environ.copy()
+    env.update(
+        {
+            "CODESPACES": "true",
+            "DOTS_THEME": "dark",
+            "XDG_RUNTIME_DIR": str(tmp_path),
+        }
+    )
+
+    result = subprocess.run(
+        [str(NETWORK)],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=env,
+    )
+
+    assert result.stdout == ""
+    assert not (tmp_path / "network").exists()
 
 
 def _run_theme(tmp_path, appearance, **env_overrides):
