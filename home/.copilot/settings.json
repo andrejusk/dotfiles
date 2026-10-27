@@ -10,6 +10,7 @@
   ],
   "autoUpdatesChannel": "stable",
   "enabledPlugins": {
-    "computer-use": false
+    "computer-use": false,
+    "datadog@awesome-copilot": true
   }
 }

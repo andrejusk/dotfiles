@@ -2,7 +2,7 @@
 
 # -----------------------------------------------------------------------------
 # Description:
-#   (macOS only) Install the GitHub Copilot desktop app.
+#   (macOS only) Install the GitHub Copilot desktop app and CLI.
 #
 
 # macOS only
@@ -14,3 +14,9 @@ if ! echo "$BREW_CASKS" | grep -q "^github-copilot-app$"; then
 fi
 log_pass "GitHub Copilot app installed"
 echo "$BREW_CASK_VERSIONS" | grep "^github-copilot-app " | log_quote || true
+
+if ! echo "$BREW_CASKS" | grep -q "^copilot-cli$"; then
+    brew install --cask copilot-cli
+fi
+log_pass "GitHub Copilot CLI installed"
+copilot --version 2>/dev/null | log_quote || true
