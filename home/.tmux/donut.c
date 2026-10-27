@@ -17,11 +17,23 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#include <notify.h>
+#endif
+
 static struct termios orig_termios;
 static volatile sig_atomic_t running = 1;
+#ifdef __APPLE__
+static volatile sig_atomic_t theme_changed = 0;
+#endif
 static int light_mode = 0;
 static int weight_shading = 1;
 static int sparse_flicker = 0;
+
+#ifdef __APPLE__
+static void init_palette(float dim);
+static void init_clock_colors(void);
+#endif
 
 static void restore_tmux(void) {
     system("tmux set-option status on 2>/dev/null");
@@ -37,6 +49,25 @@ static void cleanup(void) {
 }
 
 static void handle_sig(int s) { (void)s; running = 0; }
+#ifdef __APPLE__
+static void handle_theme_sig(int s) { (void)s; theme_changed = 1; }
+
+static void refresh_theme(void) {
+    FILE *theme_command = popen("$HOME/.tmux/theme.sh", "r");
+    if (!theme_command) return;
+
+    char theme[16] = "";
+    if (fgets(theme, sizeof(theme), theme_command)) {
+        int next_light_mode = strncmp(theme, "light", 5) == 0;
+        if (next_light_mode != light_mode) {
+            light_mode = next_light_mode;
+            init_palette(1.0f);
+            init_clock_colors();
+        }
+    }
+    pclose(theme_command);
+}
+#endif
 
 static void write_all(int fd, const char *buf, int len) {
     while (len > 0) {
@@ -302,6 +333,13 @@ int main(int argc, char **argv) {
     signal(SIGINT, handle_sig);
     signal(SIGTERM, handle_sig);
     signal(SIGPIPE, handle_sig);
+#ifdef __APPLE__
+    int theme_notify_token;
+    signal(SIGUSR1, handle_theme_sig);
+    notify_register_signal(
+        "AppleInterfaceThemeChanged", SIGUSR1, &theme_notify_token
+    );
+#endif
 
     struct termios raw = orig_termios;
     raw.c_lflag &= ~(ICANON | ECHO);
@@ -362,6 +400,13 @@ int main(int argc, char **argv) {
 
     while (running) {
         gettimeofday(&tv_start, NULL);
+
+#ifdef __APPLE__
+        if (theme_changed) {
+            theme_changed = 0;
+            refresh_theme();
+        }
+#endif
 
         /* Time-based movement: scale all motion by actual frame delta */
         float dt_ms = (tv_start.tv_sec - tv_prev.tv_sec) * 1000.0f

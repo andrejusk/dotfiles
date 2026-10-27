@@ -32,6 +32,15 @@ if command -v cc &> /dev/null && [ -f "$HOME/.tmux/donut.c" ]; then
     fi
 fi
 
+# Compile the macOS appearance observer used by the tmux theme watcher.
+if [[ "$DOTS_OS" == "macos" ]] && command -v swiftc &>/dev/null \
+    && [[ -f "$HOME/.tmux/theme-watcher.swift" ]]; then
+    if [[ ! -f "$HOME/.tmux/theme-watcher" \
+        || "$HOME/.tmux/theme-watcher.swift" -nt "$HOME/.tmux/theme-watcher" ]]; then
+        swiftc -O "$HOME/.tmux/theme-watcher.swift" -o "$HOME/.tmux/theme-watcher"
+    fi
+fi
+
 log_pass "tmux configured"
 tmux -V | log_quote
 

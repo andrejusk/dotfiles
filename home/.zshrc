@@ -131,14 +131,19 @@ _dots_load_mise() {
 }
 
 # fzf env vars (needed by widgets and zoxide before fzf init loads)
-if [[ -n "${commands[fzf]:-}" ]]; then
-    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
-    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+_dots_set_fzf_theme() {
+    [[ -n "${commands[fzf]:-}" ]] || return
     if [[ "$DOTS_THEME" == light ]]; then
         export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#506888,fg+:#3C4A50,bg:-1,bg+:#E0D8C0 --color=hl:#1A7864,hl+:#1A7864,info:#808080,marker:#1A7864 --color=prompt:#1A7864,spinner:#78348C,pointer:#1A7864,header:#808080 --color=border:#C0B898,preview-border:#C0B898,gutter:-1,preview-fg:#3C4A50'
     else
         export FZF_DEFAULT_OPTS='--style=minimal --layout=reverse --height=40% --border=none --no-scrollbar --prompt="> " --info=inline-right --no-separator --margin=1,0,0,0 --color=fg:#808080,fg+:#CCE0D0,bg:-1,bg+:#1A1A1A --color=hl:#2CB494,hl+:#2CB494,info:#808080,marker:#2CB494 --color=prompt:#2CB494,spinner:#88409C,pointer:#2CB494,header:#808080 --color=border:#3C3C3C,preview-border:#3C3C3C,gutter:#1A1A1A,preview-fg:#CCE0D0'
     fi
+    export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS"
+}
+if [[ -n "${commands[fzf]:-}" ]]; then
+    export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    _dots_set_fzf_theme
 fi
 
 _dots_load_fzf() {
@@ -174,6 +179,30 @@ _dots_load_zoxide
 # --- Interactive shell ---
 
 source "$HOME/.zsh/prompt.zsh"
+
+_dots_refresh_theme() {
+    local theme
+    theme="$("$HOME/.tmux/theme.sh" 2>/dev/null)" || return
+    [[ "$theme" == light || "$theme" == dark ]] || return
+    [[ "$theme" == "$DOTS_THEME" ]] && return
+
+    export DOTS_THEME="$theme"
+    _dots_apply_theme_env
+    _dots_set_fzf_theme
+    _dots_init_colors
+    _dots_git_info_result=""
+    _dots_build_dots_prompt_base
+    PROMPT="$_dots_prompt_base"
+    zle reset-prompt 2>/dev/null || true
+}
+
+TRAPUSR1() {
+    _dots_refresh_theme
+}
+
+if [[ -n "${TMUX:-}" && -n "${commands[tmux]:-}" ]]; then
+    tmux set-option -p @dots_theme_listener 1 2>/dev/null
+fi
 
 # Load fzf + widgets after first prompt renders (zle-line-init fires before first keystroke)
 autoload -Uz add-zle-hook-widget

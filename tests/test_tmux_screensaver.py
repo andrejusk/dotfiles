@@ -3,6 +3,8 @@ import subprocess
 from pathlib import Path
 
 SCRIPT = Path(__file__).parents[1] / "home/.tmux/heartbeat.sh"
+CONFIG = Path(__file__).parents[1] / "home/.tmux.conf"
+DONUT = Path(__file__).parents[1] / "home/.tmux/donut.c"
 
 
 def write_executable(path, content):
@@ -80,3 +82,18 @@ def test_user_activity_resets_idle_screensaver_timeout(tmp_path):
     assert "lock-session -t $1" in run_heartbeat(
         tmp_path, now=1599, activity=1299, copilot_state=""
     )
+
+
+def test_screensaver_resolves_live_theme_when_it_starts():
+    config = CONFIG.read_text()
+
+    assert 'DOTS_THEME="$(~/.tmux/theme.sh)" ~/.tmux/donut' in config
+
+
+def test_running_screensaver_follows_macos_appearance_changes():
+    source = DONUT.read_text()
+
+    assert '#include <notify.h>' in source
+    assert '"AppleInterfaceThemeChanged", SIGUSR1' in source
+    assert "if (theme_changed)" in source
+    assert 'popen("$HOME/.tmux/theme.sh", "r")' in source

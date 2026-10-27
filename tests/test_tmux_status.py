@@ -1,8 +1,96 @@
+import os
 import re
 import subprocess
 from pathlib import Path
 
 CONFIG = Path(__file__).parents[1] / "home/.tmux.conf"
+NETWORK = Path(__file__).parents[1] / "home/.tmux/network.sh"
+BATTERY = Path(__file__).parents[1] / "home/.tmux/battery.sh"
+THEME = Path(__file__).parents[1] / "home/.tmux/theme.sh"
+PROFILE = Path(__file__).parents[1] / "home/.profile"
+ZSHRC = Path(__file__).parents[1] / "home/.zshrc"
+
+
+def _write_command(bin_dir, name, body):
+    command = bin_dir / name
+    command.write_text(f"#!/bin/sh\n{body}\n")
+    command.chmod(0o755)
+
+
+def _run_theme(tmp_path, appearance, **env_overrides):
+    bin_dir = tmp_path / "theme-bin"
+    bin_dir.mkdir(exist_ok=True)
+    _write_command(bin_dir, "uname", 'printf "Darwin\\n"')
+    _write_command(
+        bin_dir,
+        "defaults",
+        f'printf "%s\\n" "{appearance}"',
+    )
+    env = os.environ.copy()
+    env.pop("DOTS_THEME_OVERRIDE", None)
+    env.update(env_overrides)
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    return subprocess.run(
+        [str(THEME)],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=env,
+    ).stdout.strip()
+
+
+def test_theme_follows_macos_appearance_instead_of_cached_value(tmp_path):
+    assert _run_theme(tmp_path, "Dark", DOTS_THEME="light") == "dark"
+
+
+def test_theme_explicit_override_wins_over_macos_appearance(tmp_path):
+    assert _run_theme(
+        tmp_path,
+        "Dark",
+        DOTS_THEME="dark",
+        DOTS_THEME_OVERRIDE="light",
+    ) == "light"
+
+
+def test_tmux_refreshes_theme_without_polling():
+    config = CONFIG.read_text()
+    sync_script = (THEME.parent / "sync-theme.sh").read_text()
+    watch_script = (THEME.parent / "watch-theme.sh").read_text()
+    watcher_source = (THEME.parent / "theme-watcher.swift").read_text()
+    zshrc = ZSHRC.read_text()
+    assert "client-focus-in 'run-shell -b \"~/.tmux/sync-theme.sh\"'" in config
+    assert "client-attached 'run-shell -b \"~/.tmux/sync-theme.sh\"'" in config
+    assert "run-shell -b '~/.tmux/watch-theme.sh'" in config
+    assert '"$watcher"' in watch_script
+    assert "notifyutil -w AppleInterfaceThemeChangedNotification" in watch_script
+    assert 'sleep 0.1' in watch_script
+    assert 'kill "$old_pid"' in watch_script
+    assert "AppleInterfaceThemeChangedNotification" in watcher_source
+    assert "DistributedNotificationCenter.default()" in watcher_source
+    assert '"$script_dir/sync-theme.sh"' in watch_script
+    assert "'#{pane_pid} #{@dots_theme_listener}'" in sync_script
+    assert "kill -USR1 \"$pane_pid\"" in sync_script
+    assert "TRAPUSR1()" in zshrc
+    assert "tmux set-option -p @dots_theme_listener 1" in zshrc
+
+
+def test_shell_theme_environment_can_switch_both_ways():
+    command = f"""
+        source {PROFILE!s}
+        DOTS_THEME=light
+        _dots_apply_theme_env
+        [[ $BAT_THEME == dots-light ]]
+        [[ $GLAMOUR_STYLE == light ]]
+        [[ $DELTA_FEATURES == light ]]
+        (( GIT_CONFIG_COUNT > 0 ))
+        DOTS_THEME=dark
+        _dots_apply_theme_env
+        [[ $BAT_THEME == dots ]]
+        [[ $GLAMOUR_STYLE == dark ]]
+        [[ $DELTA_FEATURES == dark ]]
+        [[ -z $GIT_CONFIG_COUNT ]]
+    """
+    subprocess.run(["zsh", "-dfc", command], check=True)
 
 
 def test_compact_status_preserves_copilot_indicators_in_both_themes(tmp_path):

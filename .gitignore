@@ -55,6 +55,7 @@ home/.tmux/plugins
 
 # compiled binaries
 home/.tmux/donut
+home/.tmux/theme-watcher
 
 *.zwc
 

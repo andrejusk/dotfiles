@@ -12,18 +12,18 @@ export VISUAL=vim
 export PAGER=less
 
 # Machine-local overrides (DOTS_THEME, credentials, etc.)
+_dots_inherited_theme="${DOTS_THEME:-}"
 [[ -f ~/.profile.local ]] && source ~/.profile.local
+if [[ -z "${DOTS_THEME_OVERRIDE:-}" && -n "${DOTS_THEME:-}" &&
+      "$DOTS_THEME" != "$_dots_inherited_theme" ]]; then
+    export DOTS_THEME_OVERRIDE="$DOTS_THEME"
+fi
+unset _dots_inherited_theme
 
-# Theme detection: explicit > COLORFGBG > macOS appearance > dark
+# Theme detection: explicit override > macOS appearance > COLORFGBG > dark
 _dots_detect_theme() {
-    [[ -n "${DOTS_THEME:-}" ]] && return
-    if [[ -n "${COLORFGBG:-}" ]]; then
-        local bg="${COLORFGBG##*;}"
-        if (( bg >= 7 )); then
-            export DOTS_THEME=light
-        else
-            export DOTS_THEME=dark
-        fi
+    if [[ "$DOTS_THEME_OVERRIDE" == light || "$DOTS_THEME_OVERRIDE" == dark ]]; then
+        export DOTS_THEME="$DOTS_THEME_OVERRIDE"
         return
     fi
     if [[ "$OSTYPE" == darwin* ]]; then
@@ -33,27 +33,36 @@ _dots_detect_theme() {
         else
             export DOTS_THEME=light
         fi
-    else
-        export DOTS_THEME=${DOTS_THEME:-dark}
+        return
     fi
+    if [[ -n "${COLORFGBG:-}" ]]; then
+        local bg="${COLORFGBG##*;}"
+        if (( bg >= 7 )); then
+            export DOTS_THEME=light
+        else
+            export DOTS_THEME=dark
+        fi
+        return
+    fi
+    export DOTS_THEME=dark
 }
 _dots_detect_theme
-
-# Theme-aware tool configuration
-if [[ "$DOTS_THEME" == light ]]; then
-    export BAT_THEME=dots-light
-    export GLAMOUR_STYLE=light
-    export DELTA_FEATURES=light
-else
-    export BAT_THEME=dots
-    export GLAMOUR_STYLE=dark
-    export DELTA_FEATURES=dark
-fi
 
 # Git colour overrides: .gitconfig hex values are tuned for dark backgrounds
 # and include near-white shades (header, branch.local) that vanish on light.
 # Applied via GIT_CONFIG_COUNT overlay so no per-invocation config rewrite.
+_dots_clear_git_light_overrides() {
+    [[ -n "${DOTS_GIT_CONFIG_COUNT:-}" ]] || return
+    local count="${DOTS_GIT_CONFIG_COUNT:-0}" i=0
+    while (( i < count )); do
+        unset "GIT_CONFIG_KEY_${i}" "GIT_CONFIG_VALUE_${i}"
+        (( i++ ))
+    done
+    unset GIT_CONFIG_COUNT DOTS_GIT_CONFIG_COUNT
+}
+
 _dots_git_light_overrides() {
+    _dots_clear_git_light_overrides
     set -- \
         color.status.added          '#1A8A72' \
         color.status.changed        '#3A5C94' \
@@ -81,6 +90,7 @@ _dots_git_light_overrides() {
         alias.ld 'log --pretty=format:%C(#B46400)%h\ %ad%C(#1A8A72)%d\ %Creset%s%C(#606060)\ [%cn] --decorate --date=relative'
     local i=0
     export GIT_CONFIG_COUNT=$(( $# / 2 ))
+    export DOTS_GIT_CONFIG_COUNT="$GIT_CONFIG_COUNT"
     while [ $# -ge 2 ]; do
         export "GIT_CONFIG_KEY_${i}=$1"
         export "GIT_CONFIG_VALUE_${i}=$2"
@@ -88,32 +98,36 @@ _dots_git_light_overrides() {
         i=$(( i + 1 ))
     done
 }
-if [[ "$DOTS_THEME" == light ]]; then
-    _dots_git_light_overrides
-fi
 
 # Man pages via bat for syntax highlighting
 export MANPAGER="sh -c 'col -bx | sed -e \"s/\x1b\[[0-9;]*m//g\" | bat -l man -p'"
 
-# Less colours for bold/underline (man pages fallback)
 export LESS="-R --mouse"
-if [[ "$DOTS_THEME" == light ]]; then
-    export LESS_TERMCAP_mb=$'\e[1;38;2;200;100;0m'
-    export LESS_TERMCAP_md=$'\e[1;38;2;50;80;170m'
+
+_dots_apply_theme_env() {
+    if [[ "$DOTS_THEME" == light ]]; then
+        export BAT_THEME=dots-light
+        export GLAMOUR_STYLE=light
+        export DELTA_FEATURES=light
+        _dots_git_light_overrides
+        export LESS_TERMCAP_mb=$'\e[1;38;2;200;100;0m'
+        export LESS_TERMCAP_md=$'\e[1;38;2;50;80;170m'
+        export LESS_TERMCAP_so=$'\e[38;2;253;246;227;48;2;44;180;148m'
+    else
+        export BAT_THEME=dots
+        export GLAMOUR_STYLE=dark
+        export DELTA_FEATURES=dark
+        _dots_clear_git_light_overrides
+        export LESS_TERMCAP_mb=$'\e[1;38;2;248;140;20m'
+        export LESS_TERMCAP_md=$'\e[1;38;2;64;104;212m'
+        export LESS_TERMCAP_so=$'\e[38;2;26;26;26;48;2;44;180;148m'
+    fi
     export LESS_TERMCAP_me=$'\e[0m'
-    export LESS_TERMCAP_so=$'\e[38;2;253;246;227;48;2;44;180;148m'
     export LESS_TERMCAP_se=$'\e[0m'
     export LESS_TERMCAP_us=$'\e[4;38;2;44;180;148m'
     export LESS_TERMCAP_ue=$'\e[0m'
-else
-    export LESS_TERMCAP_mb=$'\e[1;38;2;248;140;20m'
-    export LESS_TERMCAP_md=$'\e[1;38;2;64;104;212m'
-    export LESS_TERMCAP_me=$'\e[0m'
-    export LESS_TERMCAP_so=$'\e[38;2;26;26;26;48;2;44;180;148m'
-    export LESS_TERMCAP_se=$'\e[0m'
-    export LESS_TERMCAP_us=$'\e[4;38;2;44;180;148m'
-    export LESS_TERMCAP_ue=$'\e[0m'
-fi
+}
+_dots_apply_theme_env
 
 # Use bat as a colourised pager for less
 export LESSOPEN="| bat --color=always --style=plain %s 2>/dev/null"
